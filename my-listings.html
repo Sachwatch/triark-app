@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.myListings.title">自分の体験 — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  :root{
+    --sea:#0B3A5B; --sea-deep:#061F31; --sun:#E8452B; --earth:#C97B3C;
+    --sand:#F4EDE2; --paper:#FBF8F4; --ink:#0A1622; --mist:#8FA6B5; --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+
+  .wrap{max-width:900px;margin:0 auto;padding:54px 24px 90px}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:40px}
+  .eyebrow{font-size:12px;letter-spacing:.3em;color:var(--sun);font-family:"Helvetica Neue",sans-serif;font-weight:700;margin-bottom:12px}
+  h1{font-size:clamp(26px,4.6vw,38px);letter-spacing:.05em;font-weight:700}
+
+  .btn{border:none;border-radius:3px;padding:13px 26px;font-size:14px;font-weight:600;letter-spacing:.08em;cursor:pointer;font-family:"Helvetica Neue",sans-serif;text-decoration:none;display:inline-block;transition:opacity .2s}
+  .btn:hover{opacity:.88}
+  .btn-primary{background:var(--sun);color:#fff}
+
+  .list{display:flex;flex-direction:column;gap:18px}
+  .card{
+    display:flex;gap:20px;background:#fff;border:1px solid rgba(10,22,34,.12);border-radius:3px;
+    overflow:hidden;
+  }
+  .card .thumbs{width:180px;flex-shrink:0;display:flex;flex-direction:column;gap:2px}
+  .card .thumbs .t{flex:1;min-height:44px;background:#e6e0d6 center/cover no-repeat}
+  .card .thumbs .t.main{flex:2.4}
+  .card .more-n{
+    position:relative;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:13px;font-family:"Helvetica Neue",sans-serif;
+  }
+  .card .more-n::after{content:'';position:absolute;inset:0;background:rgba(10,22,34,.45)}
+  .card .more-n span{position:relative;z-index:1}
+  .card .body{flex:1;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+  .card .row1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .badge{
+    font-size:11px;letter-spacing:.14em;padding:4px 10px;border-radius:2px;
+    font-family:"Helvetica Neue",sans-serif;font-weight:700;
+  }
+  .badge.type{background:rgba(11,58,91,.1);color:var(--sea)}
+  .badge.published{background:rgba(31,122,90,.12);color:#1F7A5A}
+  .badge.draft{background:rgba(10,22,34,.08);color:#6b7d8a}
+  .badge.closed{background:rgba(192,57,43,.1);color:#C0392B}
+  .card h3{font-size:19px;letter-spacing:.03em;line-height:1.5}
+  .card .meta{font-size:13px;color:#6b7d8a;font-family:"Helvetica Neue",sans-serif;letter-spacing:.04em}
+  .card .links{margin-top:auto;display:flex;gap:18px;font-family:"Helvetica Neue",sans-serif;font-size:13px}
+  .card .links a,.card .links button{
+    background:none;border:none;padding:0;cursor:pointer;color:var(--sea);
+    text-decoration:underline;font-size:13px;font-family:inherit;
+  }
+  .card .links button.del{color:#C0392B}
+  .card .links a:hover,.card .links button:hover{color:var(--sun)}
+
+  .empty{padding:60px 0;text-align:center;color:#6b7d8a;font-size:15px;line-height:2}
+  .loading{padding:40px 0;color:#7d8d99;font-family:"Helvetica Neue",sans-serif;font-size:14px}
+  .hidden{display:none !important}
+  @media(max-width:600px){
+    .wrap{padding:36px 20px 70px}
+    .card{flex-direction:column}
+    /* 写真は横に並べて、上部いっぱいに */
+    .card .thumbs{width:100%;flex-direction:row;height:180px}
+    .card .thumbs .t{min-height:0}
+    .card .thumbs .t.main{flex:2}
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <p class="eyebrow">HOST</p>
+        <h1 data-i18n="listing.mineTitle">自分の体験</h1>
+      </div>
+      <a class="btn btn-primary" id="addBtn" href="listing-edit.html" data-i18n="listing.addNew">体験を登録する</a>
+    </div>
+
+    <p class="loading" id="loading" data-i18n="common.loading">読み込み中…</p>
+    <p class="empty hidden" id="empty" data-i18n="listing.mineEmpty"></p>
+    <div class="list" id="list"></div>
+  </div>
+
+<script src="i18n.js"></script>
+<script type="module">
+  import { db, onUser, getUser } from './auth.js';
+  import {
+    collection, query, where, orderBy, getDocs, deleteDoc, doc
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const q  = () => '?lang=' + TriArk.i18n.get();
+  const el = (id) => document.getElementById(id);
+
+  let cache = [];   // 読み込んだ体験
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]
+    ));
+  }
+
+  function render() {
+    const lang = TriArk.i18n.get();
+    el('loading').classList.add('hidden');
+
+    if (!cache.length) {
+      el('empty').classList.remove('hidden');
+      el('list').innerHTML = '';
+      return;
+    }
+    el('empty').classList.add('hidden');
+
+    el('list').innerHTML = cache.map(item => {
+      const d = item.data;
+      const title = TriArk.i18n.pick(d, 'title').text || '(no title)';
+      const area  = TriArk.i18n.pick(d, 'area').text;
+      const imgs = (d.images || []).filter(Boolean);
+      const cover = imgs[0] || '';
+      const price = d.price ? '¥' + Number(d.price).toLocaleString() : '—';
+      const addr = TriArk.i18n.pick(d, 'address').text;
+      const from = addr
+        ? t('listing.departure') + '：' + addr +
+          ((lang === 'ja' && d.addressLabel) ? '（' + d.addressLabel + '）' : '')
+        : '';
+      const meta  = [area, t('listing.fee') + ' ' + price + ' / ' + t('listing.perPerson'),
+                     t('listing.upTo') + ' ' + (d.capacity || 1)].filter(Boolean).join('　·　');
+
+      return '<div class="card">' +
+        '<div class="thumbs">' +
+          '<div class="t main"' + (cover ? ' style="background-image:url(\'' + esc(cover) + '\')"' : '') + '></div>' +
+          (imgs[1] ? '<div class="t" style="background-image:url(\'' + esc(imgs[1]) + '\')"></div>' : '') +
+          (imgs[2]
+            ? '<div class="t' + (imgs.length > 3 ? ' more-n' : '') + '" style="background-image:url(\'' + esc(imgs[2]) + '\')">' +
+              (imgs.length > 3 ? '<span>+' + (imgs.length - 3) + '</span>' : '') + '</div>'
+            : '') +
+        '</div>' +
+        '<div class="body">' +
+          '<div class="row1">' +
+            '<span class="badge type">' + t('listing.type.' + (d.type || 'land')) + '</span>' +
+            '<span class="badge ' + (d.status || 'draft') + '">' + t('listing.status.' + (d.status || 'draft')) + '</span>' +
+          '</div>' +
+          '<h3>' + esc(title) + '</h3>' +
+          '<p class="meta">' + esc(meta) + '</p>' +
+          (from ? '<p class="meta">' + esc(from) + '</p>' : '') +
+          '<div class="links">' +
+            '<a href="listing-edit.html?id=' + esc(item.id) + '&lang=' + lang + '">' + t('listing.edit') + '</a>' +
+            '<button class="del" data-id="' + esc(item.id) + '">' + t('listing.delete') + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    el('list').querySelectorAll('button.del').forEach(b => {
+      b.addEventListener('click', () => remove(b.dataset.id));
+    });
+  }
+
+  async function remove(id) {
+    if (!confirm(t('listing.deleteConfirm'))) return;
+    try {
+      await deleteDoc(doc(db, 'listings', id));
+      cache = cache.filter(i => i.id !== id);
+      render();
+    } catch (e) {
+      console.error(e);
+      alert(t('listing.saveFailed'));
+    }
+  }
+
+  async function load(uid) {
+    try {
+      // 並べ替えに索引が要る場合があるので、取得後に手元で並べる
+      const snap = await getDocs(
+        query(collection(db, 'listings'), where('hostId', '==', uid))
+      );
+      cache = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+      cache.sort((a, b) => {
+        const ta = a.data.createdAt?.seconds || 0;
+        const tb = b.data.createdAt?.seconds || 0;
+        return tb - ta;
+      });
+    } catch (e) {
+      console.error(e);
+      cache = [];
+    }
+    render();
+  }
+
+  onUser(({ user }) => {
+    if (!user) { location.href = 'login.html' + q(); return; }
+    el('addBtn').href = 'listing-edit.html' + q();
+    load(user.uid);
+  });
+
+  TriArk.i18n.onChange(() => { if (cache.length) render(); });
+</script>
+</body>
+</html>

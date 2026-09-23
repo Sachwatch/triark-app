@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.home.title">TriArk — 旅が、人生になる。</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  :root{
+    --sea:#0B3A5B;
+    --sea-deep:#061F31;
+    --sun:#E8452B;
+    --earth:#C97B3C;
+    --sand:#F4EDE2;
+    --ink:#0A1622;
+    --mist:#8FA6B5;
+    --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:var(--ink);line-height:1.9}
+  body.en{font-family:Georgia,"Times New Roman",serif}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;transition:background .3s,box-shadow .3s}
+  header.scrolled{background:rgba(255,255,255,.97);box-shadow:0 2px 20px rgba(10,22,34,.1)}
+
+  .logo{height:60px;width:auto;display:block}
+  .logo .mark{fill:#ffffff}
+  .logo .arc-inner{stroke:#ffffff}
+  .logo .arc-outer{stroke:var(--sun)}
+  .logo .arc-mid{stroke:var(--cyan)}
+  .logo .underline{fill:var(--sun)}
+  header.scrolled .logo .mark{fill:var(--ink)}
+  header.scrolled .logo .arc-inner{stroke:var(--ink)}
+
+  .header-nav{display:flex;gap:20px;align-items:center;font-family:"Helvetica Neue",sans-serif}
+  .header-nav a{color:#fff;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:.05em;text-shadow:0 1px 10px rgba(0,0,0,.4)}
+  header.scrolled .header-nav a{color:var(--ink);text-shadow:none}
+  .header-nav .btn-outline{border:1.5px solid rgba(255,255,255,.9);padding:8px 18px;border-radius:3px}
+  header.scrolled .header-nav .btn-outline{border-color:var(--ink)}
+  .header-nav .btn-fill{background:var(--sun);color:#fff;padding:9px 20px;border-radius:3px;text-shadow:none}
+  .auth-nav{display:flex;gap:20px;align-items:center}
+  .auth-nav .auth-name{color:#fff;font-size:14px;font-weight:600;letter-spacing:.05em;text-shadow:0 1px 10px rgba(0,0,0,.4);font-family:"Helvetica Neue",sans-serif}
+  header.scrolled .auth-nav .auth-name{color:var(--ink);text-shadow:none}
+  .auth-nav button.btn-fill{border:none;cursor:pointer;font-family:"Helvetica Neue",sans-serif;font-size:14px;font-weight:600;letter-spacing:.05em}
+  .lang-toggle{display:flex;align-items:center;gap:0;border:1.5px solid rgba(255,255,255,.7);border-radius:3px;overflow:hidden;font-family:"Helvetica Neue",sans-serif}
+  header.scrolled .lang-toggle{border-color:var(--ink)}
+  .lang-toggle button{border:none;background:transparent;color:#fff;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;transition:background .2s,color .2s}
+  header.scrolled .lang-toggle button{color:var(--ink)}
+  .lang-toggle button.active{background:var(--sun);color:#fff}
+  header.scrolled .lang-toggle button.active{background:var(--sun);color:#fff}
+
+  .hero{position:relative;height:100vh;min-height:600px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center}
+  .slides{position:absolute;inset:0;z-index:0}
+  .slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s ease}
+  /* スマホは画面が縦長なので、横写真の左右が大きく切れる。
+     高さは画面いっぱいのまま、見せる帯だけ少し上にずらす */
+  @media(max-width:720px){
+    .hero .slide{background-position:center 40%}
+  }
+  .slide.active{opacity:1}
+  .hero-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(6,31,49,.4),rgba(6,31,49,.25) 40%,rgba(6,31,49,.6))}
+  .hero-content{position:relative;z-index:2;padding:0 24px;color:#fff}
+  .hero-eyebrow{font-family:"Helvetica Neue",sans-serif;font-size:clamp(12px,1.5vw,15px);font-weight:600;letter-spacing:.3em;margin-bottom:26px;color:var(--sand)}
+  .hero-title{font-size:clamp(48px,9vw,104px);font-weight:700;line-height:1.15;letter-spacing:.05em;margin-bottom:30px;text-shadow:0 4px 40px rgba(0,0,0,.4)}
+  .hero-title .accent{color:var(--sun)}
+  /* 語の途中で改行させない。狭い画面では「旅が、」で行を分ける */
+  @media(max-width:720px){
+    .hero-title{font-size:clamp(40px,11vw,64px);line-height:1.25}
+    .hero-title .lang-ja,
+    .hero-title .lang-en{text-align:center}
+    /* 「、」「。」は文字枠の右半分が空くので、その分だけ右へ寄せて見た目を中央に合わせる */
+    body:not(.en) .hero-title .lang-ja{text-indent:.5em}
+
+    /* 英語表示のとき */
+    body.en .hero-title{font-size:clamp(28px,8.2vw,52px);line-height:1.3}
+    /* TRI / × / ARK を3段に */
+    body.en .hero-eyebrow .eb,
+    body.en .hero-eyebrow .eb-x{display:block;letter-spacing:.2em}
+    body.en .hero-eyebrow .eb-x{margin:4px 0}
+    /* 説明文は「sky」で改行して、ダッシュから次の行へ */
+    body.en .hero-tagline .tl{display:block}
+    body:not(.en) .hero-title .lang-ja{display:block}
+    body.en .hero-title .lang-en{display:block}
+    .hero-title .accent{display:block;text-align:center}
+  }
+  .hero-tagline{font-size:clamp(15px,2.3vw,22px);font-weight:400;letter-spacing:.1em;text-shadow:0 2px 20px rgba(0,0,0,.5)}
+  .indicators{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:10px}
+  .indicators button{width:9px;height:9px;border-radius:50%;border:none;background:rgba(255,255,255,.5);cursor:pointer;padding:0;transition:background .3s,width .3s}
+  .indicators button.active{background:#fff;width:28px;border-radius:5px}
+  .hero-scroll{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:3;color:#fff;font-family:"Helvetica Neue",sans-serif;font-size:11px;letter-spacing:.3em;text-align:center;animation:bob 2.2s ease-in-out infinite}
+  .hero-scroll span{display:block;font-size:20px;margin-top:4px}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+  .section-head{max-width:720px;margin:0 auto 52px;text-align:center}
+  .section-head .eyebrow{font-family:"Helvetica Neue",sans-serif;font-size:12px;letter-spacing:.4em;color:var(--earth);margin-bottom:18px;text-transform:uppercase}
+  .section-head h2{font-size:clamp(28px,4.5vw,44px);font-weight:700;line-height:1.35;margin-bottom:16px;color:#fff}
+  .section-head p{font-size:16px;color:var(--mist)}
+
+  .vehicles{padding:120px 6vw;background:var(--sea)}
+  .vehicle-grid{display:grid;gap:22px;max-width:1200px;margin:0 auto}
+  /* ---- スマホのヘッダー ---- */
+  .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:10px;z-index:120}
+  .nav-toggle span{display:block;width:24px;height:2px;background:#fff;margin:5px 0;transition:transform .25s,opacity .25s;box-shadow:0 1px 6px rgba(0,0,0,.3)}
+  header.scrolled .nav-toggle span{background:var(--ink);box-shadow:none}
+  .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .nav-toggle.open span:nth-child(2){opacity:0}
+  .nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+  @media(max-width:900px){
+    header{padding:12px 20px}
+    .nav-toggle{display:block}
+    .header-nav{
+      position:fixed;top:0;right:0;bottom:0;width:min(78vw,320px);
+      background:var(--sea-deep);
+      flex-direction:column;align-items:flex-start;justify-content:flex-start;
+      gap:0;padding:96px 30px 40px;
+      transform:translateX(100%);transition:transform .3s ease;
+      box-shadow:-10px 0 40px rgba(0,0,0,.3);overflow-y:auto;
+    }
+    .header-nav.open{transform:translateX(0)}
+    .header-nav .auth-nav{flex-direction:column;align-items:stretch;gap:0;width:100%}
+    .header-nav a,.header-nav .auth-name{
+      display:block;width:100%;padding:16px 0;font-size:16px;
+      border-bottom:1px solid rgba(244,237,226,.12);
+      color:var(--sand)!important;text-shadow:none!important;text-align:left;
+    }
+    .header-nav .btn-outline{border:none!important;border-bottom:1px solid rgba(244,237,226,.12)!important;border-radius:0;padding:16px 0}
+    .header-nav .btn-fill{background:var(--sun);color:#fff!important;border-radius:3px;padding:15px 0;text-align:center;margin-top:22px;border-bottom:none}
+    .header-nav .auth-nav button.btn-fill{width:100%}
+    .header-nav .lang-toggle{margin-top:26px;border-color:rgba(244,237,226,.5)}
+    .header-nav .lang-toggle button{color:var(--sand);padding:10px 18px}
+    header.scrolled .header-nav a,
+    header.scrolled .header-nav .auth-name,
+    header.scrolled .header-nav .lang-toggle button{color:var(--sand)}
+  }
+
+  @media(min-width:820px){.vehicle-grid{grid-template-columns:repeat(3,1fr)}}
+  .vehicle{position:relative;border-radius:8px;overflow:hidden;min-height:400px;display:flex;flex-direction:column;justify-content:flex-end;padding:30px;color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 12px 40px rgba(6,31,49,.4);transition:transform .3s,box-shadow .3s}
+  .vehicle:hover{transform:translateY(-8px);box-shadow:0 20px 50px rgba(6,31,49,.55)}
+  .vehicle .v-bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;transition:transform .5s}
+  .vehicle:hover .v-bg{transform:scale(1.06)}
+  .vehicle .v-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(6,31,49,.15),rgba(6,31,49,.8))}
+  .vehicle .v-inner{position:relative;z-index:2}
+  .vehicle h3{font-size:23px;font-weight:700;margin-bottom:8px}
+  .vehicle p{font-size:14px;opacity:.95;line-height:1.7;font-family:"Hiragino Kaku Gothic ProN",sans-serif}
+  body.en .vehicle p{font-family:Georgia,serif}
+  .vehicle .badge{position:absolute;top:20px;left:20px;z-index:2;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.05em;font-family:"Helvetica Neue",sans-serif}
+  .vehicle .badge.open{background:var(--sun);color:#fff}
+  .vehicle .badge.soon{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(4px)}
+  .vehicle.locked{cursor:default}
+  .vehicle.locked .v-shade{background:linear-gradient(180deg,rgba(6,31,49,.45),rgba(6,31,49,.88))}
+
+  .listings{padding:120px 6vw;background:var(--sea-deep)}
+  .card-grid{display:grid;gap:28px;max-width:1200px;margin:0 auto}
+  @media(min-width:640px){.card-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1000px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+  a.card{text-decoration:none;color:inherit;display:flex}
+  .card-grid > a.card{height:100%}
+  .card{border-radius:8px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);transition:transform .25s,box-shadow .25s;cursor:pointer;display:flex;flex-direction:column;width:100%}
+  .card:hover{transform:translateY(-6px);box-shadow:0 16px 44px rgba(0,0,0,.4)}
+  .card-img{height:210px;background-size:cover;background-position:center;position:relative;flex-shrink:0}
+  .card-body{padding:28px 22px 24px;flex:1;display:flex;flex-direction:column}
+  .card-body .loc{color:var(--earth);font-size:13px;font-weight:600;letter-spacing:.05em;margin-bottom:6px;font-family:"Helvetica Neue",sans-serif}
+  .card-body h3{font-size:18px;font-weight:700;margin-bottom:8px;line-height:1.5;color:#fff}
+  .card-body p{font-size:14px;color:var(--mist);line-height:1.7;font-family:"Hiragino Kaku Gothic ProN",sans-serif}
+  body.en .card-body p{font-family:Georgia,serif}
+  .card-body .meta{margin-top:auto;padding-top:16px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--sand);font-family:"Helvetica Neue",sans-serif}
+  .card-body .price{font-weight:700;font-size:16px;color:#fff}
+
+  .cta-host{padding:130px 6vw;text-align:center;background:linear-gradient(135deg,var(--sea),var(--sea-deep))}
+  .cta-host h2{font-size:clamp(28px,4.5vw,46px);font-weight:700;margin-bottom:20px;line-height:1.4;color:#fff}
+  .cta-host .accent{color:var(--sun)}
+  .cta-host p{font-size:16px;color:var(--mist);max-width:600px;margin:0 auto 36px;font-family:"Hiragino Kaku Gothic ProN",sans-serif}
+  body.en .cta-host p{font-family:Georgia,serif}
+  .cta-host .btn{display:inline-block;background:var(--sun);color:#fff;padding:16px 46px;border-radius:3px;font-size:17px;font-weight:700;text-decoration:none;letter-spacing:.05em;transition:transform .2s}
+  .cta-host .btn:hover{transform:scale(1.04)}
+
+  footer{background:var(--ink);color:var(--mist);padding:50px 6vw;text-align:center}
+  footer .logo{width:90px;height:auto;margin:0 auto 16px}
+  footer .f-tag{font-size:14px;letter-spacing:.15em;color:var(--sand)}
+  footer .f-nav{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;margin-top:26px;font-family:"Helvetica Neue",sans-serif}
+  footer .f-nav a{color:var(--sand);text-decoration:none;font-size:13px;letter-spacing:.06em;transition:color .2s}
+  footer .f-nav a:hover{color:var(--sun)}
+  footer .f-src{margin-top:26px;font-size:11px;opacity:.6;font-family:"Helvetica Neue",sans-serif}
+
+  /* 言語表示の切り替え */
+  .lang-ja{display:inline}
+  .lang-en{display:none}
+  body.en .lang-ja{display:none}
+  body.en .lang-en{display:inline}
+  /* ブロック要素用 */
+  p.lang-ja,div.lang-ja{display:block}
+  p.lang-en,div.lang-en{display:none}
+  body.en p.lang-ja,body.en div.lang-ja{display:none}
+  body.en p.lang-en,body.en div.lang-en{display:block}
+
+  @media(prefers-reduced-motion:reduce){.slide{transition:none}*{animation:none!important}}
+</style>
+</head>
+<body>
+  <header id="header">
+    <svg class="logo" viewBox="0 0 220 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TriArk">
+      <path class="arc-outer" d="M10,150 A100,100 0 0,1 210,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path class="arc-mid" d="M30,150 A80,80 0 0,1 190,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path class="arc-inner" d="M50,150 A60,60 0 0,1 170,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+      <rect class="mark" x="103" y="18" width="12" height="134" rx="3"/>
+      <rect class="mark" x="55" y="18" width="108" height="10" rx="3"/>
+      <text class="mark" x="110" y="192" font-family="Georgia, serif" font-size="24" font-weight="bold" letter-spacing="5" text-anchor="middle">TriArk</text>
+      <rect class="underline" x="56" y="199" width="108" height="2" rx="1"/>
+    </svg>
+    <button class="nav-toggle" id="navToggle" aria-label="menu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="header-nav" id="headerNav">
+      <div id="authNav" class="auth-nav">
+        <a href="listings.html" data-i18n="nav.findListings">体験をさがす</a>
+        <a href="hosts.html" data-i18n="nav.findHosts">ホストを探す</a>
+      <a href="messages.html" data-i18n="nav.messages">メッセージ</a>
+        <a href="profile.html?host=1" class="btn-outline" data-i18n="nav.host">ホストになる</a>
+        <a href="login.html" data-i18n="nav.login">ログイン</a>
+        <a href="login.html?mode=signup" class="btn-fill" data-i18n="nav.signup">新規登録</a>
+      </div>
+      <div class="lang-toggle">
+        <button id="btn-ja" class="active" onclick="setLang('ja')">日本語</button>
+        <button id="btn-en" onclick="setLang('en')">EN</button>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="slides" id="slides">
+      <div class="slide active" style="background-image:url('images/hero1.jpg')"></div>
+      <div class="slide" style="background-image:url('images/hero6.jpg')"></div>
+      <div class="slide" style="background-image:url('images/hero3.jpg')"></div>
+      <div class="slide" style="background-image:url('images/hero5.jpg')"></div>
+      <div class="slide" style="background-image:url('images/hero4.jpg')"></div>
+      <div class="slide" style="background-image:url('images/hero2.jpg')"></div>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow"><span class="lang-ja">TRI（陸・海・空）× ARK（希望の箱舟）</span><span class="lang-en"><span class="eb">TRI (land, sea, sky)</span><span class="eb-x">×</span><span class="eb">ARK (an ark of hope)</span></span></p>
+      <h1 class="hero-title">
+        <span class="lang-ja">旅が、<span class="accent">人生になる。</span></span>
+        <span class="lang-en">Where the journey<br><span class="accent">becomes life.</span></span>
+      </h1>
+      <p class="hero-tagline"><span class="lang-ja">陸・海・空をつなぐ、世界にひとつだけの旅へ。</span><span class="lang-en"><span class="tl">Connecting land, sea, and sky</span><span class="tl">— a journey unlike any other.</span></span></p>
+    </div>
+    <div class="indicators" id="indicators"></div>
+    <div class="hero-scroll">SCROLL<span>↓</span></div>
+  </section>
+
+  <section class="vehicles">
+    <div class="section-head">
+      <div class="eyebrow">Choose your journey</div>
+      <h2><span class="lang-ja">どの空間で、旅をする？</span><span class="lang-en">Which way will you travel?</span></h2>
+    </div>
+    <div class="vehicle-grid">
+      <a href="listings.html?type=land" class="vehicle">
+        <div class="v-bg" style="background-image:url('images/land.jpg')"></div>
+        <div class="v-shade"></div>
+        <span class="badge open"><span class="lang-ja">受付中</span><span class="lang-en">Available now</span></span>
+        <div class="v-inner">
+          <h3><span class="lang-ja">陸 — キャンピングカー</span><span class="lang-en">Land — Campervan</span></h3>
+          <p><span class="lang-ja">地域と文化を知り尽くした、情熱的なホストと。</span><span class="lang-en">With a passionate host who knows the land and its culture inside out.</span></p>
+        </div>
+      </a>
+      <a href="listings.html?type=sea" class="vehicle">
+        <div class="v-bg" style="background-image:url('images/sea.jpg');background-position:12% center"></div>
+        <div class="v-shade"></div>
+        <span class="badge open"><span class="lang-ja">受付中</span><span class="lang-en">Available now</span></span>
+        <div class="v-inner">
+          <h3><span class="lang-ja">海 — クルーザー</span><span class="lang-en">Sea — Cruiser</span></h3>
+          <p><span class="lang-ja">風と波を読む、おもてなし上手なホストと。</span><span class="lang-en">With a gracious host who reads the wind and the waves.</span></p>
+        </div>
+      </a>
+      <div class="vehicle locked">
+        <div class="v-bg" style="background-image:url('images/air.jpg')"></div>
+        <div class="v-shade"></div>
+        <span class="badge soon"><span class="lang-ja">近日公開</span><span class="lang-en">Coming soon</span></span>
+        <div class="v-inner">
+          <h3><span class="lang-ja">空 — プライベート機</span><span class="lang-en">Sky — Private Plane</span></h3>
+          <p><span class="lang-ja">雲の上で、異空間のスリルを共有するホストと。</span><span class="lang-en">With a host who shares the thrill of another world, above the clouds.</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="listings">
+    <div class="section-head">
+      <div class="eyebrow">Experiences</div>
+      <h2><span class="lang-ja">いま出会える、旅</span><span class="lang-en">Journeys awaiting you</span></h2>
+      <p><span class="lang-ja">ひとつとして同じもののない、ホストとの体験。</span><span class="lang-en">No two experiences are ever the same.</span></p>
+    </div>
+    <div class="card-grid" id="cardGrid"></div>
+  </section>
+
+  <section class="cta-host">
+    <h2><span class="lang-ja">あなたの「ハコ」で、<br><span class="accent">世界とつながる。</span></span><span class="lang-en">Connect with the world<br><span class="accent">through your own vessel.</span></span></h2>
+    <p><span class="lang-ja">車・船・飛行機。あなたの乗り物と経験が、誰かの忘れられない旅になる。</span><span class="lang-en">Car, boat, or plane — your vehicle and your story can become someone's unforgettable journey.</span></p>
+    <a href="profile.html?host=1" class="btn"><span class="lang-ja">ホストになる</span><span class="lang-en">Become a host</span></a>
+  </section>
+
+  <footer>
+    <svg class="logo" viewBox="0 0 220 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TriArk">
+      <path class="arc-outer" d="M10,150 A100,100 0 0,1 210,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path class="arc-mid" d="M30,150 A80,80 0 0,1 190,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path d="M50,150 A60,60 0 0,1 170,150" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+      <rect x="103" y="18" width="12" height="134" rx="3" fill="#ffffff"/>
+      <rect x="55" y="18" width="108" height="10" rx="3" fill="#ffffff"/>
+      <text x="110" y="192" font-family="Georgia, serif" font-size="24" font-weight="bold" letter-spacing="5" text-anchor="middle" fill="#ffffff">TriArk</text>
+      <rect x="56" y="199" width="108" height="2" rx="1" fill="#E8452B"/>
+    </svg>
+    <p class="f-tag"><span class="lang-ja">旅が、人生になる。</span><span class="lang-en">Where the journey becomes life.</span></p>
+    <nav class="f-nav">
+      <a href="about.html" data-i18n="nav.about">TriArkについて</a>
+      <a href="listings.html" data-i18n="nav.journey">旅をする</a>
+      <a href="hosts.html" data-i18n="nav.findHosts">ホストを探す</a>
+      <a href="profile.html?host=1" data-i18n="nav.host">ホストになる</a>
+      <a href="#" data-i18n="nav.faq">よくある質問</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSe4w1Ns2umfjGUmAGtW71A3MjeCJPjIinfujVu2U_DmfvhoBA/viewform" target="_blank" rel="noopener" data-i18n="nav.contact" data-i18n-href="url.contact">お問い合わせ</a>
+    </nav>
+    <p class="f-src">&copy; TriArk</p>
+  </footer>
+
+<script src="i18n.js"></script>
+<script type="module" src="auth.js"></script>
+<script type="module">
+  // 公開中の体験を Firestore から読んで並べる
+  import { loadPublished, cardHtml } from './listings-shared.js';
+
+  const grid = document.getElementById('cardGrid');
+  let items = [];
+
+  function render() {
+    const lang = TriArk.i18n.get();
+    const t = (k) => TriArk.i18n.t(k);
+    if (!items.length) {
+      grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--mist);' +
+        'font-size:15px;line-height:2">' + t('listings.empty') + '</p>';
+      return;
+    }
+    grid.innerHTML = items.slice(0, 6).map(i => cardHtml(i, lang, t)).join('');
+  }
+
+  (async () => {
+    try { items = await loadPublished(); }
+    catch (e) { console.error(e); items = []; }
+    render();
+    TriArk.i18n.onChange(render);
+  })();
+</script>
+<script>
+  // 言語切替は i18n.js が担当する。
+  // このページ固有の処理（スクロール・スライドショー・カード描画）だけをここに置く。
+
+  // スマホのメニュー開閉
+  (function () {
+    const btn = document.getElementById('navToggle');
+    const nav = document.getElementById('headerNav');
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('open');
+      nav.classList.toggle('open');
+    });
+    // 中のリンクを押したら閉じる
+    nav.addEventListener('click', (e) => {
+      if (e.target.closest('a')) {
+        btn.classList.remove('open');
+        nav.classList.remove('open');
+      }
+    });
+  })();
+
+  const header = document.getElementById('header');
+  addEventListener('scroll',()=>{ header.classList.toggle('scrolled', scrollY>60); });
+
+  const slides = [...document.querySelectorAll('.slide')];
+  const indicators = document.getElementById('indicators');
+  let cur = 0;
+  slides.forEach((_,i)=>{
+    const b = document.createElement('button');
+    if(i===0) b.classList.add('active');
+    b.addEventListener('click',()=>go(i));
+    indicators.appendChild(b);
+  });
+  const dots = [...indicators.children];
+  function go(n){
+    slides[cur].classList.remove('active'); dots[cur].classList.remove('active');
+    cur = n;
+    slides[cur].classList.add('active'); dots[cur].classList.add('active');
+  }
+  setInterval(()=>go((cur+1)%slides.length), 5000);
+
+  // 体験カード（日英両対応）
+
+</script>
+</body>
+</html>

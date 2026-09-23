@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// ============================================================
+// TriArk Storage セキュリティルール（写真の置き場所）
+// ------------------------------------------------------------
+// Firebase コンソール → Storage → ルール に貼り付けて「公開」。
+//
+//   users/{uid}/...  プロフィール写真、乗り物や旅の写真（users/{uid}/photos/…）
+//     ・誰でも見られる（ホスト一覧や体験ページに出すため）
+//     ・置けるのは本人だけ。画像のみ、2MB まで
+//       （画面側で 512px の JPEG に縮めてから送るので、実際は 100KB 前後）
+// ============================================================
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /users/{uid}/{allFiles=**} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && request.resource.size < 2 * 1024 * 1024
+                            && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // それ以外の場所には誰も書けない
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

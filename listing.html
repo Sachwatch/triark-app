@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.listing.title">体験 — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  :root{
+    --sea:#0B3A5B; --sea-deep:#061F31; --sun:#E8452B; --earth:#C97B3C;
+    --sand:#F4EDE2; --ink:#0A1622; --mist:#8FA6B5; --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;background:var(--sea-deep);color:var(--sand);min-height:100vh}
+
+
+  .cover{height:min(52vh,460px);background:#123 center/cover no-repeat;position:relative}
+  .cover::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,31,49,.15),rgba(6,31,49,.9))}
+
+  .wrap{max-width:820px;margin:-90px auto 0;padding:0 24px 90px;position:relative;z-index:2}
+
+  .kicker{font-size:11px;letter-spacing:.26em;color:var(--earth);font-family:"Helvetica Neue",sans-serif;text-transform:uppercase;margin-bottom:14px}
+  h1{font-size:clamp(26px,4.6vw,40px);line-height:1.45;color:#fff;font-weight:700;letter-spacing:.04em;margin-bottom:16px}
+  .facts{display:flex;flex-wrap:wrap;gap:10px 22px;font-family:"Helvetica Neue",sans-serif;font-size:13px;color:var(--mist);margin-bottom:34px}
+  .facts .fee{color:var(--sand);font-weight:600;font-size:15px}
+
+  .block{background:rgba(244,237,226,.05);border:1px solid rgba(244,237,226,.12);border-radius:3px;padding:28px;margin-bottom:22px}
+  .block h2{font-size:12px;letter-spacing:.2em;color:var(--earth);font-family:"Helvetica Neue",sans-serif;font-weight:700;margin-bottom:16px;text-transform:uppercase}
+  .desc{font-size:16px;line-height:2.1;white-space:pre-wrap}
+
+  .host-row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+  .host-row .who{flex:1;min-width:220px}
+  .host-row .name{font-size:21px;color:#fff;margin-bottom:8px}
+  .host-row .headline{font-size:14px;line-height:1.9;color:var(--sand);margin-bottom:10px}
+  .host-row .meta{font-size:12px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;line-height:1.9}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .tag{font-size:11px;padding:4px 11px;border-radius:14px;background:rgba(244,237,226,.1);color:var(--sand);font-family:"Helvetica Neue",sans-serif}
+  a.textlink{color:var(--cyan);text-decoration:underline;font-size:13px;font-family:"Helvetica Neue",sans-serif}
+  a.textlink:hover{color:var(--sun)}
+
+  .map-box{border:1px solid rgba(244,237,226,.15);border-radius:3px;overflow:hidden;margin-top:16px}
+  .map-box iframe{display:block;width:100%;height:260px;border:0}
+
+  .cta{position:sticky;bottom:0;background:rgba(6,31,49,.96);border-top:1px solid rgba(244,237,226,.15);padding:18px 24px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .cta .fee{font-size:17px;color:#fff}
+  .cta .fee small{font-size:12px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;margin-left:8px}
+  .cta button{
+    background:var(--sun);color:#fff;border:none;border-radius:3px;padding:14px 38px;
+    font-size:15px;font-weight:600;letter-spacing:.08em;cursor:pointer;font-family:"Helvetica Neue",sans-serif;
+  }
+  .cta button:disabled{opacity:.45;cursor:default}
+  .cta .note{font-size:11px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;width:100%}
+
+  /* 問い合わせパネル */
+  .sheet{position:fixed;inset:0;background:rgba(6,31,49,.86);display:flex;align-items:center;justify-content:center;padding:20px;z-index:300}
+  .sheet-inner{background:var(--sea-deep);border:1px solid rgba(244,237,226,.18);border-radius:4px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:34px 30px}
+  .sheet h3{font-size:22px;color:#fff;margin-bottom:10px;letter-spacing:.04em}
+  .sheet .lead{font-size:13px;line-height:1.9;color:var(--mist);margin-bottom:26px;font-family:"Helvetica Neue",sans-serif}
+  .sheet label{display:block;font-size:11px;letter-spacing:.14em;color:var(--mist);margin-bottom:7px;font-family:"Helvetica Neue",sans-serif;font-weight:600}
+  .sheet .f{margin-bottom:20px}
+  .sheet select{
+    width:100%;padding:12px 14px;background:rgba(244,237,226,.06);
+    border:1px solid rgba(244,237,226,.22);border-radius:3px;color:var(--sand);
+    font-size:15px;font-family:inherit;
+  }
+  .sheet select option{background:var(--sea-deep);color:var(--sand)}
+  .sheet input,.sheet textarea{
+    width:100%;padding:12px 14px;background:rgba(244,237,226,.06);
+    border:1px solid rgba(244,237,226,.22);border-radius:3px;color:var(--sand);
+    font-size:15px;font-family:inherit;line-height:1.8;
+  }
+  .sheet textarea{min-height:110px;resize:vertical}
+  .sheet input:focus,.sheet textarea:focus{outline:none;border-color:var(--sun)}
+  .sheet .est{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid rgba(244,237,226,.15);border-bottom:1px solid rgba(244,237,226,.15);margin-bottom:22px;font-family:"Helvetica Neue",sans-serif;font-size:13px;color:var(--mist)}
+  .sheet .est b{color:#fff;font-size:18px}
+  .sheet .row{display:flex;gap:12px}
+  .sheet .row button{flex:1;border:none;border-radius:3px;padding:14px;font-size:14px;font-weight:600;letter-spacing:.06em;cursor:pointer;font-family:"Helvetica Neue",sans-serif}
+  .sheet .row .go{background:var(--sun);color:#fff}
+  .sheet .row .no{background:transparent;color:var(--mist);border:1px solid rgba(244,237,226,.3)}
+  .sheet .msg{margin-top:14px;font-size:12px;min-height:18px;color:#FF8B76;font-family:"Helvetica Neue",sans-serif}
+
+  .state{padding:80px 24px;text-align:center;color:var(--mist);font-size:15px}
+  .hidden{display:none !important}
+  .ph-grid{display:block;columns:2;column-gap:10px;margin-top:12px}
+  .ph{break-inside:avoid;margin:0 0 10px}
+  .ph img{width:100%;height:auto;min-height:40px;display:block;border-radius:2px;background:#123249}
+  @media(max-width:700px){ .ph-grid{columns:1} }
+  .v-veh{margin-bottom:24px}
+  .v-veh .n{font-size:15px;font-weight:600;letter-spacing:.03em;color:var(--sand)}
+  .v-veh .k{font-size:11px;letter-spacing:.14em;color:var(--earth);font-family:"Helvetica Neue",sans-serif;font-weight:600;margin-bottom:3px}
+  .v-veh .note{font-size:13px;color:var(--mist);line-height:1.8;margin-top:4px}
+  .bullets{list-style:none;margin:0}
+  .bullets li{
+    position:relative;padding-left:20px;margin-bottom:9px;font-size:15px;line-height:1.9;color:var(--sand);
+  }
+  .bullets li::before{content:'—';position:absolute;left:0;color:var(--earth)}
+  #listsBlock .sec + .sec{margin-top:30px}
+  .route{--rt-fg:var(--sand);--rt-muted:var(--mist);--rt-line:rgba(244,237,226,.3);--rt-mark:var(--sun)}
+  .textlink{color:var(--cyan);text-decoration:underline;font-size:13px;font-family:"Helvetica Neue",sans-serif}
+  .textlink:hover{color:var(--sun)}
+  .cal{--cal-fg:var(--sand);--cal-muted:rgba(244,237,226,.4);--cal-line:rgba(244,237,226,.22);margin-bottom:6px}
+  .cal-hint{font-size:12px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;margin-bottom:16px}
+  @media(max-width:600px){.wrap{margin-top:-60px;padding:0 20px 80px}}
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+  <div class="crumb-bar"><a class="crumb" style="color:var(--mist)" href="listings.html">← <span data-i18n="nav.findListings">体験をさがす</span></a></div>
+
+  <p class="state" id="state" data-i18n="common.loading">読み込み中…</p>
+
+  <div id="main" class="hidden">
+    <div class="cover" id="cover"></div>
+
+    <div class="wrap">
+      <p class="kicker" id="kicker"></p>
+      <h1 id="title"></h1>
+      <div class="facts" id="facts"></div>
+
+      <div class="block">
+        <h2 data-i18n="detail.about">この体験について</h2>
+        <p class="desc" id="desc"></p>
+      </div>
+
+      <div class="block">
+        <h2 data-i18n="detail.hostedBy">案内するホスト</h2>
+        <div class="host-row">
+          <div class="who">
+            <p class="name" id="hostName"></p>
+            <p class="headline" id="hostHeadline"></p>
+            <p class="meta" id="hostMeta"></p>
+            <div class="tags" id="hostTags"></div>
+            <p style="margin-top:14px"><a class="textlink" id="hostLink" href="#" data-i18n="detail.viewHost"></a></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="block hidden" id="hostVehBlock">
+        <h2 id="hostVehHead" data-i18n="veh.hostVehicle">このホストの Ark</h2>
+        <div id="hostVeh"></div>
+      </div>
+
+      <div class="block hidden" id="listsBlock">
+        <div class="sec hidden" id="doSec">
+          <h2 data-i18n="listing.doList">やること</h2>
+          <ul class="bullets" id="doList"></ul>
+        </div>
+        <div class="sec hidden" id="incSec">
+          <h2 data-i18n="listing.included">含まれるもの</h2>
+          <ul class="bullets" id="incList"></ul>
+        </div>
+        <div class="sec hidden" id="brgSec">
+          <h2 data-i18n="listing.bring">持ち物</h2>
+          <ul class="bullets" id="brgList"></ul>
+        </div>
+      </div>
+
+      <div class="block hidden" id="datesBlock">
+        <h2 data-i18n="detail.openDates">開催できる日</h2>
+        <div id="cal"></div>
+        <p class="cal-hint" data-i18n="cal.hint"></p>
+        <p class="meta" id="datesText" style="font-size:14px;color:var(--sand);line-height:2.1"></p>
+      </div>
+
+      <div class="block" id="placeBlock">
+        <h2 data-i18n="detail.route">経路</h2>
+        <div id="routeBox" class="hidden" style="margin-bottom:18px"></div>
+        <p class="meta" id="placeLabel" style="font-size:11px;letter-spacing:.2em;color:var(--earth);font-family:'Helvetica Neue',sans-serif;margin-bottom:6px" data-i18n="detail.meetingPoint">出発地</p>
+        <p class="meta" id="placeText" style="font-size:14px;color:var(--sand)"></p>
+        <p style="margin-top:12px"><a class="textlink hidden" id="mapsLink" target="_blank" rel="noopener" data-i18n="detail.openMaps"></a></p>
+        <div class="map-box hidden" id="mapBox">
+          <iframe id="mapFrame" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <p class="fee" id="ctaFee"></p>
+      <button id="inquireBtn" disabled data-i18n="detail.inquire">問い合わせる</button>
+      <p class="note" data-i18n="detail.inquireSoon"></p>
+    </div>
+  </div>
+
+  <div class="sheet hidden" id="sheet">
+    <div class="sheet-inner">
+      <h3 data-i18n="inq.title">問い合わせる</h3>
+      <p class="lead" data-i18n="inq.lead"></p>
+
+      <div class="f" id="dateField">
+        <label data-i18n="inq.date">希望日</label>
+        <select id="inqDateSelect"></select>
+        <input type="date" id="inqDate" class="hidden">
+        <p class="lead hidden" id="noDatesNote" style="margin:8px 0 0" data-i18n="inq.noOpenDates"></p>
+      </div>
+      <div class="f">
+        <label data-i18n="inq.people">人数</label>
+        <input type="number" id="inqPeople" min="1" value="1">
+      </div>
+      <div class="f">
+        <label data-i18n="inq.message">ホストへのメッセージ</label>
+        <textarea id="inqMessage" data-max="1000" data-i18n-attr="placeholder:inq.messagePh"></textarea>
+      </div>
+
+      <div class="est">
+        <span data-i18n="inq.total">体験料の目安</span>
+        <b id="inqTotal">—</b>
+      </div>
+
+      <div class="row">
+        <button class="no" id="inqCancel" data-i18n="common.cancel">キャンセル</button>
+        <button class="go" id="inqSend" data-i18n="inq.send">この内容で問い合わせる</button>
+      </div>
+      <p class="msg" id="inqMsg"></p>
+    </div>
+  </div>
+
+<script src="i18n.js"></script>
+<script src="limits.js"></script>
+<script src="lightbox.js"></script>
+<script type="module">
+  import { db, onUser, getUser } from './auth.js';
+  import {
+    doc, getDoc, addDoc, updateDoc, collection, serverTimestamp,
+    query, where, getDocs
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import { esc } from './listings-shared.js';
+  import { normalize, upcoming, label as sessionLabel, nightsOf } from './sessions.js';
+  import { mountCalendar } from './calendar.js';
+  import { routeHtml, mapsLink } from './route.js';
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const el = (id) => document.getElementById(id);
+  const id = new URLSearchParams(location.search).get('id');
+
+  let listing = null, host = null, hostUser = null;
+
+  function render() {
+    if (!listing) return;
+    const lang = TriArk.i18n.get();
+    const d = listing;
+
+    const img = (d.images && d.images[0]) ? d.images[0] : '';
+    if (img) el('cover').style.backgroundImage = "url('" + img + "')";
+
+    el('kicker').textContent = t('listing.type.' + (d.type || 'land'));
+    el('title').textContent  = TriArk.i18n.pick(d, 'title').text || '';
+    el('desc').textContent   = TriArk.i18n.pick(d, 'description').text || '';
+
+    const area = TriArk.i18n.pick(d, 'area').text;
+    const fee  = d.price ? '¥' + Number(d.price).toLocaleString() : '';
+    el('facts').innerHTML =
+      (area ? '<span>' + esc(area) + '</span>' : '') +
+      '<span>' + t('detail.capacity') + '：' + (d.capacity || 1) + t('detail.people') + '</span>' +
+      '<span>' + t('detail.private') + '</span>' +
+      (fee ? '<span class="fee">' + t('listing.fee') + ' ' + fee + '</span>' : '');
+
+    el('ctaFee').innerHTML = fee
+      ? esc(fee) + '<small>' + t('listing.feeNote') + '</small>' : '';
+
+    // 開催日程
+    const sess = upcoming(normalize(d));
+    if (sess.length) {
+      el('datesText').innerHTML = sess
+        .map(sn => esc(sessionLabel(sn, lang, t))).join('<br>');
+      el('datesBlock').classList.remove('hidden');
+      showCalendar(sess);
+    } else {
+      el('datesBlock').classList.add('hidden');
+    }
+
+    // 出発地
+    // 英語のときは英語の集合場所を優先し、無ければ日本語をそのまま出す
+    const picked = TriArk.i18n.pick(d, 'address');
+    const place = picked.text +
+      ((lang === 'ja' && d.addressLabel) ? '（' + d.addressLabel + '）' : '');
+    el('placeText').textContent = place;
+    if (d.lat != null && d.lng != null) {
+      el('mapFrame').src = 'https://maps.google.com/maps?q=' + d.lat + ',' + d.lng + '&z=14&output=embed';
+      el('mapBox').classList.remove('hidden');
+    }
+    // ホストの Ark（プロフィールにあるものを、そのまま見せる）
+    if (host) {
+      const hostFirst = String((hostUser && hostUser.name) || '').trim().split(/[\s\u3000]+/)[0] || '';
+      el('hostVehHead').textContent = hostFirst
+        ? t('veh.of').replace('{name}', hostFirst) : t('veh.hostVehicle');
+      const all = TriArk.i18n.pickObjList(host, 'vehicles', ['name', 'note']);
+      // この体験と同じ種別のものを優先し、無ければすべて出す
+      const same = all.filter(v => (v.type || 'land') === (d.type || 'land'));
+      const vehs = same.length ? same : all;
+      el('hostVeh').innerHTML = vehs.map(v =>
+        '<div class="v-veh">' +
+          '<p class="k">' + esc(t('listing.type.' + (v.type || 'land'))) + '</p>' +
+          '<p class="n">' + esc(v.name || '') + '</p>' +
+          (v.note ? '<p class="note">' + esc(v.note) + '</p>' : '') +
+          '<div class="ph-grid">' + (v.photos || []).map(u =>
+            '<div class="ph" data-full="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy"></div>').join('') + '</div>' +
+        '</div>').join('');
+      el('hostVehBlock').classList.toggle('hidden', !vehs.length);
+    }
+
+    // やること・含まれるもの・持ち物
+    const fill = (secId, listId, field) => {
+      const items = TriArk.i18n.pickList(d, field);
+      el(listId).innerHTML = items.map(x => '<li>' + esc(x) + '</li>').join('');
+      el(secId).classList.toggle('hidden', !items.length);
+      return items.length;
+    };
+    const shown = fill('doSec', 'doList', 'doList') +
+                  fill('incSec', 'incList', 'included') +
+                  fill('brgSec', 'brgList', 'bring');
+    el('listsBlock').classList.toggle('hidden', !shown);
+
+    // 経路（出発地 → 行き先）
+    const fromName = picked.text || (lang === 'ja' ? d.addressLabel : '') || '';
+    const toName   = TriArk.i18n.pick(d, 'destName').text || '';
+    const viaNames = TriArk.i18n.pickList(d, 'via');
+    if (fromName || toName) {
+      el('routeBox').innerHTML = routeHtml(
+        { type: d.type || 'land', from: fromName, via: viaNames, to: toName }, esc);
+      el('routeBox').classList.remove('hidden');
+    } else {
+      el('routeBox').classList.add('hidden');
+    }
+    const link = mapsLink(d);
+    el('mapsLink').href = link || '#';
+    el('mapsLink').classList.toggle('hidden', !link);
+
+    el('placeBlock').classList.toggle('hidden', !place && d.lat == null);
+
+    // ホスト
+    if (hostUser) {
+      el('hostName').textContent = hostUser.name || '';
+      const langs = Object.keys(hostUser.languages || {})
+        .map(c => t('lang.' + c) + '（' + t('level.' + hostUser.languages[c]) + '）').join(' / ');
+      const based = host ? TriArk.i18n.pick(host, 'basedIn').text : '';
+      el('hostMeta').textContent = [based, langs].filter(Boolean).join('　·　');
+      el('hostTags').innerHTML = (hostUser.interests || [])
+        .map(c => '<span class="tag">' + t('interest.' + c) + '</span>').join('') +
+        TriArk.i18n.pickList(hostUser, 'tags')
+        .map(x => '<span class="tag">' + esc(x) + '</span>').join('');
+      el('hostLink').href = 'profile.html?uid=' + esc(d.hostId) + '&lang=' + lang;
+    }
+    if (host) {
+      el('hostHeadline').textContent = TriArk.i18n.pick(host, 'headline').text || '';
+    }
+  }
+
+  /* ---------- 問い合わせ ---------- */
+  let me = null;
+
+  function updateTotal() {
+    const n = parseInt(el('inqPeople').value, 10) || 1;
+    const total = (listing.price || 0) * n;
+    el('inqTotal').textContent = '¥' + total.toLocaleString();
+  }
+
+  function fmtDate(str) {
+    const d = new Date(str + 'T00:00:00');
+    const lang = TriArk.i18n.get();
+    return d.toLocaleDateString(lang === 'en' ? 'en-US' : 'ja-JP',
+      { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  }
+
+  /* 開催日程が設定されていれば選択式、無ければ自由入力にする */
+  function setupDateField() {
+    const lang = TriArk.i18n.get();
+    const dates = upcoming(normalize(listing));
+
+    if (dates.length) {
+      el('inqDateSelect').innerHTML =
+        '<option value="">' + t('inq.pickDate') + '</option>' +
+        dates.map(sn => '<option value="' + sn.start + '">' +
+          sessionLabel(sn, lang, t) + '</option>').join('');
+      el('inqDateSelect').classList.remove('hidden');
+      el('inqDate').classList.add('hidden');
+      el('noDatesNote').classList.add('hidden');
+    } else {
+      el('inqDateSelect').classList.add('hidden');
+      el('inqDate').classList.remove('hidden');
+      el('noDatesNote').classList.remove('hidden');
+    }
+  }
+
+  function pickedDate() {
+    return el('inqDateSelect').classList.contains('hidden')
+      ? el('inqDate').value
+      : el('inqDateSelect').value;
+  }
+
+  function openSheet() {
+    if (!me) {
+      location.href = 'login.html?mode=signup&next=' +
+        encodeURIComponent('listing.html?id=' + id) + '&lang=' + TriArk.i18n.get();
+      return;
+    }
+    el('inqPeople').max = listing.capacity || 1;
+    setupDateField();
+    updateTotal();
+    el('sheet').classList.remove('hidden');
+  }
+
+  /* 空いている日を押したら、その日を選んだ状態で問い合わせを開く */
+  let cal = null;
+  function showCalendar(sess) {
+    const pick = (session) => {
+      openSheet();
+      if (!el('sheet').classList.contains('hidden')) {
+        el('inqDateSelect').value = session.start;
+        updateTotal();
+      }
+    };
+    if (cal) cal.setSessions(sess);
+    else cal = mountCalendar(el('cal'), { sessions: sess, onPick: pick });
+  }
+
+  el('inquireBtn').addEventListener('click', openSheet);
+  el('inqCancel').addEventListener('click', () => el('sheet').classList.add('hidden'));
+  el('inqPeople').addEventListener('input', updateTotal);
+
+  async function send() {
+    const dateStr = pickedDate();
+    const people  = parseInt(el('inqPeople').value, 10) || 1;
+    const text    = el('inqMessage').value.trim();
+
+    if (!dateStr) { el('inqMsg').textContent = t('inq.needDate'); return; }
+    if (!text)    { el('inqMsg').textContent = t('inq.needMessage'); return; }
+    if (people > (listing.capacity || 1)) {
+      el('inqMsg').textContent = t('inq.overCapacity'); return;
+    }
+
+    el('inqSend').disabled = true;
+    el('inqMsg').textContent = t('auth.processing');
+
+    try {
+      // 0. この体験に、まだ生きている問い合わせが既にあれば、そこへ合流する
+      const mine = await getDocs(
+        query(collection(db, 'bookings'), where('guestId', '==', me.uid))
+      );
+      const alive = mine.docs.find(d => {
+        const b = d.data();
+        return b.listingId === id &&
+               ['inquiry', 'requested', 'confirmed'].indexOf(b.status) !== -1;
+      });
+
+      if (alive && alive.data().roomId) {
+        await addDoc(collection(db, 'rooms', alive.data().roomId, 'messages'), {
+          senderId : me.uid,
+          text     : text,
+          type     : 'user',
+          createdAt: serverTimestamp()
+        });
+        await updateDoc(doc(db, 'rooms', alive.data().roomId), {
+          lastMessage  : text,
+          lastMessageAt: serverTimestamp()
+        });
+        location.href = 'chat.html?room=' + alive.data().roomId + '&lang=' + TriArk.i18n.get();
+        return;
+      }
+
+      // 1. 予約（問い合わせ中）を作る
+      const bookingRef = await addDoc(collection(db, 'bookings'), {
+        listingId : id,
+        hostId    : listing.hostId,
+        guestId   : me.uid,
+        date      : new Date(dateStr + 'T00:00:00'),
+        session   : (upcoming(normalize(listing)).find(sn => sn.start === dateStr) || null),
+        people    : people,
+        priceTotal: (listing.price || 0) * people,
+        status    : 'inquiry',
+        roomId    : '',
+        createdAt : serverTimestamp(),
+        updatedAt : serverTimestamp()
+      });
+
+      // 2. この予約のための会話を作る
+      const roomRef = await addDoc(collection(db, 'rooms'), {
+        bookingId    : bookingRef.id,
+        listingId    : id,
+        participants : [me.uid, listing.hostId],
+        lastMessage  : text,
+        lastMessageAt: serverTimestamp(),
+        lastRead     : {},
+        createdAt    : serverTimestamp()
+      });
+
+      // 3. 予約に会話を結びつける
+      await updateDoc(bookingRef, { roomId: roomRef.id });
+
+      // 4. 最初の一言を、そのまま会話の1通目にする
+      await addDoc(collection(db, 'rooms', roomRef.id, 'messages'), {
+        senderId : me.uid,
+        text     : text,
+        type     : 'user',
+        createdAt: serverTimestamp()
+      });
+
+      location.href = 'my-bookings.html?lang=' + TriArk.i18n.get();
+    } catch (e) {
+      console.error(e);
+      el('inqMsg').textContent = t('inq.failed');
+      el('inqSend').disabled = false;
+    }
+  }
+  el('inqSend').addEventListener('click', send);
+
+  onUser(({ user }) => {
+    me = user;
+    if (!listing) return;
+    // 自分の体験には問い合わせできない
+    const own = user && listing.hostId === user.uid;
+    el('inquireBtn').disabled = !!own;
+    if (own) document.querySelector('.cta .note').textContent = t('detail.ownListing');
+  });
+
+  (async () => {
+    if (!id) { el('state').textContent = t('detail.notFound'); return; }
+    try {
+      const snap = await getDoc(doc(db, 'listings', id));
+      if (!snap.exists()) { el('state').textContent = t('detail.notFound'); return; }
+      listing = snap.data();
+
+      const [hSnap, uSnap] = await Promise.all([
+        getDoc(doc(db, 'hosts', listing.hostId)),
+        getDoc(doc(db, 'users', listing.hostId))
+      ]);
+      host     = hSnap.exists() ? hSnap.data() : null;
+      hostUser = uSnap.exists() ? uSnap.data() : null;
+    } catch (e) {
+      console.error(e);
+      el('state').textContent = t('detail.notFound');
+      return;
+    }
+
+    el('state').classList.add('hidden');
+    el('main').classList.remove('hidden');
+
+    // 問い合わせを受け付けられる状態にする
+    const own = me && listing.hostId === me.uid;
+    el('inquireBtn').disabled = !!own;
+    document.querySelector('.cta .note').textContent =
+      own ? t('detail.ownListing') : '';
+
+    render();
+    TriArk.i18n.onChange(() => {
+      render();
+      // 問い合わせを開いたまま言語を変えたときは、日付の選択肢も入れ替える
+      if (!el('sheet').classList.contains('hidden')) {
+        const keep = pickedDate();
+        setupDateField();
+        if (keep) el('inqDateSelect').value = keep;
+        updateTotal();
+      }
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>TriArk チラシ</title>
+<style>
+  /* ============================================================
+     A4（210 × 297mm）1枚のチラシ
+     ブラウザで開いて command + P →「PDFとして保存」または印刷
+     印刷設定で「背景のグラフィック」を必ずオンにすること
+     ============================================================ */
+  @page{size:A4;margin:0}
+
+  :root{
+    --cobalt:#0B3A5B;        /* サイトの陸・海・空の背景と同じ紺 */
+    --cobalt-deep:#082C46;   /* 下に向かって少し沈める */
+    --sun:#E8452B;
+    --earth:#E8A05C;
+    --sand:#F4EDE2;
+    --mist:#A8BECF;
+    --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  body{
+    font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+    background:#8a8a8a;   /* 画面で見たときの余白。印刷には出ない */
+    display:flex;justify-content:center;padding:20px;
+  }
+
+  .sheet{
+    width:210mm;height:297mm;
+    background:linear-gradient(to bottom,var(--cobalt) 0%,var(--cobalt) 55%,var(--cobalt-deep) 100%);
+    color:var(--sand);position:relative;overflow:hidden;display:flex;flex-direction:column;
+  }
+
+  /* ---------- 上：風景写真 ---------- */
+  .photo{
+    height:96mm;background:url('images/hero3.jpg') center 45% / cover no-repeat;
+    position:relative;flex-shrink:0;
+  }
+  .photo::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(to bottom,rgba(11,58,91,.22) 0%,rgba(11,58,91,.10) 40%,rgba(11,58,91,.98) 100%);
+  }
+
+  .logo{position:absolute;top:10mm;left:14mm;width:25mm;z-index:2}
+  .logo .arc-o{stroke:var(--sun)}
+  .logo .arc-m{stroke:var(--cyan)}
+  .logo .arc-i{stroke:#fff}
+  .logo .mark{fill:#fff}
+  .logo .ul{fill:var(--sun)}
+
+  /* ---------- 中：言葉 ---------- */
+  .body{flex:1;padding:0 15mm;display:flex;flex-direction:column;margin-top:-22mm;position:relative;z-index:2}
+  /* 見出しまわりは中央に寄せる */
+  .body .eyebrow,
+  .body h1,
+  .body .tagline,
+  .body .lead{text-align:center}
+
+  .eyebrow{
+    font-family:"Helvetica Neue",sans-serif;font-size:8pt;font-weight:700;
+    letter-spacing:.32em;color:var(--earth);margin-bottom:4mm;
+  }
+  h1{font-size:29pt;line-height:1.3;font-weight:700;color:#fff;letter-spacing:.05em;margin-bottom:4mm}
+  h1 .accent{color:var(--sun)}
+
+  .tagline{font-size:11pt;letter-spacing:.08em;color:#fff;margin-bottom:6mm}
+
+  .lead{font-size:10.5pt;line-height:1.95;color:var(--sand);margin-bottom:6mm}
+  .lead .em{color:#fff}
+
+  /* 陸・海・空（写真つき） */
+  .three{display:flex;gap:3.5mm;margin-bottom:7mm}
+  .three .c{
+    flex:1;height:40mm;border-radius:1.5mm;overflow:hidden;position:relative;
+    background-size:cover;background-position:center;
+  }
+  .three .c::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(to bottom,rgba(8,44,70,.15) 35%,rgba(8,44,70,.9) 100%);
+  }
+  .three .c .in{position:absolute;left:0;right:0;bottom:3.5mm;text-align:center;z-index:2}
+  .three .t{font-size:17pt;letter-spacing:.3em;color:#fff;margin-bottom:1.2mm;text-shadow:0 1mm 3mm rgba(0,0,0,.4)}
+  .three .s{font-family:"Helvetica Neue",sans-serif;font-size:7.5pt;letter-spacing:.1em;color:#fff}
+  .three .s.now{
+    display:inline-block;background:var(--sun);padding:.8mm 3mm;border-radius:4mm;font-weight:700;
+  }
+  .three .s.soon{display:inline-block;background:rgba(255,255,255,.22);padding:.8mm 3mm;border-radius:4mm}
+
+  .call{border-top:.4mm solid rgba(244,237,226,.3);padding-top:6mm;font-size:10.5pt;line-height:1.9;color:var(--sand)}
+  .call b{color:#fff;font-weight:700}
+  .call ol{list-style:none;margin-top:3mm}
+  .call li{margin-bottom:2mm;padding-left:7mm;position:relative;font-size:10pt;line-height:1.8}
+  .call li .n{
+    position:absolute;left:0;top:.6mm;width:4.6mm;height:4.6mm;border-radius:50%;
+    background:var(--sun);color:#fff;font-family:"Helvetica Neue",sans-serif;
+    font-size:7pt;font-weight:700;display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---------- 下：QRと連絡先 ---------- */
+  .foot{
+    margin-top:auto;padding:7mm 15mm 10mm;display:flex;align-items:center;gap:7mm;
+    background:rgba(0,0,0,.2);
+  }
+  .foot .qr{width:28mm;height:28mm;background:#fff;padding:1.8mm;border-radius:1mm;flex-shrink:0}
+  .foot .qr img{width:100%;height:100%;display:block}
+  .foot .txt{flex:1}
+  .foot .url{
+    font-family:"Helvetica Neue",sans-serif;font-size:11.5pt;font-weight:700;
+    color:#fff;letter-spacing:.02em;margin-bottom:2mm;word-break:break-all;
+  }
+  .foot .note{font-size:8.5pt;line-height:1.8;color:var(--mist)}
+  .foot .sign{margin-top:2.5mm;font-size:10pt;color:var(--sand);letter-spacing:.08em}
+
+  .tag{
+    position:absolute;bottom:4mm;right:15mm;text-align:right;
+    font-family:"Helvetica Neue",sans-serif;font-size:7pt;
+    letter-spacing:.24em;color:rgba(244,237,226,.45);
+  }
+
+  /* ==================== 裏面 ==================== */
+  body{flex-direction:column;align-items:center;gap:20px}
+
+  .sheet.back{
+    background:linear-gradient(to bottom,var(--cobalt-deep) 0%,var(--cobalt) 40%,var(--cobalt) 100%);
+    padding:14mm 15mm 12mm;justify-content:flex-start;text-align:center;
+  }
+  .logo-back{width:22mm;margin:0 auto 8mm}
+  .logo-back .arc-o{stroke:var(--sun)}
+  .logo-back .arc-m{stroke:var(--cyan)}
+  .logo-back .arc-i{stroke:#fff}
+  .logo-back .mark{fill:#fff}
+  .logo-back .ul{fill:var(--sun)}
+
+  .b-wrap{flex:1;display:flex;flex-direction:column}
+
+  .b-big{
+    font-size:19pt;line-height:1.6;color:#fff;font-weight:700;letter-spacing:.04em;
+    padding-bottom:7mm;margin-bottom:8mm;border-bottom:.4mm solid rgba(244,237,226,.25);
+    text-align:center;
+  }
+  .b-big .accent{color:var(--sun)}
+
+  .b-sec{margin-bottom:8mm}
+  .b-eyebrow{
+    font-family:"Helvetica Neue",sans-serif;font-size:7.5pt;font-weight:700;
+    letter-spacing:.3em;color:var(--earth);margin-bottom:3mm;
+  }
+  .b-sec h2{font-size:15pt;line-height:1.55;color:#fff;font-weight:700;letter-spacing:.04em;margin-bottom:4mm;text-align:center}
+  .b-sec h2 .accent{color:var(--sun)}
+  .b-lead{font-size:10pt;line-height:1.95;color:var(--sand);margin-bottom:2.5mm}
+  .b-sub{font-size:9pt;line-height:1.9;color:var(--mist);margin-bottom:5mm}
+
+  .duo{display:flex;gap:4mm}
+  .duo .side{flex:1;border:.4mm solid rgba(244,237,226,.25);border-radius:1.5mm;padding:4.5mm}
+  .duo .role{
+    font-family:"Helvetica Neue",sans-serif;font-size:8pt;font-weight:700;
+    letter-spacing:.22em;margin-bottom:2.5mm;
+  }
+  .duo .host .role{color:var(--sun)}
+  .duo .guest .role{color:var(--cyan)}
+  .duo .side p{font-size:9pt;line-height:1.85;color:var(--sand);text-align:center}
+
+  .how{border-top:.4mm solid rgba(244,237,226,.25);padding-top:7mm}
+
+  .pillars{display:flex;gap:4mm;margin-bottom:6mm}
+  .pillar{flex:1;text-align:center}
+  .pillar .ic{font-size:16pt;margin-bottom:2mm}
+  .pillar .ttl{font-size:10.5pt;color:#fff;font-weight:700;margin-bottom:2mm;letter-spacing:.04em}
+  .pillar .txt{font-size:8.5pt;line-height:1.8;color:var(--mist)}
+
+  .feat{list-style:none;border-top:.4mm solid rgba(244,237,226,.18);padding-top:5mm}
+  .feat li{
+    font-size:9.5pt;line-height:1.9;color:var(--sand);text-align:center;
+    padding:2mm 0;border-bottom:.3mm solid rgba(244,237,226,.12);
+  }
+  .feat li:last-child{border-bottom:none}
+  .feat b{color:var(--sun);font-size:11pt}
+
+  @media print{
+    body{background:none;padding:0;gap:0}
+    .sheet{page-break-after:always}
+    .sheet:last-child{page-break-after:auto}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="photo">
+    <svg class="logo" viewBox="0 0 220 210" xmlns="http://www.w3.org/2000/svg">
+      <path class="arc-o" d="M10,150 A100,100 0 0,1 210,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path class="arc-m" d="M30,150 A80,80 0 0,1 190,150"  fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path class="arc-i" d="M50,150 A60,60 0 0,1 170,150"  fill="none" stroke-width="10" stroke-linecap="round"/>
+      <rect class="mark" x="103" y="18" width="12" height="134" rx="3"/>
+      <rect class="mark" x="55"  y="18" width="108" height="10" rx="3"/>
+      <text class="mark" x="110" y="192" font-family="Georgia, serif" font-size="24" font-weight="bold" letter-spacing="5" text-anchor="middle">TriArk</text>
+      <rect class="ul" x="56" y="199" width="108" height="2" rx="1"/>
+    </svg>
+  </div>
+
+  <div class="body">
+    <p class="eyebrow">TRI（陸・海・空）× ARK（希望の箱舟）</p>
+    <h1>旅が、<span class="accent">人生になる。</span></h1>
+    <p class="tagline">陸・海・空をつなぐ、世界にひとつだけの旅へ。</p>
+
+    <p class="lead">
+      行き先でも、宿でもなく、<span class="em">「誰と過ごすか」</span>で旅を選ぶ。<br>
+      ホストが自分の乗り物で、自分の好きな場所へ連れていく。
+    </p>
+
+    <div class="three">
+      <div class="c" style="background-image:url('images/land.jpg')">
+        <div class="in"><p class="t">陸</p><span class="s now">受付中</span></div>
+      </div>
+      <div class="c" style="background-image:url('images/sea.jpg')">
+        <div class="in"><p class="t">海</p><span class="s now">受付中</span></div>
+      </div>
+      <div class="c" style="background-image:url('images/air.jpg')">
+        <div class="in"><p class="t">空</p><span class="s soon">近日公開</span></div>
+      </div>
+    </div>
+
+    <div class="call">
+      <b>TriArk を一緒に体験してくれる人を探しています。</b>
+      <ol>
+        <li><span class="n">1</span>ホスト（私）が案内する旅に参加してくれる人</li>
+        <li><span class="n">2</span>ホスト（あなた）に登録して、ゲスト（ご友人・知人）を案内してくれる人</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="qr"><img src="images/qr.png" alt="QR"></div>
+    <div class="txt">
+      <p class="url">triark-chat.web.app</p>
+      <p class="note">
+        QRを読み取ると、体験の一覧とホストのプロフィールが見られます。<br>
+        気になる体験から、そのまま問い合わせができます。
+      </p>
+      <p class="sign">TriArk ／ Sara</p>
+    </div>
+  </div>
+
+  <p class="tag">WHERE THE JOURNEY BECOMES LIFE</p>
+</div>
+
+
+<!-- ==================== 裏面 ==================== -->
+<div class="sheet back">
+
+  <svg class="logo-back" viewBox="0 0 220 210" xmlns="http://www.w3.org/2000/svg">
+    <path class="arc-o" d="M10,150 A100,100 0 0,1 210,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+    <path class="arc-m" d="M30,150 A80,80 0 0,1 190,150"  fill="none" stroke-width="10" stroke-linecap="round"/>
+    <path class="arc-i" d="M50,150 A60,60 0 0,1 170,150"  fill="none" stroke-width="10" stroke-linecap="round"/>
+    <rect class="mark" x="103" y="18" width="12" height="134" rx="3"/>
+    <rect class="mark" x="55"  y="18" width="108" height="10" rx="3"/>
+    <text class="mark" x="110" y="192" font-family="Georgia, serif" font-size="24" font-weight="bold" letter-spacing="5" text-anchor="middle">TriArk</text>
+    <rect class="ul" x="56" y="199" width="108" height="2" rx="1"/>
+  </svg>
+
+  <div class="b-wrap">
+
+    <!-- 宣言 -->
+    <p class="b-big">
+      既存のサービスは、<br>「ハコ」を貸す。<br>TriArkは、<br>
+      <span class="accent">ホストも「ハコ」も、動く。</span>
+    </p>
+
+    <!-- Who / What -->
+    <div class="b-sec">
+      <p class="b-eyebrow">Who / What</p>
+      <h2>移動は「手段」ではなく、<br><span class="accent">体験そのもの</span>になる。</h2>
+      <p class="b-lead">目的地へ運ばれるだけの旅ではなく、移動している時間そのものに価値を見出したい人へ。<br>旅をしながら暮らしたい人へ。</p>
+      <p class="b-sub">規格化された旅では満たされない、"人とのつながりを通じた旅"への欲求に応える。</p>
+
+      <div class="duo">
+        <div class="side host">
+          <p class="role">HOST</p>
+          <p>自分の「ハコ（乗り物）」で、世界中の人と旅の体験を分かち合い、もてなしたい人。</p>
+        </div>
+        <div class="side guest">
+          <p class="role">GUEST</p>
+          <p>移動手段も、出会う人も、<br>自分の理想の旅を<br>実現したい人。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- How -->
+    <div class="b-sec how">
+      <p class="b-eyebrow">How</p>
+      <h2>ホストが、同乗する。</h2>
+
+      <div class="pillars">
+        <div class="pillar">
+          <p class="ic">🧭</p>
+          <p class="ttl">ホストが同乗する</p>
+          <p class="txt">オーナー自身が案内し、<br>その知識・文化・情熱が<br>体験そのものになる。</p>
+        </div>
+        <div class="pillar">
+          <p class="ic">📍</p>
+          <p class="ttl">GPSリアルタイム</p>
+          <p class="txt">ホストの現在地を地図で検索し、<br>その場で合流。計画しない出会いが<br>最高の旅を生む。</p>
+        </div>
+        <div class="pillar">
+          <p class="ic">🌏</p>
+          <p class="ttl">国境を越える</p>
+          <p class="txt">ホストとゲストが、旅を通じてつながり<br>言語・国籍を超えた<br>コミュニティが広がっていく。</p>
+        </div>
+      </div>
+
+      <ul class="feat">
+        <li><b>陸</b>　キャンピングカー　—　地域と文化を知り尽くした情熱的なホストと</li>
+        <li><b>海</b>　クルーザー　—　風と波を読むおもてなし上手なホストと</li>
+        <li><b>空</b>　プライベート機　—　雲の上で異空間のスリルを共有できるホストと</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <p class="tag">triark-chat.web.app</p>
+</div>
+
+</body>
+</html>

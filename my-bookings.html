@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.bookings.title">予約 — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  body{background:var(--paper);color:var(--ink);min-height:100vh}
+
+
+  .wrap{max-width:880px;margin:0 auto;padding:50px 24px 90px}
+  h1{font-size:clamp(26px,4.6vw,38px);letter-spacing:.05em;font-weight:700;color:var(--ink);margin-bottom:34px}
+
+  .tabs{display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap}
+  .tabs button{
+    border:1.5px solid var(--line);background:transparent;color:var(--ink);
+    border-radius:22px;padding:9px 22px;font-size:13px;cursor:pointer;
+    font-family:"Helvetica Neue",sans-serif;letter-spacing:.06em;transition:all .2s;
+  }
+  .tabs button.on{background:var(--sun);border-color:var(--sun);color:#fff}
+
+  .list{display:flex;flex-direction:column;gap:16px}
+  .bk{display:flex;gap:18px;background:#fff;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .bk .th{width:150px;background:#e6e0d6 center/cover no-repeat;flex-shrink:0}
+  .bk .body{flex:1;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+  .bk .row1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .bk h3{font-size:18px;line-height:1.5;color:var(--ink)}
+  .bk .meta{font-size:12px;color:var(--ink-40);font-family:var(--sans);line-height:1.9}
+  .bk .links{margin-top:auto;padding-top:8px;font-family:"Helvetica Neue",sans-serif;font-size:13px}
+  .bk .links a{color:var(--sea);text-decoration:underline}
+  .bk .links a:hover{color:var(--sun)}
+
+  .hidden{display:none !important}
+  @media(max-width:600px){
+    .wrap{padding:34px 20px 70px}
+    .bk{flex-direction:column}
+    .bk .th{width:100%;height:160px}
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+
+  <div class="wrap">
+    <p class="eyebrow">BOOKINGS</p>
+    <h1 data-i18n="bk.title">予約</h1>
+
+    <div class="tabs">
+      <button id="tabGuest" class="on" data-i18n="bk.asGuest">ゲストとして</button>
+      <button id="tabHost" data-i18n="bk.asHost">ホストとして</button>
+    </div>
+
+    <p class="state" id="state" data-i18n="common.loading">読み込み中…</p>
+    <div class="list" id="list"></div>
+  </div>
+
+<script src="i18n.js"></script>
+<script type="module">
+  import { db, onUser } from './auth.js';
+  import { collection, query, where, getDocs, doc, getDoc }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const el = (id) => document.getElementById(id);
+
+  let me = null;
+  let asGuest = [];   // 自分がゲストの予約
+  let asHost  = [];   // 自分がホストの予約
+  let tab = 'guest';
+  const listingCache = {};
+  const userCache = {};
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]
+    ));
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const lang = TriArk.i18n.get();
+    return d.toLocaleDateString(lang === 'en' ? 'en-US' : 'ja-JP',
+      { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  async function fetchListing(id) {
+    if (listingCache[id] !== undefined) return listingCache[id];
+    try {
+      const snap = await getDoc(doc(db, 'listings', id));
+      listingCache[id] = snap.exists() ? snap.data() : null;
+    } catch (e) { listingCache[id] = null; }
+    return listingCache[id];
+  }
+  async function fetchUser(uid) {
+    if (userCache[uid] !== undefined) return userCache[uid];
+    try {
+      const snap = await getDoc(doc(db, 'users', uid));
+      userCache[uid] = snap.exists() ? snap.data() : null;
+    } catch (e) { userCache[uid] = null; }
+    return userCache[uid];
+  }
+
+  function render() {
+    const lang = TriArk.i18n.get();
+    const items = tab === 'guest' ? asGuest : asHost;
+
+    el('tabGuest').classList.toggle('on', tab === 'guest');
+    el('tabHost').classList.toggle('on', tab === 'host');
+
+    if (!items.length) {
+      el('state').textContent = t('bk.empty');
+      el('state').classList.remove('hidden');
+      el('list').innerHTML = '';
+      return;
+    }
+    el('state').classList.add('hidden');
+
+    el('list').innerHTML = items.map(b => {
+      const d = b.data;
+      const L = listingCache[d.listingId] || {};
+      const title = TriArk.i18n.pick(L, 'title').text || '';
+      const img = (L.images && L.images[0]) ? L.images[0] : '';
+
+      const other = tab === 'guest' ? userCache[d.hostId] : userCache[d.guestId];
+      const otherLabel = tab === 'guest' ? t('bk.host') : t('bk.guest');
+
+      const meta = [
+        t('bk.date') + '：' + fmtDate(d.date),
+        t('bk.people') + '：' + d.people + t('bk.peopleUnit'),
+        t('bk.total') + '：¥' + Number(d.priceTotal || 0).toLocaleString(),
+        otherLabel + '：' + ((other && other.name) || '')
+      ].join('　·　');
+
+      return '<div class="bk">' +
+        '<div class="th"' + (img ? ' style="background-image:url(\'' + esc(img) + '\')"' : '') + '></div>' +
+        '<div class="body">' +
+          '<div class="row1">' +
+            '<span class="badge ' + d.status + '">' + t('booking.' + d.status) + '</span>' +
+          '</div>' +
+          '<h3>' + esc(title) + '</h3>' +
+          '<p class="meta">' + esc(meta) + '</p>' +
+          '<p class="links">' +
+            (d.roomId
+              ? '<a href="chat.html?room=' + esc(d.roomId) + '&lang=' + lang + '">' + t('bk.openChat') + '</a>'
+              : '') +
+          '</p>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  async function load(uid) {
+    try {
+      const [g, h] = await Promise.all([
+        getDocs(query(collection(db, 'bookings'), where('guestId', '==', uid))),
+        getDocs(query(collection(db, 'bookings'), where('hostId',  '==', uid)))
+      ]);
+      asGuest = g.docs.map(d => ({ id: d.id, data: d.data() }));
+      asHost  = h.docs.map(d => ({ id: d.id, data: d.data() }));
+
+      const sortNew = (a, b) =>
+        (b.data.createdAt?.seconds || 0) - (a.data.createdAt?.seconds || 0);
+      asGuest.sort(sortNew);
+      asHost.sort(sortNew);
+
+      // 表示に必要な体験と相手の情報をまとめて読む
+      const ids = new Set(), uids = new Set();
+      asGuest.concat(asHost).forEach(b => {
+        ids.add(b.data.listingId);
+        uids.add(b.data.hostId);
+        uids.add(b.data.guestId);
+      });
+      await Promise.all([
+        ...[...ids].map(fetchListing),
+        ...[...uids].map(fetchUser)
+      ]);
+    } catch (e) {
+      console.error(e);
+    }
+    render();
+  }
+
+  el('tabGuest').addEventListener('click', () => { tab = 'guest'; render(); });
+  el('tabHost').addEventListener('click',  () => { tab = 'host';  render(); });
+
+  onUser(({ user }) => {
+    if (!user) {
+      location.href = 'login.html?next=my-bookings.html&lang=' + TriArk.i18n.get();
+      return;
+    }
+    me = user;
+    load(user.uid);
+  });
+
+  TriArk.i18n.onChange(() => { if (me) render(); });
+</script>
+</body>
+</html>

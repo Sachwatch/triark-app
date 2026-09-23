@@ -1,0 +1,177 @@
+rules_version = '2';
+
+// ============================================================
+// TriArk Firestore セキュリティルール
+// ------------------------------------------------------------
+// 期限付きのテストルールを置き換えるもの。
+// Firebase コンソール → Firestore Database → ルール に貼り付けて「公開」。
+//
+// 考え方
+//   ・ログインしていない人は、公開されている情報だけ読める
+//   ・自分の記録は自分だけが書き換えられる
+//   ・会話と予約は、その当事者だけが読める
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- 補助 ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    // 文字数の上限（画面側の上限の約2倍の余裕を持たせた「荒らし対策」）。
+    // 項目が無い・文字列でない場合は通す
+    function fits(d, f, n) {
+      return !(f in d) || !(d[f] is string) || d[f].size() <= n;
+    }
+    // 翻訳（tr / trSrc / srcLang / trAt）はサーバー側の関数だけが書く。
+    // 画面から送られた内容が、いま保存されているものと同じなら通す
+    function keepsTr(now, before) {
+      return (!('tr'      in now) && !('trSrc' in now))
+          || (before != null && now.tr == before.tr && now.trSrc == before.trSrc);
+    }
+    function userOk(d) {
+      return fits(d, 'name', 60) && fits(d, 'photoURL', 1000)
+          && fits(d, 'bio', 2000)
+          && fits(d, 'interestsFree', 400) && fits(d, 'interestsFree_en', 800)
+          // 自分で足すキーワードは10個まで
+          && (!('tags' in d) || (d.tags is list && d.tags.size() <= 10));
+    }
+    function hostOk(d) {
+      return fits(d, 'headline', 80) && fits(d, 'headline_en', 160)
+          && fits(d, 'basedIn', 60)  && fits(d, 'basedIn_en', 120)
+          && fits(d, 'intro', 10000) && fits(d, 'intro_en', 20000)
+          && (!('vehicles' in d) || (d.vehicles is list && d.vehicles.size() <= 5))
+          && (!('gallery' in d)  || (d.gallery is list  && d.gallery.size()  <= 12));
+    }
+    function listingOk(d) {
+      return fits(d, 'title', 80)  && fits(d, 'title_en', 160)
+          && fits(d, 'area', 60)   && fits(d, 'area_en', 120)
+          && fits(d, 'description', 6000) && fits(d, 'description_en', 12000)
+          && fits(d, 'address', 200) && fits(d, 'address_en', 400)
+          && fits(d, 'destName', 200) && fits(d, 'destLabel', 200)
+          && (!('via' in d) || (d.via is list && d.via.size() <= 5))
+          && (!('doList' in d)   || (d.doList is list   && d.doList.size()   <= 10))
+          && (!('included' in d) || (d.included is list && d.included.size() <= 10))
+          && (!('bring' in d)    || (d.bring is list    && d.bring.size()    <= 10));
+    }
+
+    // users/{uid} を読んでホストかどうか判定する
+    function isHost() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isHost == true;
+    }
+
+    // ---------- users ----------
+    // 公開プロフィール。名前・写真・自己紹介・話せる言語が入る。
+    // ログインしていない人も読める（体験を見に来た人がホストの言語を確認できるように）。
+    // メールや電話は users には置かず、下の private に入れる。
+    match /users/{uid} {
+      allow read  : if true;
+      allow create: if isSelf(uid) && userOk(request.resource.data)
+                    && keepsTr(request.resource.data, null);
+      allow update: if isSelf(uid) && userOk(request.resource.data)
+                    && keepsTr(request.resource.data, resource.data);
+      allow delete: if false;
+
+      // 本人だけが読み書きできる場所（連絡先など）
+      match /private/{docId} {
+        allow read, write: if isSelf(uid);
+      }
+
+      // お気に入り
+      match /favorites/{listingId} {
+        allow read, write: if isSelf(uid);
+      }
+    }
+
+    // ---------- hosts ----------
+    // ホストの紹介文。ゲストが見るものなので誰でも読める
+    match /hosts/{uid} {
+      allow read : if true;
+      allow create: if isSelf(uid) && hostOk(request.resource.data)
+                    && keepsTr(request.resource.data, null);
+      allow update: if isSelf(uid) && hostOk(request.resource.data)
+                    && keepsTr(request.resource.data, resource.data);
+      allow delete: if isSelf(uid);
+    }
+
+    // ---------- listings ----------
+    // 公開中の体験は誰でも読める。書けるのは作った本人だけ
+    match /listings/{listingId} {
+      allow read: if resource.data.status == 'published'
+                  || (signedIn() && resource.data.hostId == request.auth.uid);
+
+      allow create: if isHost()
+                    && request.resource.data.hostId == request.auth.uid
+                    && listingOk(request.resource.data)
+                    && keepsTr(request.resource.data, null);
+
+      allow update: if signedIn()
+                    && resource.data.hostId == request.auth.uid
+                    && listingOk(request.resource.data)
+                    && keepsTr(request.resource.data, resource.data);
+      allow delete: if signedIn()
+                    && resource.data.hostId == request.auth.uid;
+    }
+
+    // ---------- bookings ----------
+    // 当事者（ゲストとホスト）だけ
+    match /bookings/{bookingId} {
+      function isParty() {
+        return signedIn()
+          && (resource.data.guestId == request.auth.uid
+              || resource.data.hostId == request.auth.uid);
+      }
+
+      allow read: if isParty();
+
+      // 作れるのはゲスト本人だけ。最初は inquiry から始まる
+      allow create: if signedIn()
+                    && request.resource.data.guestId == request.auth.uid
+                    && request.resource.data.status == 'inquiry';
+
+      // 当事者なら更新できる（どちらが何をできるかは今後細かくする）
+      allow update: if isParty();
+      allow delete: if false;
+    }
+
+    // ---------- rooms ----------
+    // participants に自分が入っている会話だけ
+    match /rooms/{roomId} {
+      function inRoom() {
+        return signedIn()
+          && request.auth.uid in resource.data.participants;
+      }
+
+      // get（1件を開く）と list（一覧を引く）を明示的に許可する。
+      // どちらも「自分が participants に入っている部屋だけ」。
+      allow get   : if inRoom();
+      allow list  : if inRoom();
+      allow create: if signedIn()
+                    && request.auth.uid in request.resource.data.participants;
+      allow update: if inRoom();
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        function inParentRoom() {
+          return signedIn()
+            && request.auth.uid in
+               get(/databases/$(database)/documents/rooms/$(roomId)).data.participants;
+        }
+
+        allow read  : if inParentRoom();
+        // システムメッセージ（予約の状態変化）も、操作した本人が書き込む
+        allow create: if inParentRoom()
+                      && request.resource.data.senderId == request.auth.uid
+                      && fits(request.resource.data, 'text', 4000);
+        allow update, delete: if false;   // 送ったメッセージは書き換えない
+      }
+    }
+
+  }
+}

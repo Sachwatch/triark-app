@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.hosts.title">ホストを探す — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  :root{
+    --sea:#0B3A5B; --sea-deep:#061F31; --sun:#E8452B; --earth:#C97B3C;
+    --sand:#F4EDE2; --ink:#0A1622; --mist:#8FA6B5; --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;background:var(--sand);color:var(--ink);min-height:100vh}
+
+
+  .hero{background:radial-gradient(ellipse at 50% 0%,var(--sea) 0%,var(--sea-deep) 75%);color:var(--sand);padding:64px 6vw 56px;text-align:center}
+  .hero .eyebrow{font-size:12px;letter-spacing:.3em;color:var(--sun);font-family:"Helvetica Neue",sans-serif;font-weight:700;margin-bottom:16px}
+  .hero h1{font-size:clamp(28px,5vw,42px);letter-spacing:.06em;margin-bottom:18px;font-weight:700;color:#fff}
+  .hero p{font-size:15px;line-height:2;color:var(--mist);max-width:620px;margin:0 auto}
+
+  .wrap{max-width:960px;margin:0 auto;padding:44px 24px 90px}
+
+  .filters{margin-bottom:40px}
+  .filters h2{font-size:12px;letter-spacing:.16em;color:#5d6f7c;font-family:"Helvetica Neue",sans-serif;font-weight:600;margin-bottom:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:24px}
+  .chip{
+    border:1.5px solid rgba(10,22,34,.2);background:#fff;border-radius:20px;padding:8px 16px;
+    font-size:13px;cursor:pointer;color:var(--ink);font-family:"Helvetica Neue",sans-serif;
+    transition:border-color .18s,background .18s,color .18s;
+  }
+  .chip.on{border-color:var(--sun);background:var(--sun);color:#fff}
+  .bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-family:"Helvetica Neue",sans-serif;font-size:13px;color:#5d6f7c}
+  .bar button.clear{background:none;border:none;color:var(--sea);text-decoration:underline;cursor:pointer;font-size:13px;font-family:inherit}
+  .bar button.clear:hover{color:var(--sun)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+  .host-card{background:#fff;border:1px solid rgba(10,22,34,.12);border-radius:3px;padding:24px 24px 20px;display:flex;flex-direction:column;gap:10px}
+  .host-card .name{font-size:20px;letter-spacing:.04em}
+  .host-card .headline{font-size:14px;line-height:1.8;color:var(--sea)}
+  .host-card .meta{font-size:12px;color:#6b7d8a;font-family:"Helvetica Neue",sans-serif;letter-spacing:.04em}
+  .host-card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .host-card .tag{font-size:11px;padding:4px 10px;border-radius:14px;background:rgba(11,58,91,.08);color:var(--sea);font-family:"Helvetica Neue",sans-serif}
+  .host-card .tag.hit{background:var(--sun);color:#fff}
+  .host-card .tag.own{background:var(--sea);color:#fff}
+  .host-card .who{display:flex;align-items:center;gap:12px}
+  .host-card .avatar{
+    width:46px;height:46px;border-radius:50%;flex-shrink:0;background:#8FA6B5 center/cover no-repeat;
+    display:flex;align-items:center;justify-content:center;color:#fff;font:600 18px/1 "Helvetica Neue",sans-serif;
+  }
+  .host-card a.more{margin-top:auto;padding-top:12px;font-size:13px;color:var(--sea);text-decoration:underline;font-family:"Helvetica Neue",sans-serif}
+  .host-card a.more:hover{color:var(--sun)}
+
+  .state{padding:50px 0;text-align:center;color:#6b7d8a;font-size:15px;line-height:2}
+  .hidden{display:none !important}
+  @media(max-width:600px){.wrap{padding:32px 20px 70px}}
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+
+  <div class="hero">
+    <p class="eyebrow">FIND A HOST</p>
+    <h1 data-i18n="hosts.title">ホストを探す</h1>
+    <p data-i18n="hosts.lead"></p>
+  </div>
+
+  <div class="wrap">
+
+    <div class="filters">
+      <h2 data-i18n="hosts.filterInterest">好きなことで絞る</h2>
+      <div class="chips" id="interestFilter"></div>
+
+      <h2 data-i18n="hosts.filterLang">言語で絞る</h2>
+      <div class="chips" id="langFilter"></div>
+
+      <div class="bar">
+        <span id="count"></span>
+        <button class="clear" id="clearBtn" data-i18n="hosts.clear">条件をはずす</button>
+      </div>
+    </div>
+
+    <p class="state" id="state" data-i18n="common.loading">読み込み中…</p>
+    <div class="cards" id="cards"></div>
+  </div>
+
+<script src="i18n.js"></script>
+<script type="module">
+  import { db } from './auth.js';
+  import { collection, query, where, getDocs, doc, getDoc }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const el = (id) => document.getElementById(id);
+
+  const INTERESTS = ['music','film','manga','books','fishing','hiking','camping','trains',
+    'cars','photography','food','onsen','sake','cafe','history','art','nature','stars',
+    'cycling','surfing','snow','crafts','games','language'];
+  const LANGS = ['ja','en','zh','ko','fr','es'];
+
+  let hosts = [];                 // { uid, user, host }
+  let pickedInterests = [];
+  let pickedLangs = [];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]
+    ));
+  }
+
+  /* ---- 絞り込みボタン ---- */
+  function buildFilters() {
+    el('interestFilter').innerHTML = INTERESTS.map(c =>
+      '<button type="button" class="chip' + (pickedInterests.includes(c) ? ' on' : '') +
+      '" data-code="' + c + '">' + t('interest.' + c) + '</button>'
+    ).join('');
+    el('langFilter').innerHTML = LANGS.map(c =>
+      '<button type="button" class="chip' + (pickedLangs.includes(c) ? ' on' : '') +
+      '" data-code="' + c + '">' + t('lang.' + c) + '</button>'
+    ).join('');
+
+    el('interestFilter').querySelectorAll('.chip').forEach(b =>
+      b.addEventListener('click', () => {
+        const c = b.dataset.code;
+        pickedInterests = pickedInterests.includes(c)
+          ? pickedInterests.filter(x => x !== c) : pickedInterests.concat(c);
+        b.classList.toggle('on');
+        render();
+      })
+    );
+    el('langFilter').querySelectorAll('.chip').forEach(b =>
+      b.addEventListener('click', () => {
+        const c = b.dataset.code;
+        pickedLangs = pickedLangs.includes(c)
+          ? pickedLangs.filter(x => x !== c) : pickedLangs.concat(c);
+        b.classList.toggle('on');
+        render();
+      })
+    );
+  }
+
+  el('clearBtn').addEventListener('click', () => {
+    pickedInterests = []; pickedLangs = [];
+    buildFilters(); render();
+  });
+
+  /* ---- 表示 ----
+     絞り込みは手元で行う。件数が数十のうちはこの方が速く、
+     Firestore の索引を用意しなくて済む。増えたら検索の作りを変える。 */
+  function match(h) {
+    const ints = h.user.interests || [];
+    const langs = Object.keys(h.user.languages || {});
+    const okI = !pickedInterests.length || pickedInterests.some(c => ints.includes(c));
+    const okL = !pickedLangs.length || pickedLangs.every(c => langs.includes(c));
+    return okI && okL;
+  }
+
+  function render() {
+    const lang = TriArk.i18n.get();
+
+    if (!hosts.length) {
+      el('state').textContent = t('hosts.noHosts');
+      el('state').classList.remove('hidden');
+      el('cards').innerHTML = '';
+      el('count').textContent = '';
+      return;
+    }
+
+    const shown = hosts.filter(match);
+    el('count').textContent = shown.length + ' ' + t('hosts.count');
+
+    if (!shown.length) {
+      el('state').textContent = t('hosts.empty');
+      el('state').classList.remove('hidden');
+      el('cards').innerHTML = '';
+      return;
+    }
+    el('state').classList.add('hidden');
+
+    el('cards').innerHTML = shown.map(h => {
+      const headline = TriArk.i18n.pick(h.host, 'headline').text;
+      const based    = TriArk.i18n.pick(h.host, 'basedIn').text;
+      const langs = Object.keys(h.user.languages || {})
+        .map(c => t('lang.' + c) + '（' + t('level.' + h.user.languages[c]) + '）').join(' / ');
+      const tags = (h.user.interests || []).map(c =>
+        '<span class="tag' + (pickedInterests.includes(c) ? ' hit' : '') + '">' +
+        t('interest.' + c) + '</span>'
+      ).join('') + TriArk.i18n.pickList(h.user, 'tags').map(x =>
+        '<span class="tag own">' + esc(x) + '</span>'
+      ).join('');
+      const photo = h.user.photoURL
+        ? '<div class="avatar" style="background-image:url(\'' + esc(h.user.photoURL) + '\')"></div>'
+        : '<div class="avatar">' + esc(String(h.user.name || '·').trim().charAt(0).toUpperCase()) + '</div>';
+
+      return '<div class="host-card">' +
+        '<div class="who">' + photo +
+        '<p class="name">' + esc(h.user.name || '') + '</p></div>' +
+        (headline ? '<p class="headline">' + esc(headline) + '</p>' : '') +
+        '<p class="meta">' + esc([based, langs].filter(Boolean).join('　·　')) + '</p>' +
+        (tags ? '<div class="tags">' + tags + '</div>' : '') +
+        '<a class="more" href="profile.html?uid=' + esc(h.uid) + '&lang=' + lang + '">' +
+          t('hosts.viewProfile') + '</a>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ---- 読み込み ---- */
+  async function load() {
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'users'), where('isHost', '==', true))
+      );
+      const list = [];
+      for (const d of snap.docs) {
+        const hostSnap = await getDoc(doc(db, 'hosts', d.id));
+        list.push({
+          uid  : d.id,
+          user : d.data(),
+          host : hostSnap.exists() ? hostSnap.data() : {}
+        });
+      }
+      hosts = list;
+    } catch (e) {
+      console.error(e);
+      hosts = [];
+    }
+    buildFilters();
+    render();
+  }
+
+  load();
+  TriArk.i18n.onChange(() => { buildFilters(); render(); });
+</script>
+</body>
+</html>

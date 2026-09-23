@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.profile.title">プロフィール — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  /* ============================================================
+     プロフィール — ゲストもホストも同じページ
+     ・編集（自分）: profile.html
+     ・ホストの欄を開いた状態で編集: profile.html?host=1
+     ・閲覧（誰でも）: profile.html?uid=xxxx
+     ============================================================ */
+  body{background:var(--paper);color:var(--ink)}
+  .wrap{max-width:760px;margin:0 auto;padding:50px 24px 90px}
+
+  .eyebrow{color:var(--sun)}
+  h1{font-size:clamp(28px,5vw,40px);letter-spacing:.05em;margin-bottom:14px;font-weight:700}
+  h2{font-size:clamp(21px,3.6vw,26px);letter-spacing:.05em;margin-bottom:10px;font-weight:700}
+  .lead{font-size:15px;line-height:2;color:var(--ink-60);margin-bottom:38px}
+
+  .field{margin-bottom:30px}
+  .field > label,.field > .label{
+    display:block;font-size:12px;letter-spacing:.14em;color:#5d6f7c;margin-bottom:8px;
+    font-family:var(--sans);font-weight:600;
+  }
+  .help{font-size:12px;color:#7d8d99;margin-top:7px;line-height:1.7;font-family:var(--sans)}
+  .field input[type=text],.field textarea{
+    width:100%;padding:13px 15px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    color:var(--ink);font-size:15px;font-family:inherit;line-height:1.9;transition:border-color .2s;
+  }
+  .field textarea{min-height:150px;resize:vertical}
+  .field textarea.long{min-height:280px}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--sun)}
+  .field input::placeholder,.field textarea::placeholder{color:#9fb0bb}
+
+  /* 写真 */
+  .photo-box{display:flex;align-items:center;gap:24px;margin-bottom:36px}
+  .avatar-lg{
+    width:112px;height:112px;border-radius:50%;flex-shrink:0;
+    background:#dfd7cb center/cover no-repeat;display:flex;align-items:center;justify-content:center;
+    font:600 40px/1 var(--sans);color:#fff;letter-spacing:0;overflow:hidden;
+  }
+  .photo-btn{
+    display:inline-block;cursor:pointer;border:1.5px solid var(--ink);border-radius:3px;
+    padding:9px 18px;font:600 13px/1 var(--sans);letter-spacing:.06em;background:#fff;
+  }
+  .photo-btn:hover{border-color:var(--sun);color:var(--sun)}
+  .link-btn{background:none;border:none;cursor:pointer;color:#7d8d99;font:12px var(--sans);text-decoration:underline;margin-left:12px}
+  .photo-note{font-size:12px;color:var(--earth);margin-top:8px;font-family:var(--sans)}
+
+  /* 言語 */
+  .lang-rows{display:flex;flex-direction:column;gap:10px}
+  .lang-row{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 14px;background:#fff;border:1px solid rgba(10,22,34,.14);border-radius:3px;
+  }
+  .lang-row label{
+    display:flex;align-items:center;gap:8px;margin:0;min-width:130px;cursor:pointer;
+    font-size:14px;color:var(--ink);font-family:var(--sans);
+  }
+  .lang-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--sun);cursor:pointer}
+  .lang-row select{
+    flex:1;max-width:200px;padding:7px 10px;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    background:#fff;color:var(--ink);font-size:13px;font-family:var(--sans);cursor:pointer;
+  }
+  .lang-row select:disabled{opacity:.35;cursor:default}
+
+  /* 好きなこと（選ぶ）＋ 自分の言葉（足す） */
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{
+    border:1.5px solid rgba(10,22,34,.2);background:#fff;border-radius:20px;
+    padding:8px 16px;font-size:13px;cursor:pointer;color:var(--ink);
+    font-family:var(--sans);transition:border-color .18s,background .18s,color .18s;
+  }
+  .chip.on{border-color:var(--sun);background:var(--sun);color:#fff}
+  .tag-box{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;
+    padding:9px 10px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+  }
+  .tag-box:focus-within{border-color:var(--sun)}
+  .tag-box input{flex:1;min-width:160px;border:none !important;padding:5px 4px !important;font-size:14px;font-family:var(--sans)}
+  .tag-box input:focus{outline:none}
+  .utag{
+    display:inline-flex;align-items:center;gap:6px;background:var(--sea);color:#fff;
+    border-radius:16px;padding:5px 8px 5px 13px;font:13px var(--sans);
+  }
+  .utag button{background:none;border:none;color:#fff;cursor:pointer;font-size:15px;line-height:1;opacity:.8;padding:0 3px}
+  .utag button:hover{opacity:1}
+
+  .write-note{
+    padding:14px 16px;background:rgba(0,180,200,.08);border-left:3px solid var(--cyan);
+    font:13px/1.9 var(--sans);color:#42586a;margin:-6px 0 34px;
+  }
+
+  /* ホストの欄 */
+  .host-sec{border-top:1px solid var(--line);padding-top:44px;margin-top:14px}
+  .host-invite{
+    border:1px solid var(--line);background:#fff;border-radius:3px;padding:24px;margin:10px 0 36px;
+  }
+  .host-invite p{font-size:14px;line-height:1.9;color:var(--ink-60);margin:6px 0 16px}
+  .btn-line{
+    background:#fff;border:1.5px solid var(--sun);color:var(--sun);border-radius:3px;cursor:pointer;
+    padding:10px 20px;font:600 14px var(--sans);letter-spacing:.06em;
+  }
+  .btn-line:hover{background:var(--sun);color:#fff}
+
+  .save{
+    background:var(--sun);color:#fff;border:none;border-radius:3px;margin-top:10px;
+    padding:14px 40px;font-size:15px;font-weight:600;letter-spacing:.1em;cursor:pointer;
+    font-family:var(--sans);transition:opacity .2s;
+  }
+  .save:hover{opacity:.88}
+  .save:disabled{opacity:.5;cursor:default}
+  .message{margin-top:16px;font-size:13px;min-height:20px;font-family:var(--sans)}
+  .message.ok{color:#1F7A5A}
+  .message.error{color:#C0392B}
+  .message.info{color:#7d8d99}
+  a.textlink{color:var(--sea);text-decoration:underline;font-size:13px;font-family:var(--sans)}
+  a.textlink:hover{color:var(--sun)}
+
+  /* 乗り物と写真 */
+  .veh{border:1px solid var(--line);background:#fff;border-radius:3px;padding:16px;margin-bottom:12px}
+  .veh-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .veh-head select{padding:8px 10px;border:1px solid rgba(10,22,34,.18);border-radius:3px;background:#fff;font:14px var(--sans)}
+  .veh-head input{flex:1;min-width:180px;padding:9px 12px;border:1px solid rgba(10,22,34,.18);border-radius:3px;font-size:14px;font-family:inherit}
+  .veh-head .rm{margin-left:auto;background:none;border:none;color:#9aa8b2;font-size:17px;cursor:pointer}
+  .veh-head .rm:hover{color:var(--sun)}
+  .veh textarea{
+    width:100%;padding:9px 12px;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    font-size:13px;font-family:inherit;line-height:1.8;min-height:52px;resize:vertical;
+  }
+  .ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:12px 0}
+  .ph{position:relative;aspect-ratio:4/3;background:#efe9e0;border-radius:2px;overflow:hidden}
+  .ph img{width:100%;height:100%;object-fit:contain;display:block}
+  .ph button{
+    position:absolute;top:4px;right:4px;width:22px;height:22px;border:none;border-radius:50%;
+    background:rgba(10,22,34,.65);color:#fff;font-size:13px;line-height:1;cursor:pointer;
+  }
+  .ph.busy{opacity:.45}
+  .v-veh{margin-bottom:26px}
+  .v-veh .n{font-size:15px;font-weight:600;letter-spacing:.03em}
+  .v-veh .k{font:600 11px var(--sans);letter-spacing:.14em;color:var(--earth);margin-bottom:3px}
+  .v-veh .note{font-size:13px;color:var(--ink-40);line-height:1.8;margin-top:4px}
+  .v-veh .ph-grid,#galView{
+    display:block;columns:2;column-gap:10px;margin-top:12px;
+  }
+  .v-veh .ph-grid .ph,#galView .ph{
+    aspect-ratio:auto;break-inside:avoid;margin:0 0 10px;background:none;
+  }
+  .v-veh .ph-grid img,#galView img{width:100%;height:auto;min-height:40px;display:block;border-radius:2px;background:#efe9e0}
+  @media(max-width:600px){ .v-veh .ph-grid,#galView{columns:1} }
+  .veh .photo-btn{font-size:12px;padding:7px 14px}
+
+  /* 翻訳の確認 */
+  .tr-box{margin-top:40px;border:1px solid var(--line);background:#fff;border-radius:3px;padding:20px 22px}
+  .tr-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:600 12px var(--sans);letter-spacing:.14em;color:#5d6f7c}
+  .tr-head select{padding:5px 9px;border:1px solid rgba(10,22,34,.18);border-radius:3px;background:#fff;font:13px var(--sans);cursor:pointer}
+  .tr-head .link-btn{margin-left:0}
+  .tr-item{margin-top:16px}
+  .tr-item .k{font:600 11px var(--sans);letter-spacing:.14em;color:var(--earth);margin-bottom:5px}
+  .tr-item .v{font-size:14px;line-height:1.9;white-space:pre-wrap;color:#42586a}
+  .tr-empty{margin-top:14px;font:13px var(--sans);color:#8c9aa6}
+
+  /* 閲覧 */
+  .v-head{display:flex;align-items:center;gap:24px;margin-bottom:26px}
+  .v-head h1{margin-bottom:4px}
+  .view-headline{font-size:clamp(18px,3vw,22px);line-height:1.7;color:var(--sea)}
+  .view-meta{font-size:13px;color:#6b7d8a;margin-bottom:22px;font-family:var(--sans);letter-spacing:.04em;line-height:1.9}
+  .v-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:36px}
+  .v-tags span{font-size:12px;padding:5px 12px;border-radius:14px;background:rgba(11,58,91,.08);color:var(--sea);font-family:var(--sans)}
+  .v-tags span.own{background:var(--sea);color:#fff}
+  .v-sec{margin-bottom:40px}
+  .v-sec h3{font:600 12px var(--sans);letter-spacing:.2em;color:var(--earth);margin-bottom:12px}
+  .view-text{font-size:16px;line-height:2.2;white-space:pre-wrap}
+  .fallback-note{display:inline-block;margin-top:8px;font-size:11px;color:#8c9aa6;font-family:var(--sans);letter-spacing:.06em}
+
+  .mini-card{
+    display:flex;gap:16px;align-items:center;background:#fff;
+    border:1px solid rgba(10,22,34,.12);border-radius:3px;padding:14px;margin-bottom:12px;
+    text-decoration:none;color:inherit;transition:border-color .2s;
+  }
+  .mini-card:hover{border-color:var(--sun)}
+  .mini-card .mc-img{width:92px;height:68px;background:#dfd7cb center/cover no-repeat;flex-shrink:0;border-radius:2px}
+  .mini-card .mc-title{font-size:16px;line-height:1.5;margin-bottom:5px}
+  .mini-card .mc-meta{font-size:12px;color:#6b7d8a;font-family:var(--sans)}
+
+  .hidden{display:none !important}
+
+  @media(max-width:600px){
+    .wrap{padding:34px 20px 70px}
+    .photo-box,.v-head{gap:18px}
+    .avatar-lg{width:88px;height:88px;font-size:32px}
+    .field textarea.long{min-height:230px}
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+
+  <div class="wrap">
+
+    <!-- ================= 編集（自分） ================= -->
+    <div id="editMode" class="hidden">
+      <p class="eyebrow">PROFILE</p>
+      <h1 data-i18n="profile.title">プロフィール</h1>
+      <p class="lead" data-i18n="profile.lead"></p>
+
+      <!-- 写真はいちばん上 -->
+      <div class="photo-box">
+        <div class="avatar-lg" id="avatarPreview"></div>
+        <div>
+          <label class="photo-btn" for="photoFile" id="photoBtn" data-i18n="profile.photoPick">写真を選ぶ</label>
+          <button type="button" class="link-btn hidden" id="photoRemove" data-i18n="profile.photoRemove">写真を外す</button>
+          <input type="file" id="photoFile" accept="image/*" hidden>
+          <p class="help" data-i18n="profile.photoHelp2"></p>
+          <p class="photo-note hidden" id="photoNote" data-i18n="profile.photoPending"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="name" data-i18n="profile.name">名前</label>
+        <input type="text" id="name" data-max="30" autocomplete="name">
+        <p class="help" data-i18n="profile.nameHelp"></p>
+      </div>
+
+      <div class="field">
+        <label for="bio" data-i18n="profile.bio">自己紹介</label>
+        <textarea id="bio" data-max="1000" data-i18n-attr="placeholder:profile.bioPh"></textarea>
+      </div>
+
+      <div class="field">
+        <span class="label" data-i18n="profile.languages">話せる言語</span>
+        <div class="lang-rows" id="langChecks"></div>
+        <p class="help" data-i18n="host.languagesHelp"></p>
+      </div>
+
+      <div class="field">
+        <span class="label" data-i18n="interests.label">好きなこと・分かち合いたいこと</span>
+        <div class="chips" id="interestChips"></div>
+        <div class="tag-box" id="tagBox">
+          <input type="text" id="tagInput" maxlength="20" data-i18n-attr="placeholder:profile.tagsPh">
+        </div>
+        <p class="help" id="tagHelp" data-i18n="profile.tagsHelp"></p>
+      </div>
+
+      <p class="write-note" data-i18n="profile.anyLang"></p>
+
+      <!-- ホストになっていない人への案内 -->
+      <div class="host-invite hidden" id="hostInvite">
+        <h2 data-i18n="profile.hostInviteTitle">ホストになりませんか</h2>
+        <p data-i18n="profile.hostInviteText"></p>
+        <button type="button" class="btn-line" id="openHost" data-i18n="profile.hostOpen">ホストとしての紹介を書く</button>
+      </div>
+
+      <!-- ホストとしての紹介 -->
+      <section class="host-sec hidden" id="hostSec">
+        <p class="eyebrow">HOST</p>
+        <h2 data-i18n="profile.hostTitle">ホストとしての紹介</h2>
+        <p class="lead" data-i18n="host.editLead"></p>
+
+        <div class="field">
+          <label for="headline" data-i18n="host.headline">一行の肩書き</label>
+          <input type="text" id="headline" data-max="40" data-i18n-attr="placeholder:host.headlinePh">
+          <p class="help" data-i18n="host.headlineHelp"></p>
+        </div>
+
+        <div class="field">
+          <label for="basedIn" data-i18n="host.basedIn">拠点</label>
+          <input type="text" id="basedIn" data-max="30" data-i18n-attr="placeholder:host.basedInPh">
+        </div>
+
+        <div class="field">
+          <label for="intro" data-i18n="host.intro">紹介文</label>
+          <textarea id="intro" class="long" data-max="5000" data-recommend="300" data-i18n-attr="placeholder:host.introPh"></textarea>
+          <p class="help" data-i18n="host.introHelp"></p>
+        </div>
+
+        <!-- 乗り物（体験ごとに入れ直さず、ここに一度だけ） -->
+        <div class="field">
+          <span class="label" data-i18n="veh.title">あなたの乗り物</span>
+          <p class="help" style="margin:0 0 12px" data-i18n="veh.help"></p>
+          <div id="vehList"></div>
+          <button type="button" class="btn-line" id="vehAdd" data-i18n="veh.add">乗り物を足す</button>
+        </div>
+
+        <!-- 旅の様子 -->
+        <div class="field">
+          <span class="label" data-i18n="veh.gallery">これまでの旅の様子</span>
+          <p class="help" style="margin:0 0 12px" data-i18n="veh.galleryHelp"></p>
+          <div class="ph-grid" id="galGrid"></div>
+          <label class="photo-btn" for="galFile" data-i18n="veh.addPhotos">写真を足す</label>
+          <input type="file" id="galFile" accept="image/*" multiple hidden>
+        </div>
+      </section>
+
+      <button class="save" id="saveBtn" data-i18n="common.save">保存する</button>
+      <p class="message" id="message"></p>
+
+      <!-- 自分の文章が、ほかの言語でどう表示されるか -->
+      <div class="tr-box" id="trBox">
+        <div class="tr-head">
+          <span data-i18n="profile.trTitle">翻訳の確認</span>
+          <select id="trLang"></select>
+          <button type="button" class="link-btn" id="trReload" data-i18n="profile.trReload">最新にする</button>
+        </div>
+        <p class="help" data-i18n="profile.trHelp"></p>
+        <div id="trBody"></div>
+      </div>
+      <p style="margin-top:22px"><a class="textlink" id="viewMine" href="profile.html" data-i18n="profile.viewMine"></a></p>
+    </div>
+
+    <!-- ================= 閲覧（誰でも） ================= -->
+    <div id="viewMode" class="hidden">
+      <div class="v-head">
+        <div class="avatar-lg" id="vAvatar"></div>
+        <div>
+          <p class="eyebrow" id="vRole"></p>
+          <h1 id="viewName"></h1>
+          <p class="view-headline" id="viewHeadline"></p>
+        </div>
+      </div>
+      <p class="view-meta" id="viewMeta"></p>
+      <div class="v-tags" id="viewTags"></div>
+
+      <div class="v-sec hidden" id="introSec">
+        <h3 data-i18n="profile.hostTitle">ホストとしての紹介</h3>
+        <p class="view-text" id="viewIntro"></p>
+        <span class="fallback-note hidden" id="introNote"></span>
+      </div>
+
+      <div class="v-sec hidden" id="bioSec">
+        <h3 data-i18n="profile.bio">自己紹介</h3>
+        <p class="view-text" id="viewBio"></p>
+      </div>
+
+      <!-- 以前の「もっと具体的に」欄に書かれていた文章（新しい欄に移すまで表示する） -->
+      <div class="v-sec hidden" id="freeSec">
+        <p class="view-text" id="viewFree" style="font-size:15px;color:#42586a"></p>
+      </div>
+
+      <div class="v-sec hidden" id="vehSec">
+        <h3 id="vehHead"></h3>
+        <div id="vehView"></div>
+      </div>
+
+      <div class="v-sec hidden" id="galSec">
+        <h3 id="galHead"></h3>
+        <div class="ph-grid" id="galView"></div>
+      </div>
+
+      <div id="viewListings" class="hidden" style="margin-top:50px">
+        <p class="eyebrow" data-i18n="host.listings">このホストの体験</p>
+        <div id="viewListingCards"></div>
+      </div>
+
+      <p style="margin-top:34px"><a class="textlink hidden" id="editMine" href="profile.html" data-i18n="host.editMine"></a></p>
+    </div>
+
+    <p class="lead hidden" id="notFound" data-i18n="profile.notFound"></p>
+
+  </div>
+
+<script src="i18n.js"></script>
+<script src="limits.js"></script>
+<script src="lightbox.js"></script>
+<script type="module">
+  import { app, db, onUser, getUser } from './auth.js';
+  import {
+    doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteField,
+    collection, query, where, getDocs
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import {
+    getStorage, ref as storageRef, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+
+  const storage = getStorage(app);
+  const t = (k) => TriArk.i18n.t(k);
+  const el = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+  const LANG_CODES = ['ja','en','zh','ko','fr','es'];
+  const LEVELS = ['native','fluent','business','conversational','beginner'];
+  const INTERESTS = ['music','film','manga','books','fishing','hiking','camping','trains',
+    'cars','photography','food','onsen','sake','cafe','history','art','nature','stars',
+    'cycling','surfing','snow','crafts','games','language'];
+  const TAG_MAX = 10;        // 自分で足せるキーワードの数
+  const TAG_LEN = 20;        // 1つあたりの文字数
+
+  const params  = new URLSearchParams(location.search);
+  const viewUid = params.get('uid');
+  const wantHost = params.get('host') === '1';
+
+  let tags = [];             // 自分で足したキーワード
+  let photoBlob = null;      // 選んだ写真（保存するまでは手元に置いておく）
+  let photoURL = '';         // 保存されている写真の URL
+  let hostOpen = false;      // ホストの欄を開いているか
+  let wasHost = false;
+
+  /* ============================================================
+     共通：丸い顔写真（写真がなければ名前の頭文字）
+     ============================================================ */
+  function paintAvatar(box, url, name) {
+    if (url) {
+      box.style.backgroundImage = 'url("' + url.replace(/"/g, '%22') + '")';
+      box.style.backgroundColor = '';
+      box.textContent = '';
+    } else {
+      box.style.backgroundImage = '';
+      box.style.backgroundColor = '#8FA6B5';
+      box.textContent = (String(name || '').trim().charAt(0) || '·').toUpperCase();
+    }
+  }
+
+  function show(id) {
+    ['editMode','viewMode','notFound'].forEach(m => el(m).classList.toggle('hidden', m !== id));
+  }
+  function message(key, kind) {
+    el('message').textContent = key ? t(key) : '';
+    el('message').className = 'message ' + (kind || '');
+  }
+
+  /* ============================================================
+     編集：言語
+     ============================================================ */
+  function toLangMap(raw) {
+    if (!raw) return {};
+    return Array.isArray(raw) ? raw.reduce((o, c) => (o[c] = 'fluent', o), {}) : raw;
+  }
+  function buildLangChecks(current) {
+    const langs = toLangMap(current);
+    el('langChecks').innerHTML = LANG_CODES.map(code =>
+      '<div class="lang-row">' +
+        '<label><input type="checkbox" value="' + code + '" data-role="on"' + (langs[code] ? ' checked' : '') + '>' +
+        '<span data-i18n="lang.' + code + '">' + t('lang.' + code) + '</span></label>' +
+        '<select data-level="' + code + '"' + (langs[code] ? '' : ' disabled') + '>' +
+          LEVELS.map(lv => '<option value="' + lv + '"' + (langs[code] === lv ? ' selected' : '') +
+            ' data-i18n="level.' + lv + '">' + t('level.' + lv) + '</option>').join('') +
+        '</select>' +
+      '</div>'
+    ).join('');
+    el('langChecks').querySelectorAll('input[data-role=on]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        el('langChecks').querySelector('select[data-level="' + cb.value + '"]').disabled = !cb.checked;
+      });
+    });
+  }
+
+  /* ============================================================
+     編集：好きなこと（選ぶ）と、自分の言葉（足す）
+     ============================================================ */
+  function buildInterests(selected) {
+    const on = selected || [];
+    el('interestChips').innerHTML = INTERESTS.map(code =>
+      '<button type="button" class="chip' + (on.includes(code) ? ' on' : '') +
+      '" data-code="' + code + '" data-i18n="interest.' + code + '">' + t('interest.' + code) + '</button>'
+    ).join('');
+    el('interestChips').querySelectorAll('.chip').forEach(b =>
+      b.addEventListener('click', () => b.classList.toggle('on')));
+  }
+
+  function renderTags() {
+    el('tagBox').querySelectorAll('.utag').forEach(n => n.remove());
+    const input = el('tagInput');
+    tags.forEach((tg, i) => {
+      const s = document.createElement('span');
+      s.className = 'utag';
+      s.innerHTML = esc(tg) + '<button type="button" aria-label="remove">×</button>';
+      s.querySelector('button').addEventListener('click', () => { tags.splice(i, 1); renderTags(); });
+      el('tagBox').insertBefore(s, input);
+    });
+    input.disabled = tags.length >= TAG_MAX;
+    el('tagHelp').textContent = t(tags.length >= TAG_MAX ? 'profile.tagsFull' : 'profile.tagsHelp');
+  }
+  function addTag(raw) {
+    const v = String(raw || '').replace(/[,、，]/g, ' ').trim().slice(0, TAG_LEN);
+    if (!v) return;
+    if (tags.length >= TAG_MAX) return;
+    if (tags.some(x => x.toLowerCase() === v.toLowerCase())) return;   // 同じものは足さない
+    tags.push(v);
+    renderTags();
+  }
+  el('tagInput').addEventListener('keydown', (e) => {
+    // 日本語の変換中の Enter は「確定」なので、ここでは拾わない
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Enter' || e.key === ',' || e.key === '、') {
+      e.preventDefault();
+      addTag(e.target.value);
+      e.target.value = '';
+    } else if (e.key === 'Backspace' && !e.target.value && tags.length) {
+      tags.pop(); renderTags();
+    }
+  });
+  // 入力したまま保存ボタンを押した場合も、取りこぼさない
+  el('tagInput').addEventListener('blur', (e) => { addTag(e.target.value); e.target.value = ''; });
+
+  /* ============================================================
+     編集：写真
+     ・選んだ時点で正方形に切り抜き、512px の JPEG に縮めて手元に置く
+     ・アップロードは「保存する」を押したとき
+     ============================================================ */
+  async function squareJpeg(file, size) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();                     // 読めない形式（HEIC など）はここで失敗する
+      const s = Math.min(img.naturalWidth, img.naturalHeight);
+      const sx = (img.naturalWidth - s) / 2;
+      const sy = (img.naturalHeight - s) / 2;
+      const out = Math.min(size, s);
+      const c = document.createElement('canvas');
+      c.width = c.height = out;
+      c.getContext('2d').drawImage(img, sx, sy, s, s, 0, 0, out, out);
+      return await new Promise(res => c.toBlob(res, 'image/jpeg', 0.85));
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  el('photoFile').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      photoBlob = await squareJpeg(file, 512);
+      if (!photoBlob) throw new Error('toBlob failed');
+      paintAvatar(el('avatarPreview'), URL.createObjectURL(photoBlob), el('name').value);
+      el('photoNote').classList.remove('hidden');
+      el('photoRemove').classList.remove('hidden');
+      message('', '');
+    } catch (err) {
+      console.error(err);
+      photoBlob = null;
+      message('profile.photoFormat', 'error');
+    }
+  });
+  el('photoRemove').addEventListener('click', () => {
+    photoBlob = null;
+    photoURL = '';
+    paintAvatar(el('avatarPreview'), '', el('name').value);
+    el('photoRemove').classList.add('hidden');
+    el('photoNote').classList.remove('hidden');
+  });
+
+  /* ============================================================
+     編集：乗り物と、旅の様子の写真
+     ・体験ごとに入れ直さなくて済むよう、ホストのプロフィールに一度だけ置く
+     ・写真は選んだ時点でアップロードし、URL を持っておく
+     ============================================================ */
+  const VEH_TYPES = ['land', 'sea', 'air'];
+  const VEH_MAX = 5, VEH_PHOTOS = 6, GAL_MAX = 12;
+  let vehicles = [];     // [{ type, name, note, photos:[url] }]
+  let gallery  = [];     // [url]
+
+  /* 長い辺を 1600px までに縮めた JPEG にする */
+  async function wideJpeg(file, max) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      return await new Promise(res => c.toBlob(res, 'image/jpeg', 0.82));
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  async function uploadPhoto(file) {
+    const user = getUser();
+    if (!user) return null;
+    const blob = await wideJpeg(file, 1600);
+    if (!blob) return null;
+    const path = 'users/' + user.uid + '/photos/' + Date.now() + '-' +
+                 Math.random().toString(36).slice(2, 7) + '.jpg';
+    const r = storageRef(storage, path);
+    await uploadBytes(r, blob, { contentType: 'image/jpeg' });
+    return await getDownloadURL(r);
+  }
+
+  /* 写真を選んだときの共通処理。1枚ずつ上げて、上がったものから並べる */
+  async function takePhotos(files, list, max, redraw) {
+    const room = max - list.length;
+    const picked = files.slice(0, Math.max(0, room));
+    if (!picked.length) { message('veh.full', 'error'); return; }
+    message('veh.uploading', 'info');
+    for (const f of picked) {
+      try {
+        const url = await uploadPhoto(f);
+        if (url) { list.push(url); redraw(); }
+      } catch (e) {
+        console.error('[profile] 写真のアップロードに失敗', e);
+        message('profile.photoFailed', 'error');
+        return;
+      }
+    }
+    message('veh.uploaded', 'ok');
+  }
+
+  function photoGrid(urls) {
+    return urls.map((u, i) =>
+      '<div class="ph" data-full="' + esc(u) + '">' +
+        '<img src="' + esc(u) + '" alt="" loading="lazy">' +
+        '<button type="button" data-i="' + i + '" aria-label="remove">×</button>' +
+      '</div>').join('');
+  }
+
+  function renderVehicles() {
+    const box = el('vehList');
+    box.innerHTML = vehicles.map((v, i) =>
+      '<div class="veh" data-i="' + i + '">' +
+        '<div class="veh-head">' +
+          '<select data-f="type">' + VEH_TYPES.map(k =>
+            '<option value="' + k + '"' + (v.type === k ? ' selected' : '') + '>' +
+            esc(t('listing.type.' + k)) + '</option>').join('') + '</select>' +
+          '<input type="text" data-f="name" maxlength="40" value="' + esc(v.name || '') + '" placeholder="' + esc(t('veh.namePh')) + '">' +
+          '<button type="button" class="rm" aria-label="remove">×</button>' +
+        '</div>' +
+        '<textarea data-f="note" maxlength="200" placeholder="' + esc(t('veh.notePh')) + '">' + esc(v.note || '') + '</textarea>' +
+        '<div class="ph-grid">' + photoGrid(v.photos || []) + '</div>' +
+        '<label class="photo-btn" for="vehFile' + i + '">' + esc(t('veh.addPhotos')) + '</label>' +
+        '<input type="file" id="vehFile' + i + '" accept="image/*" multiple hidden>' +
+      '</div>'
+    ).join('');
+
+    box.querySelectorAll('.veh').forEach(row => {
+      const i = parseInt(row.dataset.i, 10);
+      row.querySelectorAll('[data-f]').forEach(inp => {
+        inp.addEventListener('change', () => { vehicles[i][inp.dataset.f] = inp.value; });
+        inp.addEventListener('input',  () => { vehicles[i][inp.dataset.f] = inp.value; });
+      });
+      row.querySelector('.rm').addEventListener('click', () => { vehicles.splice(i, 1); renderVehicles(); });
+      row.querySelectorAll('.ph button').forEach(b => b.addEventListener('click', () => {
+        vehicles[i].photos.splice(parseInt(b.dataset.i, 10), 1); renderVehicles();
+      }));
+      row.querySelector('input[type=file]').addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files); e.target.value = '';
+        await takePhotos(files, vehicles[i].photos, VEH_PHOTOS, renderVehicles);
+      });
+    });
+    el('vehAdd').classList.toggle('hidden', vehicles.length >= VEH_MAX);
+  }
+
+  el('vehAdd').addEventListener('click', () => {
+    if (vehicles.length >= VEH_MAX) return;
+    vehicles.push({ type: 'land', name: '', note: '', photos: [] });
+    renderVehicles();
+  });
+
+  function renderGallery() {
+    el('galGrid').innerHTML = photoGrid(gallery);
+    el('galGrid').querySelectorAll('.ph button').forEach(b =>
+      b.addEventListener('click', () => { gallery.splice(parseInt(b.dataset.i, 10), 1); renderGallery(); }));
+  }
+  el('galFile').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files); e.target.value = '';
+    await takePhotos(files, gallery, GAL_MAX, renderGallery);
+  });
+
+  /* ============================================================
+     編集：ホストの欄
+     ============================================================ */
+  function setHostOpen(open) {
+    hostOpen = open;
+    el('hostSec').classList.toggle('hidden', !open);
+    el('hostInvite').classList.toggle('hidden', open);
+    TriArk.limits.refresh();
+  }
+  el('openHost').addEventListener('click', () => {
+    setHostOpen(true);
+    el('hostSec').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  /* ============================================================
+     編集：読み込み
+     以前の形（日本語欄と英語欄が別）のデータも読めるようにしておく。
+     日本語欄が空で英語欄だけ書いてあれば、英語のほうを入れる。
+     ============================================================ */
+  const legacy = (d, f) => (d[f] && String(d[f]).trim()) ? d[f] : (d[f + '_en'] || '');
+
+  async function loadIntoForm(uid) {
+    const [userSnap, hostSnap] = await Promise.all([
+      getDoc(doc(db, 'users', uid)),
+      getDoc(doc(db, 'hosts', uid))
+    ]);
+    const u = userSnap.exists() ? userSnap.data() : {};
+    const h = hostSnap.exists() ? hostSnap.data() : {};
+
+    el('name').value = u.name || '';
+    // 以前の「もっと具体的に」は、自己紹介の後ろにつなげて一つにする
+    const bio  = legacy(u, 'bio');
+    const free = legacy(u, 'interestsFree');
+    el('bio').value = [bio, free].filter(Boolean).join('\n\n');
+
+    photoURL = u.photoURL || '';
+    paintAvatar(el('avatarPreview'), photoURL, u.name);
+    el('photoRemove').classList.toggle('hidden', !photoURL);
+    el('photoBtn').textContent = t(photoURL ? 'profile.photoChange' : 'profile.photoPick');
+
+    buildLangChecks(u.languages || h.languages);
+    buildInterests(u.interests || []);
+    tags = Array.isArray(u.tags) ? u.tags.slice(0, TAG_MAX) : [];
+    renderTags();
+
+    vehicles = Array.isArray(h.vehicles) ? h.vehicles.map(v => ({
+      type: v.type || 'land', name: v.name || '', note: v.note || '',
+      photos: Array.isArray(v.photos) ? v.photos.slice(0, VEH_PHOTOS) : []
+    })).slice(0, VEH_MAX) : [];
+    gallery = Array.isArray(h.gallery) ? h.gallery.slice(0, GAL_MAX) : [];
+    renderVehicles();
+    renderGallery();
+
+    el('headline').value = legacy(h, 'headline');
+    el('basedIn').value  = legacy(h, 'basedIn');
+    el('intro').value    = legacy(h, 'intro');
+
+    wasHost = !!u.isHost;
+    setHostOpen(wasHost || wantHost);
+    TriArk.limits.refresh();
+
+    buildTrLangs(u.srcLang || h.srcLang);
+    loadTranslations().catch(e => console.warn('[profile] 翻訳の読み込みに失敗', e));
+  }
+
+  /* ============================================================
+     編集：保存
+     ============================================================ */
+  async function save() {
+    const user = getUser();
+    if (!user) return;
+    addTag(el('tagInput').value); el('tagInput').value = '';
+    if (!TriArk.limits.check()) { message('limit.over', 'error'); return; }
+
+    const name = el('name').value.trim();
+    if (!name) { message('profile.needName', 'error'); el('name').focus(); return; }
+
+    el('saveBtn').disabled = true;
+    message('auth.processing', 'info');
+
+    try {
+      // 1. 写真（選び直したときだけ）。
+      //    毎回別の名前で保存するので、ブラウザに古い写真が残って見えることがない
+      if (photoBlob) {
+        const path = 'users/' + user.uid + '/avatar-' + Date.now() + '.jpg';
+        const r = storageRef(storage, path);
+        try {
+          await uploadBytes(r, photoBlob, { contentType: 'image/jpeg' });
+          photoURL = await getDownloadURL(r);
+        } catch (e) {
+          console.error('[profile] 写真のアップロードに失敗', e);
+          message('profile.photoFailed', 'error');
+          el('saveBtn').disabled = false;
+          return;
+        }
+        photoBlob = null;
+      }
+
+      // 2. 人そのものの情報（ゲストもホストも）
+      const languages = {}, languageCodes = [];
+      el('langChecks').querySelectorAll('input[data-role=on]:checked').forEach(cb => {
+        languages[cb.value] = el('langChecks').querySelector('select[data-level="' + cb.value + '"]').value;
+        languageCodes.push(cb.value);
+      });
+      const interests = Array.from(el('interestChips').querySelectorAll('.chip.on')).map(b => b.dataset.code);
+
+      await updateDoc(doc(db, 'users', user.uid), {
+        name, photoURL,
+        bio: el('bio').value.trim(),
+        languages, languageCodes, interests, tags,
+        isHost: hostOpen || wasHost,
+        // 以前の形の欄は、新しい欄に移したので消す
+        bio_en: deleteField(),
+        interestsFree: deleteField(),
+        interestsFree_en: deleteField(),
+        updatedAt: serverTimestamp()
+      });
+
+      // 3. ホストとしての紹介（欄を開いているときだけ）
+      if (hostOpen) {
+        const ref = doc(db, 'hosts', user.uid);
+        const snap = await getDoc(ref);
+        const data = {
+          headline: el('headline').value.trim(),
+          basedIn : el('basedIn').value.trim(),
+          intro   : el('intro').value.trim(),
+          vehicles: vehicles
+            .filter(v => v.name || (v.photos && v.photos.length))
+            .map(v => ({ type: v.type || 'land', name: (v.name || '').trim(),
+                         note: (v.note || '').trim(), photos: v.photos || [] })),
+          gallery : gallery,
+          headline_en: deleteField(),
+          basedIn_en : deleteField(),
+          intro_en   : deleteField(),
+          updatedAt: serverTimestamp()
+        };
+        if (!snap.exists()) { data.hostSince = serverTimestamp(); data.createdAt = serverTimestamp(); }
+        await setDoc(ref, data, { merge: true });
+        wasHost = true;
+      }
+
+      el('photoNote').classList.add('hidden');
+      el('photoBtn').textContent = t(photoURL ? 'profile.photoChange' : 'profile.photoPick');
+      message('host.saved', 'ok');
+      setTimeout(loadTranslations, 6000);   // 翻訳が書き戻されるのを待つ
+    } catch (e) {
+      console.error(e);
+      message('host.saveFailed', 'error');
+    } finally {
+      el('saveBtn').disabled = false;
+    }
+  }
+  el('saveBtn').addEventListener('click', save);
+
+  /* ============================================================
+     翻訳の確認
+     文章を保存すると、サーバー側の関数が自動で翻訳して書き戻す。
+     ここでは、その結果を言語を選んで読めるようにしている。
+     （数十秒かかることがあるので「最新にする」で読み直せる）
+     ============================================================ */
+  const TR_TEXT = [['bio','profile.bio'],['headline','host.headline'],['basedIn','host.basedIn'],['intro','host.intro']];
+
+  async function loadTranslations() {
+    const user = getUser();
+    if (!user) return;
+    const lang = el('trLang').value;
+    const [userSnap, hostSnap] = await Promise.all([
+      getDoc(doc(db, 'users', user.uid)),
+      getDoc(doc(db, 'hosts', user.uid))
+    ]);
+    const u = userSnap.exists() ? userSnap.data() : {};
+    const h = hostSnap.exists() ? hostSnap.data() : {};
+    const got = {};
+    if (u.tr && u.tr[lang]) Object.assign(got, u.tr[lang]);
+    if (h.tr && h.tr[lang]) Object.assign(got, h.tr[lang]);
+
+    let html = TR_TEXT.filter(([f]) => got[f]).map(([f, key]) =>
+      '<div class="tr-item"><p class="k">' + esc(t(key)) + '</p><p class="v">' + esc(got[f]) + '</p></div>'
+    ).join('');
+    if (Array.isArray(got.tags) && got.tags.length) {
+      html += '<div class="tr-item"><p class="k">' + esc(t('interests.label')) + '</p>' +
+              '<p class="v">' + esc(got.tags.join('　·　')) + '</p></div>';
+    }
+    el('trBody').innerHTML = html || '<p class="tr-empty">' + esc(t('profile.trPending')) + '</p>';
+  }
+
+  function buildTrLangs(srcLang) {
+    const others = TriArk.i18n.langs.filter(l => l !== (srcLang || TriArk.i18n.get()));
+    el('trLang').innerHTML = others.map(l =>
+      '<option value="' + l + '">' + esc(t('lang.' + l)) + '</option>').join('');
+  }
+  el('trLang').addEventListener('change', loadTranslations);
+  el('trReload').addEventListener('click', loadTranslations);
+
+  /* ============================================================
+     閲覧
+     文章は TriArk.i18n.pick() で取り出す。
+     翻訳が用意されていれば（次の段階で追加）見る人の言語で、
+     無ければ書いた人の言葉のまま表示される。
+     ============================================================ */
+  async function renderView(uid) {
+    const [userSnap, hostSnap] = await Promise.all([
+      getDoc(doc(db, 'users', uid)),
+      getDoc(doc(db, 'hosts', uid))
+    ]);
+    if (!userSnap.exists()) { show('notFound'); return; }
+
+    const u = userSnap.data();
+    const h = hostSnap.exists() ? hostSnap.data() : null;
+    const isHost = !!u.isHost && !!h;
+
+    paintAvatar(el('vAvatar'), u.photoURL, u.name);
+    el('vRole').textContent = isHost ? 'HOST' : 'TRAVELER';
+    el('viewName').textContent = u.name || '';
+
+    const headline = h ? TriArk.i18n.pick(h, 'headline').text : '';
+    el('viewHeadline').textContent = headline || '';
+    el('viewHeadline').classList.toggle('hidden', !headline);
+
+    const based = h ? TriArk.i18n.pick(h, 'basedIn').text : '';
+    const langMap = toLangMap(u.languages);
+    const langNames = Object.keys(langMap)
+      .map(c => t('lang.' + c) + '（' + t('level.' + langMap[c]) + '）').join(' / ');
+    el('viewMeta').textContent = [based, langNames].filter(Boolean).join('　·　');
+
+    const own = TriArk.i18n.pickList ? TriArk.i18n.pickList(u, 'tags') : (u.tags || []);
+    el('viewTags').innerHTML =
+      (u.interests || []).map(c => '<span>' + esc(t('interest.' + c)) + '</span>').join('') +
+      own.map(x => '<span class="own">' + esc(x) + '</span>').join('');
+
+    // 見出しは「○○さんの Ark」。ゲストが読む場所なので、名前を主語にする
+    const firstName = String(u.name || '').trim().split(/[\s\u3000]+/)[0] || '';
+    el('vehHead').textContent = t('veh.of').replace('{name}', firstName);
+    el('galHead').textContent = t('veh.galleryOf').replace('{name}', firstName);
+
+    // Ark と旅の写真（体験ページからも同じものを参照する）
+    const vehs = h ? TriArk.i18n.pickObjList(h, 'vehicles', ['name', 'note']) : [];
+    el('vehView').innerHTML = vehs.map(v =>
+      '<div class="v-veh">' +
+        '<p class="k">' + esc(t('listing.type.' + (v.type || 'land'))) + '</p>' +
+        '<p class="n">' + esc(v.name || '') + '</p>' +
+        (v.note ? '<p class="note">' + esc(v.note) + '</p>' : '') +
+        '<div class="ph-grid">' + (v.photos || []).map(u =>
+          '<div class="ph" data-full="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy"></div>').join('') + '</div>' +
+      '</div>').join('');
+    el('vehSec').classList.toggle('hidden', !vehs.length);
+
+    const gal = (h && Array.isArray(h.gallery)) ? h.gallery : [];
+    el('galView').innerHTML = gal.map(u =>
+      '<div class="ph" data-full="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy"></div>').join('');
+    el('galSec').classList.toggle('hidden', !gal.length);
+
+    const intro = h ? TriArk.i18n.pick(h, 'intro') : { text: '' };
+    el('viewIntro').textContent = intro.text || '';
+    el('introSec').classList.toggle('hidden', !isHost || !intro.text);
+    el('introNote').classList.toggle('hidden', !intro.isFallback);
+    if (intro.isFallback) el('introNote').textContent = t(TriArk.i18n.get() === 'en' ? 'common.jaOnly' : 'common.enOnly');
+
+    const bio = TriArk.i18n.pick(u, 'bio').text;
+    el('viewBio').textContent = bio || '';
+    el('bioSec').classList.toggle('hidden', !bio);
+
+    const free = TriArk.i18n.pick(u, 'interestsFree').text;
+    el('viewFree').textContent = free || '';
+    el('freeSec').classList.toggle('hidden', !free);
+
+    if (isHost) await renderHostListings(uid);
+    else el('viewListings').classList.add('hidden');
+    show('viewMode');
+  }
+
+  async function renderHostListings(uid) {
+    let items = [];
+    try {
+      const snap = await getDocs(query(collection(db, 'listings'),
+        where('hostId', '==', uid), where('status', '==', 'published')));
+      items = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+    } catch (e) { console.error(e); }
+
+    if (!items.length) { el('viewListings').classList.add('hidden'); return; }
+    const lang = TriArk.i18n.get();
+    el('viewListingCards').innerHTML = items.map(i => {
+      const d = i.data;
+      const title = TriArk.i18n.pick(d, 'title').text || '';
+      const area  = TriArk.i18n.pick(d, 'area').text || '';
+      const img   = (d.images && d.images[0]) ? d.images[0] : '';
+      const fee   = d.price ? '¥' + Number(d.price).toLocaleString() : '';
+      const meta  = [area, fee ? t('listing.fee') + ' ' + fee : ''].filter(Boolean).join('　·　');
+      return '<a class="mini-card" href="listing.html?id=' + i.id + '&lang=' + lang + '">' +
+        '<div class="mc-img"' + (img ? ' style="background-image:url(\'' + esc(img) + '\')"' : '') + '></div>' +
+        '<div><p class="mc-title">' + esc(title) + '</p><p class="mc-meta">' + esc(meta) + '</p></div></a>';
+    }).join('');
+    el('viewListings').classList.remove('hidden');
+  }
+
+  /* ============================================================
+     起動
+     ============================================================ */
+  onUser(async ({ user }) => {
+    if (viewUid) {
+      await renderView(viewUid);
+      if (user && viewUid === user.uid) {
+        el('editMine').href = 'profile.html?lang=' + TriArk.i18n.get();
+        el('editMine').classList.remove('hidden');
+      }
+      return;
+    }
+    if (!user) {
+      const next = 'profile.html' + (wantHost ? '?host=1' : '');
+      location.href = 'login.html?mode=signup&next=' + encodeURIComponent(next) + '&lang=' + TriArk.i18n.get();
+      return;
+    }
+    show('editMode');
+    el('viewMine').href = 'profile.html?uid=' + user.uid + '&lang=' + TriArk.i18n.get();
+    try { await loadIntoForm(user.uid); }
+    catch (e) { console.error(e); buildLangChecks({}); buildInterests([]); }
+  });
+
+  TriArk.i18n.onChange(() => {
+    if (viewUid && !el('viewMode').classList.contains('hidden')) renderView(viewUid);
+    if (!el('editMode').classList.contains('hidden')) {
+      renderTags();
+      el('photoBtn').textContent = t(photoURL || photoBlob ? 'profile.photoChange' : 'profile.photoPick');
+    }
+  });
+</script>
+</body>
+</html>

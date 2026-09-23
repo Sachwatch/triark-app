@@ -1,0 +1,315 @@
+/* ============================================================
+   TriArk style — 全ページ共通のデザイン定義
+   ------------------------------------------------------------
+   <link rel="stylesheet" href="style.css"> を <head> で読み込む。
+   各ページ固有の調整は、そのページの <style> で上書きする。
+
+   考え方
+     ・見せる面（トップ・About・体験・ホスト検索）は濃紺。世界観を伝える場所
+     ・使う面（予約・メッセージ・登録フォーム）は明るい砂色。長く読み書きする場所
+     ・チャットは白。写真や文章が主役なので、背景は消える方がよい
+   ============================================================ */
+
+:root{
+  /* 企画書から受け継いだ色 */
+  --sea:#0B3A5B;        /* 濃紺（基調） */
+  --sea-deep:#061F31;   /* さらに深い紺 */
+  --sun:#E8452B;        /* 朱（強調・行動） */
+  --earth:#C97B3C;      /* 土（小見出し） */
+  --cyan:#00B4C8;       /* 水色（ロゴの中央アーチ） */
+  --sand:#F4EDE2;       /* 砂（濃紺の面での文字色） */
+  --paper:#FBF8F4;      /* 紙（明るい面の地色。砂より薄い） */
+  --ink:#0A1622;        /* 墨（文字・最暗部） */
+  --mist:#8FA6B5;       /* 霞（補助的な文字） */
+
+  /* 明るい面で使う濃さ */
+  --ink-60:#4a5c6a;     /* 本文 */
+  --ink-40:#6b7d8a;     /* 補助 */
+  --ink-25:#8c9aa6;     /* さらに薄い補助 */
+  --line:rgba(10,22,34,.14);   /* 明るい面の罫線 */
+  --line-dark:rgba(244,237,226,.14); /* 暗い面の罫線 */
+
+  /* 書体 */
+  --serif:"Yu Mincho","Hiragino Mincho ProN",serif;
+  --sans:"Helvetica Neue",sans-serif;
+
+  /* 角の丸み */
+  --r:3px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{font-family:var(--serif);color:var(--ink);min-height:100vh}
+
+/* 面の種類 ------------------------------------------------- */
+body.surface-dark{background:var(--sea-deep);color:var(--sand)}
+body.surface-light{background:var(--paper);color:var(--ink)}
+body.surface-white{background:#fff;color:var(--ink)}
+
+/* 上部バー ------------------------------------------------- */
+.topbar{
+  background:var(--ink);padding:16px 6vw;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.topbar a.home{
+  color:var(--sand);text-decoration:none;font-size:13px;letter-spacing:.08em;
+  font-family:var(--sans);white-space:nowrap;
+}
+.topbar a.home:hover{color:var(--sun)}
+
+.lang-toggle{
+  display:flex;border:1.5px solid rgba(244,237,226,.5);
+  border-radius:var(--r);overflow:hidden;font-family:var(--sans);
+}
+.lang-toggle button{
+  border:none;background:transparent;color:var(--sand);
+  padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;
+  transition:background .2s,color .2s;
+}
+.lang-toggle button.active{background:var(--sun);color:#fff}
+
+/* 見出し --------------------------------------------------- */
+.eyebrow{
+  font-size:12px;letter-spacing:.3em;font-family:var(--sans);font-weight:700;
+  margin-bottom:12px;text-transform:uppercase;
+}
+body.surface-dark .eyebrow{color:var(--earth)}
+body.surface-light .eyebrow,body.surface-white .eyebrow{color:var(--sun)}
+
+/* ボタン --------------------------------------------------- */
+.btn{
+  border:none;border-radius:var(--r);padding:13px 28px;
+  font-size:14px;font-weight:600;letter-spacing:.08em;cursor:pointer;
+  font-family:var(--sans);text-decoration:none;display:inline-block;
+  transition:opacity .2s;
+}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--sun);color:#fff}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+body.surface-dark .btn-ghost{border-color:rgba(244,237,226,.3);color:var(--sand)}
+
+/* 予約の状態バッジ ----------------------------------------- */
+.badge{
+  font-size:11px;letter-spacing:.1em;padding:4px 11px;border-radius:2px;
+  font-family:var(--sans);font-weight:700;display:inline-block;
+}
+.badge.inquiry  {background:rgba(0,180,200,.15);color:#087C8B}
+.badge.requested{background:rgba(201,123,60,.18);color:#9A5A26}
+.badge.confirmed{background:rgba(31,122,90,.16);color:#1F7A5A}
+.badge.declined,.badge.cancelled{background:rgba(10,22,34,.08);color:var(--ink-40)}
+
+body.surface-dark .badge.inquiry  {background:rgba(0,180,200,.15);color:var(--cyan)}
+body.surface-dark .badge.requested{background:rgba(201,123,60,.22);color:var(--earth)}
+body.surface-dark .badge.confirmed{background:rgba(31,122,90,.22);color:#57C79A}
+body.surface-dark .badge.declined,
+body.surface-dark .badge.cancelled{background:rgba(244,237,226,.1);color:var(--mist)}
+
+/* 入力 ----------------------------------------------------- */
+.input,.textarea,.select{
+  width:100%;padding:13px 15px;border-radius:var(--r);
+  font-size:15px;font-family:inherit;line-height:1.8;
+  background:#fff;border:1px solid rgba(10,22,34,.18);color:var(--ink);
+  transition:border-color .2s;
+}
+.input:focus,.textarea:focus,.select:focus{outline:none;border-color:var(--sun)}
+.input::placeholder,.textarea::placeholder{color:#9fb0bb}
+
+body.surface-dark .input,body.surface-dark .textarea,body.surface-dark .select{
+  background:rgba(244,237,226,.06);border-color:rgba(244,237,226,.22);color:var(--sand);
+}
+
+/* 共通の小物 ----------------------------------------------- */
+.hidden{display:none !important}
+.state{padding:60px 0;text-align:center;color:var(--ink-40);font-size:15px;line-height:2}
+body.surface-dark .state{color:var(--mist)}
+
+/* ============================================================
+   共通ヘッダー（header.js が中身を作る）
+   トップページ以外のすべての画面で同じメニューを出す。
+   各ページの <style> に残っている .lang-toggle などに負けないよう、
+   すべて .site-header の中に限定して書く
+   ============================================================ */
+.site-header{
+  position:sticky;top:0;z-index:100;flex-shrink:0;
+  background:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:8px 4vw;min-height:64px;
+  box-shadow:0 1px 0 rgba(244,237,226,.08);
+  font-family:var(--sans);
+}
+.site-header .sh-logo{display:block;line-height:0;flex-shrink:0}
+.site-header .sh-logo svg{height:48px;width:auto;display:block}
+
+.site-header .sh-nav{display:flex;align-items:center;gap:20px}
+.site-header .auth-nav{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
+.site-header .auth-nav a,
+.site-header .auth-nav .auth-name{
+  color:var(--sand);text-decoration:none;font-size:13px;font-weight:600;
+  letter-spacing:.05em;white-space:nowrap;font-family:var(--sans);
+}
+.site-header .auth-nav a:hover{color:var(--sun)}
+.site-header .auth-nav a.current{color:var(--sun)}
+.site-header .auth-nav .auth-name{color:var(--mist);font-weight:500}
+.site-header .auth-nav .btn-outline{border:1.5px solid rgba(244,237,226,.7);padding:6px 14px;border-radius:var(--r)}
+.site-header .auth-nav .btn-fill{
+  background:var(--sun);color:#fff;padding:7px 16px;border-radius:var(--r);
+  border:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.05em;
+}
+.site-header .auth-nav a.btn-fill:hover{color:#fff;opacity:.9}
+
+.site-header .lang-toggle{
+  position:static;display:flex;border:1.5px solid rgba(244,237,226,.5);
+  border-radius:var(--r);overflow:hidden;
+}
+.site-header .lang-toggle button{
+  border:none;background:transparent;color:var(--sand);backdrop-filter:none;
+  padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;
+}
+.site-header .lang-toggle button.active{background:var(--sun);color:#fff}
+
+/* スマホ用のボタンと背景の影 */
+.site-header .sh-toggle{display:none;background:none;border:none;cursor:pointer;padding:10px;margin-right:-10px;z-index:120}
+.site-header .sh-toggle span{display:block;width:24px;height:2px;background:var(--sand);margin:5px 0;transition:transform .25s,opacity .25s}
+.site-header .sh-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.site-header .sh-toggle.open span:nth-child(2){opacity:0}
+.site-header .sh-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.site-header .sh-shade{display:none}
+
+@media(max-width:900px){
+  .site-header{padding:6px 18px;min-height:58px}
+  .site-header .sh-logo svg{height:42px}
+  .site-header .sh-toggle{display:block}
+  .site-header .sh-nav{
+    position:fixed;top:0;right:0;bottom:0;width:min(78vw,320px);z-index:110;
+    background:var(--sea-deep);
+    flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;
+    padding:84px 28px 40px;overflow-y:auto;
+    transform:translateX(100%);visibility:hidden;
+    transition:transform .3s ease,visibility 0s linear .3s;
+  }
+  .site-header .sh-nav.open{
+    transform:translateX(0);visibility:visible;transition:transform .3s ease;
+    box-shadow:-10px 0 40px rgba(0,0,0,.3);
+  }
+  .site-header .auth-nav{flex-direction:column;align-items:stretch;gap:0;width:100%}
+  .site-header .auth-nav a,
+  .site-header .auth-nav .auth-name{
+    display:block;width:100%;padding:15px 0;font-size:16px;text-align:left;
+    border-bottom:1px solid var(--line-dark);
+  }
+  .site-header .auth-nav .btn-outline{border:none;border-bottom:1px solid var(--line-dark);border-radius:0;padding:15px 0}
+  .site-header .auth-nav .btn-fill{text-align:center;padding:14px 0;margin-top:22px;font-size:15px;width:100%}
+  .site-header .lang-toggle{margin-top:26px;align-self:flex-start}
+  .site-header .lang-toggle button{padding:10px 18px}
+  .site-header .sh-shade{
+    display:block;position:fixed;inset:0;z-index:105;background:rgba(6,31,49,.45);
+    opacity:0;pointer-events:none;transition:opacity .3s;
+  }
+  .site-header .sh-shade.open{opacity:1;pointer-events:auto}
+}
+
+/* ヘッダーの下に置く「← 一覧へ」などの小さな戻り道 */
+.crumb{
+  display:inline-block;font-family:var(--sans);font-size:13px;letter-spacing:.05em;
+  color:var(--ink-40);text-decoration:none;
+}
+.crumb:hover{color:var(--sun)}
+.surface-dark .crumb{color:var(--mist)}
+.crumb-bar{padding:14px 4vw 0}
+@media(max-width:900px){.crumb-bar{padding:12px 18px 0}}
+
+/* ============================================================
+   カレンダー（calendar.js が中身を作る）
+   明るい面でも濃紺の面でも使えるよう、色は変数にしている。
+   濃紺の面では、そのページの <style> で --cal-* を上書きする
+   ============================================================ */
+.cal{
+  --cal-fg:var(--ink); --cal-muted:var(--ink-25); --cal-line:var(--line);
+  --cal-open:var(--sun); --cal-open-fg:#fff;
+  font-family:var(--sans);color:var(--cal-fg);max-width:420px;
+}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.cal-month{font-size:15px;font-weight:600;letter-spacing:.08em}
+.cal-nav{
+  background:none;border:1px solid var(--cal-line);border-radius:var(--r);
+  color:var(--cal-fg);width:32px;height:32px;font-size:17px;line-height:1;cursor:pointer;
+}
+.cal-nav:hover:not(:disabled){border-color:var(--cal-open);color:var(--cal-open)}
+.cal-nav:disabled{opacity:.3;cursor:default}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-wd{margin-bottom:6px}
+.cal-wd span{text-align:center;font-size:11px;letter-spacing:.06em;color:var(--cal-muted)}
+.cal-day{
+  display:flex;align-items:center;justify-content:center;
+  aspect-ratio:1/1;font-size:14px;font-family:var(--sans);
+  background:none;border:1px solid transparent;border-radius:var(--r);
+  color:var(--cal-fg);padding:0;
+}
+.cal-day.out{visibility:hidden}
+.cal-day.past{color:var(--cal-muted)}
+.cal-day.today{border-color:var(--cal-line);font-weight:700}
+button.cal-day.open{
+  background:var(--cal-open);color:var(--cal-open-fg);font-weight:700;cursor:pointer;
+  transition:opacity .15s;
+}
+button.cal-day.open:hover{opacity:.82}
+.cal-legend{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:12px;color:var(--cal-muted)}
+.cal-dot{width:11px;height:11px;border-radius:2px;background:var(--cal-open);display:inline-block}
+/* 編集のとき：選びかけの開始日 */
+button.cal-day.pending{
+  background:var(--cyan);color:#fff;font-weight:700;
+}
+.cal-legend .cal-dot.pending{background:var(--cyan);margin-left:14px}
+button.cal-day:not(.open):not(.pending){cursor:pointer}
+button.cal-day:not(.open):not(.pending):hover{border-color:var(--cal-open);color:var(--cal-open)}
+
+/* ============================================================
+   経路（route.js が中身を作る）
+   陸は実線、海は波打つ線、空は点線。
+   色は変数にしてあるので、濃紺の面では上書きする
+   ============================================================ */
+.route{
+  --rt-fg:var(--ink); --rt-muted:var(--ink-40); --rt-line:var(--line); --rt-mark:var(--sun);
+  display:flex;align-items:center;flex-wrap:wrap;gap:0;font-family:var(--sans);color:var(--rt-fg);
+}
+.route-stop{display:flex;align-items:center;gap:7px;padding:5px 0}
+.route-mark{color:var(--rt-mark);font-size:11px;line-height:1}
+.route-stop.via .route-mark{color:var(--rt-muted);font-size:8px}
+.route-name{font-size:14px;letter-spacing:.03em}
+.route-stop.via .route-name{font-size:13px;color:var(--rt-muted)}
+.route-stop.to .route-name{font-weight:700}
+.route-line{
+  flex:1;min-width:26px;height:2px;margin:0 10px;background:var(--rt-line);border-radius:2px;
+}
+.route-sea .route-line{
+  height:6px;background:none;
+  border-top:2px dotted var(--rt-line);border-radius:0;
+}
+.route-air .route-line{
+  height:2px;background:none;
+  border-top:2px dashed var(--rt-line);
+}
+@media(max-width:600px){
+  .route{flex-direction:column;align-items:flex-start;gap:0}
+  .route-line{width:2px;height:16px;min-width:0;flex:none;margin:2px 0 2px 4px}
+  .route-sea .route-line,.route-air .route-line{
+    width:0;height:16px;border-top:none;border-left:2px dotted var(--rt-line);margin-left:4px;
+  }
+  .route-air .route-line{border-left-style:dashed}
+}
+
+/* 自由に足すキーワード（プロフィールの「自分の言葉」、体験の「途中で寄るところ」） */
+.tag-box{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:9px 10px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:var(--r);
+}
+.tag-box:focus-within{border-color:var(--sun)}
+.tag-box input{flex:1;min-width:160px;border:none !important;padding:5px 4px !important;font-size:14px;font-family:var(--sans)}
+.tag-box input:focus{outline:none}
+.utag{
+  display:inline-flex;align-items:center;gap:6px;background:var(--sea);color:#fff;
+  border-radius:16px;padding:5px 8px 5px 13px;font:13px var(--sans);
+}
+.utag button{background:none;border:none;color:#fff;cursor:pointer;font-size:15px;line-height:1;opacity:.8;padding:0 3px}
+.utag button:hover{opacity:1}

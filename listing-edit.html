@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.listingEdit.title">体験を登録する — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  :root{
+    --sea:#0B3A5B; --sea-deep:#061F31; --sun:#E8452B; --earth:#C97B3C;
+    --sand:#F4EDE2; --paper:#FBF8F4; --ink:#0A1622; --mist:#8FA6B5; --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+
+  .wrap{max-width:760px;margin:0 auto;padding:54px 24px 90px}
+  .eyebrow{font-size:12px;letter-spacing:.3em;color:var(--sun);font-family:"Helvetica Neue",sans-serif;font-weight:700;margin-bottom:14px}
+  h1{font-size:clamp(26px,4.6vw,38px);letter-spacing:.05em;margin-bottom:16px;font-weight:700}
+  .lead{font-size:15px;line-height:2;color:#4a5c6a;margin-bottom:42px}
+
+  .field-tabs{display:flex;margin-bottom:26px;border-bottom:1px solid rgba(10,22,34,.15);font-family:"Helvetica Neue",sans-serif}
+  .field-tabs button{background:none;border:none;cursor:pointer;padding:11px 22px;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--mist);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .field-tabs button.active{color:var(--ink);border-bottom-color:var(--sun)}
+
+  .bi{background:#fff;border:1px solid rgba(10,22,34,.14);border-radius:3px;padding:16px;margin-bottom:22px}
+  .bi > .bi-label{display:block;font-size:12px;letter-spacing:.14em;color:#5d6f7c;margin-bottom:12px;font-family:"Helvetica Neue",sans-serif;font-weight:600}
+  .bi .lang-row{margin-bottom:12px}
+  .bi .lang-row:last-of-type{margin-bottom:0}
+  .bi .lang-tag{display:block;font-size:10.5px;letter-spacing:.12em;color:#9aa8b2;margin-bottom:5px;font-family:"Helvetica Neue",sans-serif;font-weight:600}
+  .bi input[type=text],.bi textarea{
+    width:100%;padding:12px 14px;background:#fff;border:1px solid rgba(10,22,34,.18);
+    border-radius:3px;color:var(--ink);font-size:15px;font-family:inherit;line-height:1.9;
+  }
+  .bi input:focus,.bi textarea:focus{outline:none;border-color:var(--sun)}
+  .bi .help{font-size:12px;color:#7d8d99;margin-top:9px;line-height:1.7;font-family:"Helvetica Neue",sans-serif}
+  .field{margin-bottom:30px}
+  .field > label{display:block;font-size:12px;letter-spacing:.14em;color:#5d6f7c;margin-bottom:8px;font-family:"Helvetica Neue",sans-serif;font-weight:600}
+  .field .help{font-size:12px;color:#7d8d99;margin-top:7px;line-height:1.7;font-family:"Helvetica Neue",sans-serif}
+  .field input[type=text],.field input[type=number],.field textarea,.field select{
+    width:100%;padding:13px 15px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    color:var(--ink);font-size:15px;font-family:inherit;line-height:1.9;transition:border-color .2s;
+  }
+  .field textarea{min-height:200px;resize:vertical}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--sun)}
+  .field input::placeholder,.field textarea::placeholder{color:#9fb0bb}
+
+  /* 陸・海・空 */
+  .types{display:flex;gap:12px;flex-wrap:wrap}
+  .type-card{
+    flex:1;min-width:150px;background:#fff;border:1.5px solid rgba(10,22,34,.16);border-radius:3px;
+    padding:18px 16px;cursor:pointer;text-align:center;transition:border-color .2s,background .2s;
+  }
+  .type-card.active{border-color:var(--sun);background:rgba(232,69,43,.05)}
+  .type-card .t-name{font-size:22px;letter-spacing:.2em;margin-bottom:6px}
+  .type-card .t-desc{font-size:11px;color:#7d8d99;font-family:"Helvetica Neue",sans-serif;letter-spacing:.04em}
+
+  .two{display:flex;gap:16px}
+  .two > div{flex:1}
+
+  .actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .btn{border:none;border-radius:3px;padding:14px 32px;font-size:15px;font-weight:600;letter-spacing:.08em;cursor:pointer;font-family:"Helvetica Neue",sans-serif;transition:opacity .2s}
+  .btn:hover{opacity:.88}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn-primary{background:var(--sun);color:#fff}
+  .btn-outline{background:transparent;color:var(--ink);border:1.5px solid rgba(10,22,34,.3)}
+
+  .message{margin-top:16px;font-size:13px;min-height:20px;font-family:"Helvetica Neue",sans-serif}
+  .message.ok{color:#1F7A5A}
+  .message.error{color:#C0392B}
+  .message.info{color:#7d8d99}
+
+  .sess-form{background:#fff;border:1px solid rgba(10,22,34,.14);border-radius:3px;padding:16px;margin-bottom:14px}
+  .sess-form .grid{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .sess-form .grid > div{flex:1;min-width:140px}
+  .sess-form .grid label{display:block;font-size:11px;letter-spacing:.1em;color:#5d6f7c;margin-bottom:6px;font-family:"Helvetica Neue",sans-serif;font-weight:600}
+  .sess-form input[type=date],.sess-form input[type=time]{
+    width:100%;padding:10px 12px;background:#fff;border:1px solid rgba(10,22,34,.18);
+    border-radius:3px;font-size:14px;font-family:inherit;color:var(--ink);
+  }
+  .sess-form .flex-row{display:flex;align-items:center;gap:8px;font-size:13px;
+    font-family:"Helvetica Neue",sans-serif;color:var(--ink);margin-bottom:12px}
+  .sess-form .flex-row input{width:16px;height:16px;accent-color:var(--sun)}
+
+  .date-add{display:flex;gap:10px;align-items:stretch;margin-bottom:14px}
+  .date-add input{flex:1}
+  .date-add button{
+    flex-shrink:0;background:var(--sea);color:#fff;border:none;border-radius:3px;
+    padding:0 22px;font-size:13px;font-weight:600;letter-spacing:.06em;cursor:pointer;
+    font-family:"Helvetica Neue",sans-serif;
+  }
+  .cal{--cal-fg:var(--ink);margin-bottom:10px}
+  .route-preview{margin-top:18px}
+  .cal-hint{font-size:12px;color:#7d8d99;font-family:"Helvetica Neue",sans-serif;margin-bottom:16px;line-height:1.8}
+  .sess-list{display:flex;flex-direction:column;gap:8px}
+  .sess-row{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:#fff;border:1px solid rgba(10,22,34,.14);border-radius:3px;padding:11px 14px;
+    font-family:"Helvetica Neue",sans-serif;font-size:13px;
+  }
+  .sess-row .d{font-weight:600;letter-spacing:.04em;min-width:190px}
+  .sess-row label{display:flex;align-items:center;gap:6px;margin:0;font-size:12px;color:#5d6f7c;font-weight:600;letter-spacing:.06em}
+  .sess-row input[type=time]{
+    padding:6px 8px;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    font-family:"Helvetica Neue",sans-serif;font-size:13px;color:var(--ink);background:#fff;
+  }
+  .sess-row input[type=time]:disabled{opacity:.4}
+  .sess-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--sun)}
+  .sess-row .rm{margin-left:auto;background:none;border:none;color:#9aa8b2;font-size:17px;cursor:pointer;line-height:1}
+  .sess-row .rm:hover{color:var(--sun)}
+  @media(max-width:600px){ .sess-row .d{min-width:100%} }
+  .date-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .date-chip{
+    display:inline-flex;align-items:center;gap:9px;background:#fff;
+    border:1px solid rgba(10,22,34,.18);border-radius:20px;padding:8px 10px 8px 16px;
+    font-size:13px;font-family:"Helvetica Neue",sans-serif;
+  }
+  .date-chip button{
+    background:none;border:none;cursor:pointer;color:#9aa8b2;font-size:16px;line-height:1;padding:0 2px;
+  }
+  .date-chip button:hover{color:var(--sun)}
+  .date-empty{font-size:13px;color:#8c9aa6;font-family:"Helvetica Neue",sans-serif}
+
+  .addr-row{display:flex;gap:10px;align-items:stretch}
+  .addr-row input{flex:1}
+  .addr-row button{
+    flex-shrink:0;background:var(--sea);color:#fff;border:none;border-radius:3px;
+    padding:0 22px;font-size:13px;font-weight:600;letter-spacing:.06em;cursor:pointer;
+    font-family:"Helvetica Neue",sans-serif;transition:opacity .2s;
+  }
+  .addr-row button:hover{opacity:.88}
+  .addr-row button:disabled{opacity:.5;cursor:default}
+  .map-box{margin-top:14px;border:1px solid rgba(10,22,34,.18);border-radius:3px;overflow:hidden;background:#e8e2d8}
+  .map-box iframe{display:block;width:100%;height:260px;border:0}
+  .addr-status{margin-top:8px;font-size:12px;font-family:"Helvetica Neue",sans-serif}
+  .addr-status.ok{color:#1F7A5A}
+  .addr-status.error{color:#C0392B}
+  .addr-status.info{color:#7d8d99}
+  .manual-toggle{
+    margin-top:12px;background:none;border:none;padding:0;cursor:pointer;
+    color:var(--sea);text-decoration:underline;font-size:12px;font-family:"Helvetica Neue",sans-serif;
+  }
+  .note{margin-top:34px;padding:16px 18px;background:rgba(0,180,200,.08);border-left:3px solid var(--cyan);font-size:13px;line-height:1.9;color:#42586a;font-family:"Helvetica Neue",sans-serif}
+  .hidden{display:none !important}
+  @media(max-width:600px){.wrap{padding:36px 20px 70px}.two{flex-direction:column;gap:0}}
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+  <div class="crumb-bar"><a class="crumb" href="my-listings.html">← <span data-i18n="listing.mineTitle">自分の体験</span></a></div>
+
+  <div class="wrap">
+
+    <div id="formMode" class="hidden">
+      <p class="eyebrow">EXPERIENCE</p>
+      <h1 id="pageTitle" data-i18n="listing.newTitle">体験を登録する</h1>
+      <p class="lead" data-i18n="listing.lead"></p>
+
+      <!-- 種別 -->
+      <div class="field">
+        <label data-i18n="listing.type">種別</label>
+        <div class="types" id="typeCards">
+          <div class="type-card" data-type="land">
+            <p class="t-name" data-i18n="listing.type.land">陸</p>
+            <p class="t-desc" data-i18n="listing.type.landDesc"></p>
+          </div>
+          <div class="type-card" data-type="sea">
+            <p class="t-name" data-i18n="listing.type.sea">海</p>
+            <p class="t-desc" data-i18n="listing.type.seaDesc"></p>
+          </div>
+          <div class="type-card" data-type="air">
+            <p class="t-name" data-i18n="listing.type.air">空</p>
+            <p class="t-desc" data-i18n="listing.type.airDesc"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 日本語と英語を、同じ枠の中に並べて入力する -->
+      <div class="field">
+        <label for="title" data-i18n="listing.title">タイトル</label>
+        <input type="text" id="title" data-max="40" data-i18n-attr="placeholder:listing.titlePh">
+      </div>
+
+      <div class="field">
+        <label for="area" data-i18n="listing.area">エリア</label>
+        <input type="text" id="area" data-max="30" data-i18n-attr="placeholder:listing.areaPh">
+      </div>
+
+      <div class="field">
+        <label for="description" data-i18n="listing.description">説明</label>
+        <textarea id="description" data-max="3000" data-recommend="200" data-i18n-attr="placeholder:listing.descriptionPh"></textarea>
+        <p class="help" data-i18n="listing.descriptionHelp"></p>
+      </div>
+
+      <div class="field">
+        <label for="doList" data-i18n="listing.doList">やること</label>
+        <textarea id="doList" style="min-height:120px" data-max="600" data-i18n-attr="placeholder:listing.doListPh"></textarea>
+        <p class="help" data-i18n="listing.linesHelp"></p>
+      </div>
+
+      <div class="field">
+        <label for="included" data-i18n="listing.included">含まれるもの</label>
+        <textarea id="included" style="min-height:100px" data-max="400" data-i18n-attr="placeholder:listing.includedPh"></textarea>
+        <p class="help" data-i18n="listing.linesHelp"></p>
+      </div>
+
+      <div class="field">
+        <label for="bring" data-i18n="listing.bring">持ち物</label>
+        <textarea id="bring" style="min-height:100px" data-max="400" data-i18n-attr="placeholder:listing.bringPh"></textarea>
+        <p class="help" data-i18n="listing.linesHelp"></p>
+      </div>
+
+      <p class="write-note" data-i18n="profile.anyLang"></p>
+
+      <!-- 料金・人数 -->
+      <div class="two">
+        <div class="field">
+          <label for="price" data-i18n="listing.price">料金</label>
+          <input type="number" id="price" min="0" step="1000" value="0">
+        </div>
+        <div class="field">
+          <label for="capacity" data-i18n="listing.capacity">最大人数</label>
+          <input type="number" id="capacity" min="1" step="1" value="2">
+        </div>
+      </div>
+
+      <!-- 写真 -->
+      <div class="field">
+        <label for="images" data-i18n="listing.images">写真のURL</label>
+        <textarea id="images" style="min-height:110px" placeholder="https://..."></textarea>
+        <p class="help" data-i18n="listing.imagesHelp"></p>
+        <p class="help" data-i18n="listing.imagesLocal"></p>
+      </div>
+
+      <!-- 開催日程 -->
+      <div class="field">
+        <label data-i18n="listing.sessions">開催日程</label>
+
+        <div id="calEdit"></div>
+        <p class="cal-hint" id="calHint"></p>
+
+        <div class="sess-list" id="dateChips"></div>
+        <p class="help" data-i18n="listing.sessionsHelp"></p>
+      </div>
+
+      <!-- 経路（出発地 → 行き先） -->
+      <div class="field">
+        <label for="address" data-i18n="listing.address">出発地の住所</label>
+        <div class="addr-row">
+          <input type="text" id="address" maxlength="100" data-i18n-attr="placeholder:listing.addressPh">
+          <button type="button" id="locateBtn" data-i18n="listing.locate">地図で確認</button>
+        </div>
+        <p class="help" data-i18n="listing.addressHelp"></p>
+        <p class="addr-status" id="addrStatus"></p>
+
+        <div class="map-box hidden" id="mapBox">
+          <iframe id="mapFrame" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+
+        <div style="margin-top:20px">
+          <label for="jmaArea" style="display:block;font-size:11px;letter-spacing:.1em;color:#5d6f7c;margin-bottom:6px;font-family:'Helvetica Neue',sans-serif;font-weight:600" data-i18n="listing.jmaArea">警報を見る地域</label>
+          <select id="jmaArea" style="width:100%;padding:12px 14px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;font-size:15px;font-family:inherit;color:var(--ink)">
+            <option value="" data-i18n="listing.jmaPick">選んでください</option>
+          </select>
+          <label for="jmaCity" style="display:block;font-size:11px;letter-spacing:.1em;color:#5d6f7c;margin:12px 0 6px;font-family:'Helvetica Neue',sans-serif;font-weight:600" data-i18n="listing.jmaCity">市区町村</label>
+          <select id="jmaCity" style="width:100%;padding:12px 14px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;font-size:15px;font-family:inherit;color:var(--ink)">
+            <option value="" data-i18n="listing.jmaCityAll">都道府県全体で見る</option>
+          </select>
+          <p class="help" data-i18n="listing.jmaAreaHelp"></p>
+          <p class="help hidden" id="jmaAutoNote" style="color:#1F7A5A" data-i18n="listing.jmaAuto"></p>
+        </div>
+
+        <!-- 行き先 -->
+        <div style="margin-top:26px;border-top:1px solid rgba(10,22,34,.12);padding-top:22px">
+          <label for="dest" data-i18n="listing.dest">行き先</label>
+          <div class="addr-row">
+            <input type="text" id="dest" maxlength="100" data-i18n-attr="placeholder:listing.destPh">
+            <button type="button" id="destBtn" data-i18n="listing.locate">地図で確認</button>
+          </div>
+          <p class="help" data-i18n="listing.destHelp"></p>
+          <p class="addr-status" id="destStatus"></p>
+
+          <label for="viaInput" style="margin-top:18px" data-i18n="listing.via">途中で寄るところ</label>
+          <div class="tag-box" id="viaBox">
+            <input type="text" id="viaInput" maxlength="30" data-i18n-attr="placeholder:listing.viaPh">
+          </div>
+          <p class="help" data-i18n="listing.viaHelp"></p>
+
+          <div class="route-preview hidden" id="routePreview"></div>
+        </div>
+
+        <button type="button" class="manual-toggle" id="manualToggle" data-i18n="listing.coordsManual"></button>
+        <div class="two hidden" id="manualCoords" style="margin-top:12px">
+          <div>
+            <input type="text" id="lat" placeholder="35.2323">
+            <p class="help" data-i18n="listing.lat">緯度</p>
+          </div>
+          <div>
+            <input type="text" id="lng" placeholder="139.1069">
+            <p class="help" data-i18n="listing.lng">経度</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="publishBtn" data-i18n="listing.publish">公開する</button>
+        <button class="btn btn-outline" id="draftBtn" data-i18n="listing.saveDraft">下書きとして保存</button>
+      </div>
+      <p class="message" id="message"></p>
+
+      <p class="note" data-i18n="listing.imagesHelp"></p>
+    </div>
+
+    <!-- ホストプロフィール未作成 -->
+    <div id="guardMode" class="hidden">
+      <p class="lead" id="guardText"></p>
+      <a class="btn btn-primary" id="guardLink" href="profile.html?host=1" style="display:inline-block;text-decoration:none">→</a>
+    </div>
+
+  </div>
+
+<script src="i18n.js"></script>
+<script src="limits.js"></script>
+<script type="module">
+  import { db, onUser, getUser, getProfile } from './auth.js';
+  import { normalize, label as sessionLabel, nightsOf } from './sessions.js';
+  import { mountCalendar } from './calendar.js';
+  import { routeHtml } from './route.js';
+  import { loadAreaTable, citiesOf, officeOfCity, jmaCityFromMuni } from './weather.js';
+  import {
+    doc, getDoc, setDoc, addDoc, updateDoc, collection, serverTimestamp, deleteField
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const q  = () => '?lang=' + TriArk.i18n.get();
+  const el = (id) => document.getElementById(id);
+
+  const listingId = new URLSearchParams(location.search).get('id');
+  let selectedType = 'land';
+
+  /* ---- 警報を見る地域（気象庁の区分：都道府県 → 市区町村） ---- */
+  let jmaTable = null;
+
+  function fillCities(officeCode, selectedCity) {
+    const lang = TriArk.i18n.get();
+    const list = jmaTable && officeCode ? citiesOf(jmaTable, officeCode) : [];
+    el('jmaCity').innerHTML =
+      '<option value="">' + t('listing.jmaCityAll') + '</option>' +
+      list.map(c => '<option value="' + c.code + '">' +
+        ((lang === 'en' && c.enName) ? c.enName : c.name) + '</option>').join('');
+    el('jmaCity').value = selectedCity || '';
+  }
+
+  async function loadJmaAreas(selectedOffice, selectedCity) {
+    try {
+      jmaTable = await loadAreaTable();
+      const offices = jmaTable.offices || {};
+      const lang = TriArk.i18n.get();
+      const items = Object.keys(offices).sort()
+        .map(code => ({ code: code, name: offices[code].name, enName: offices[code].enName || '' }));
+      el('jmaArea').innerHTML = '<option value="">' + t('listing.jmaPick') + '</option>' +
+        items.map(i => '<option value="' + i.code + '">' +
+          ((lang === 'en' && i.enName) ? i.enName : i.name) + '</option>').join('');
+      el('jmaArea').value = selectedOffice || '';
+      fillCities(selectedOffice, selectedCity);
+    } catch (e) {
+      console.warn('気象庁の地域一覧を取得できませんでした', e);
+    }
+  }
+
+  el('jmaArea').addEventListener('change', () => {
+    el('jmaAutoNote').classList.add('hidden');
+    fillCities(el('jmaArea').value, '');
+  });
+  el('jmaCity').addEventListener('change', () => el('jmaAutoNote').classList.add('hidden'));
+
+  /* 出発地の座標から市区町村を割り出し、警報の地域を自動で選ぶ（国土地理院の逆ジオコーダ） */
+  async function autoPickJma(lat, lng) {
+    try {
+      if (!jmaTable) jmaTable = await loadAreaTable();
+      const res = await fetch('https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=' +
+                              lat + '&lon=' + lng);
+      const j = await res.json();
+      const muni = j && j.results ? j.results.muniCd : '';
+      const city = jmaCityFromMuni(jmaTable, muni);
+      if (!city) return;
+      const office = officeOfCity(jmaTable, city);
+      if (!office) return;
+      el('jmaArea').value = office;
+      fillCities(office, city);
+      el('jmaAutoNote').classList.remove('hidden');
+    } catch (e) {
+      console.warn('警報の地域を自動で選べませんでした', e);
+    }
+  }
+
+  loadJmaAreas('', '');
+
+  function jmaSaveFields() {
+    const office = el('jmaArea').value;
+    const city   = el('jmaCity').value;
+    const o = jmaTable && office ? (jmaTable.offices || {})[office] : null;
+    const c = jmaTable && city ? (jmaTable.class20s || {})[city] : null;
+    return {
+      jmaAreaCode    : office,
+      jmaAreaName    : o ? o.name : '',
+      jmaAreaName_en : o ? (o.enName || '') : '',
+      jmaCityCode    : city,
+      jmaCityName    : c ? c.name : '',
+      jmaCityName_en : c ? (c.enName || '') : ''
+    };
+  }
+
+  /* ---- 開催日程 ---- */
+  let sessions = [];
+
+  let cal = null;
+
+  /* 「9月24日(木) 日帰り」「10月1日(木) – 2日(金) 1泊」のような日付だけの見出し */
+  function dateHead(s) {
+    const lang = TriArk.i18n.get();
+    const L = lang === 'en' ? 'en-US' : 'ja-JP';
+    const opt = { month: 'short', day: 'numeric', weekday: 'short' };
+    const a = new Date(s.start + 'T00:00:00').toLocaleDateString(L, opt);
+    const n = nightsOf(s);
+    if (!n) return a + '　' + t('listing.dayTrip');
+    const b = new Date(s.end + 'T00:00:00').toLocaleDateString(L, opt);
+    return a + ' – ' + b + '　' + n + t('listing.nights');
+  }
+
+  /* 日程の一覧。集合・解散の時刻はここで直せる */
+  function renderDates() {
+    const box = el('dateChips');
+    if (cal) cal.update(sessions);
+    el('calHint').textContent = t(cal && cal.getPending() ? 'cal.hintPending' : 'cal.hintEdit');
+
+    if (!sessions.length) {
+      box.innerHTML = '<p class="date-empty">' + t('listing.noDates') + '</p>';
+      return;
+    }
+    box.innerHTML = sessions.map((s, i) =>
+      '<div class="sess-row" data-i="' + i + '">' +
+        '<span class="d">' + dateHead(s) + '</span>' +
+        '<label>' + t('listing.startTime') +
+          '<input type="time" data-f="startTime" value="' + (s.startTime || '') + '"' + (s.flexible ? ' disabled' : '') + '></label>' +
+        '<label>' + t('listing.endTime') +
+          '<input type="time" data-f="endTime" value="' + (s.endTime || '') + '"' + (s.flexible ? ' disabled' : '') + '></label>' +
+        '<label><input type="checkbox" data-f="flexible"' + (s.flexible ? ' checked' : '') + '>' +
+          t('listing.flexible') + '</label>' +
+        '<button type="button" class="rm" aria-label="remove">×</button>' +
+      '</div>'
+    ).join('');
+
+    box.querySelectorAll('.sess-row').forEach(row => {
+      const i = parseInt(row.dataset.i, 10);
+      row.querySelectorAll('[data-f]').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const f = inp.dataset.f;
+          if (f === 'flexible') {
+            sessions[i].flexible = inp.checked;
+            if (inp.checked) { sessions[i].startTime = ''; sessions[i].endTime = ''; }
+            renderDates();
+          } else {
+            sessions[i][f] = inp.value;
+          }
+        });
+      });
+      row.querySelector('.rm').addEventListener('click', () => {
+        sessions.splice(i, 1);
+        renderDates();
+      });
+    });
+  }
+
+  /* カレンダーで日を押したときの動き
+     ・空いている日を押す → その日程をまるごと取り消す
+     ・何も選んでいない状態で押す → 開始日として選ぶ
+     ・同じ日をもう一度押す → 日帰りとして追加
+     ・あとの日を押す → 開始日からその日までの泊まりとして追加 */
+  function onDay(date, idx) {
+    const pending = cal.getPending();
+    if (idx !== null) {                 // すでに入っている日程を取り消す
+      sessions.splice(idx, 1);
+      cal.setPending(null);
+    } else if (!pending || date < pending) {
+      cal.setPending(date);
+    } else {
+      sessions.push({ start: pending, end: date, startTime: '', endTime: '', flexible: false });
+      sessions.sort((a, b) => (a.start > b.start ? 1 : -1));
+      cal.setPending(null);
+    }
+    renderDates();
+  }
+
+  cal = mountCalendar(el('calEdit'), { sessions, mode: 'edit', onDay });
+  renderDates();
+
+  /* ---- 種別の選択 ---- */
+  function setType(type) {
+    selectedType = type;
+    el('typeCards').querySelectorAll('.type-card').forEach(c =>
+      c.classList.toggle('active', c.dataset.type === type)
+    );
+  }
+  el('typeCards').querySelectorAll('.type-card').forEach(c =>
+    c.addEventListener('click', () => setType(c.dataset.type))
+  );
+  setType('land');
+
+  /* ---- 行き先と経由地 ----
+     出発地と同じ探し方（国土地理院 → OpenStreetMap）を使う。
+     将来「ホストを乗り継いで A から B へ」を探せるように、
+     行き先は緯度経度まで持たせておく。 */
+  let dest = null;          // { name, lat, lng, label }
+  let via  = [];            // 経由地の名前（文字だけ）
+
+  function renderVia() {
+    const box = el('viaBox');
+    box.querySelectorAll('.utag').forEach(n => n.remove());
+    const input = el('viaInput');
+    via.forEach((name, i) => {
+      const s = document.createElement('span');
+      s.className = 'utag';
+      s.innerHTML = escHtml(name) + '<button type="button" aria-label="remove">×</button>';
+      s.querySelector('button').addEventListener('click', () => { via.splice(i, 1); renderVia(); });
+      box.insertBefore(s, input);
+    });
+    input.disabled = via.length >= 5;
+    renderRoute();
+  }
+  function addVia(raw) {
+    const v = String(raw || '').replace(/[,、，]/g, ' ').trim().slice(0, 30);
+    if (!v || via.length >= 5 || via.includes(v)) return;
+    via.push(v); renderVia();
+  }
+  el('viaInput').addEventListener('keydown', (e) => {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Enter' || e.key === ',' || e.key === '、') {
+      e.preventDefault(); addVia(e.target.value); e.target.value = '';
+    } else if (e.key === 'Backspace' && !e.target.value && via.length) {
+      via.pop(); renderVia();
+    }
+  });
+  el('viaInput').addEventListener('blur', (e) => { addVia(e.target.value); e.target.value = ''; });
+
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  /* 入力しながら、ゲストに見えるのと同じ形で経路を出す */
+  function renderRoute() {
+    const from = el('address').value.trim();
+    const to   = el('dest').value.trim();
+    const box  = el('routePreview');
+    if (!from && !to) { box.classList.add('hidden'); return; }
+    box.innerHTML = routeHtml({
+      type: selectedType,
+      from: from || t('listing.address'),
+      via : via,
+      to  : to
+    }, escHtml);
+    box.classList.remove('hidden');
+  }
+  el('dest').addEventListener('input', renderRoute);
+  el('address').addEventListener('input', renderRoute);
+
+  async function locateDest() {
+    const qstr = el('dest').value.trim();
+    const p = el('destStatus');
+    if (!qstr) return;
+    el('destBtn').disabled = true;
+    p.textContent = t('listing.locating'); p.className = 'addr-status info';
+
+    let found = null;
+    try { found = await geocodeGSI(qstr); } catch (e) { console.warn('GSI', e); }
+    if (!found) { try { found = await geocodeOSM(qstr); } catch (e) { console.warn('OSM', e); } }
+
+    if (found) {
+      dest = { name: qstr, lat: found.lat, lng: found.lng, label: toCityLevel(found.label) };
+      p.textContent = t('listing.locateOk') + (dest.label ? '（' + dest.label + '）' : '');
+      p.className = 'addr-status ok';
+    } else {
+      dest = { name: qstr, lat: null, lng: null, label: '' };
+      p.textContent = t('listing.destNotFound');
+      p.className = 'addr-status';
+    }
+    el('destBtn').disabled = false;
+    renderRoute();
+  }
+  el('destBtn').addEventListener('click', locateDest);
+  el('dest').addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); locateDest(); }
+  });
+
+  /* 保存する形にまとめる */
+  function routeSaveFields() {
+    const name = el('dest').value.trim();
+    if (!name) return { destName: '', destLat: null, destLng: null, destLabel: '', via: via };
+    const same = dest && dest.name === name;
+    return {
+      destName : name,
+      destLat  : same ? dest.lat   : null,
+      destLng  : same ? dest.lng   : null,
+      destLabel: same ? dest.label : '',
+      via      : via
+    };
+  }
+
+  /* ---- 住所から場所を探す ----
+     国土地理院の住所検索（日本国内・鍵不要）を先に試し、
+     だめなら OpenStreetMap の検索に切り替える。 */
+  function addrStatus(key, kind, raw) {
+    const p = el('addrStatus');
+    p.textContent = raw || (key ? t(key) : '');
+    p.className = 'addr-status ' + (kind || '');
+  }
+
+  function showMap(lat, lng) {
+    el('mapFrame').src =
+      'https://maps.google.com/maps?q=' + lat + ',' + lng + '&z=15&output=embed';
+    el('mapBox').classList.remove('hidden');
+  }
+
+  async function geocodeGSI(qstr) {
+    const url = 'https://msearch.gsi.go.jp/address-search/AddressSearch?q=' +
+                encodeURIComponent(qstr);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (!json || !json.length) return null;
+    const c = json[0].geometry.coordinates;   // [経度, 緯度]
+    return { lat: c[1], lng: c[0], label: (json[0].properties || {}).title || '' };
+  }
+
+  async function geocodeOSM(qstr) {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' +
+                encodeURIComponent(qstr);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (!json || !json.length) return null;
+    return {
+      lat   : parseFloat(json[0].lat),
+      lng   : parseFloat(json[0].lon),
+      label : json[0].display_name || ''
+    };
+  }
+
+  /* 検索で得た住所から「東京都東村山市」までを取り出す。
+     取り出せなければ、そのままの文字列を使う。 */
+  function toCityLevel(label) {
+    if (!label) return '';
+
+    // 都道府県を切り出す
+    const pref = label.match(/^(.+?[都道府県])/);
+    if (!pref) return label.split(',')[0].trim();
+
+    const rest = label.slice(pref[1].length);
+
+    // 「市」を最優先で探す（東村山市のように、途中に「村」を含む地名があるため）
+    let cut = rest.indexOf('市');
+    if (cut === -1) cut = rest.indexOf('区');
+    if (cut === -1) {
+      // 郡のあとの「町」「村」
+      const g = rest.indexOf('郡');
+      const after = g === -1 ? rest : rest.slice(g + 1);
+      const t1 = after.indexOf('町');
+      const t2 = after.indexOf('村');
+      const pick = (t1 === -1) ? t2 : (t2 === -1 ? t1 : Math.min(t1, t2));
+      if (pick === -1) return pref[1];
+      return pref[1] + rest.slice(0, (g === -1 ? 0 : g + 1) + pick + 1);
+    }
+    return pref[1] + rest.slice(0, cut + 1);
+  }
+
+  let addressLabel = '';
+
+  async function locate() {
+    const qstr = el('address').value.trim();
+    if (!qstr) return;
+
+    el('locateBtn').disabled = true;
+    addrStatus('listing.locating', 'info');
+
+    let found = null;
+    try { found = await geocodeGSI(qstr); } catch (e) { console.warn('GSI', e); }
+    if (!found) {
+      try { found = await geocodeOSM(qstr); } catch (e) { console.warn('OSM', e); }
+    }
+
+    if (found) {
+      el('lat').value = found.lat;
+      el('lng').value = found.lng;
+      addressLabel = toCityLevel(found.label);
+      showMap(found.lat, found.lng);
+      autoPickJma(found.lat, found.lng);
+      addrStatus(null, 'ok',
+        t('listing.locateOk') + (addressLabel ? '（' + addressLabel + '）' : ''));
+    } else {
+      addrStatus('listing.locateFailed', 'error');
+      el('manualCoords').classList.remove('hidden');
+    }
+    el('locateBtn').disabled = false;
+  }
+
+  el('locateBtn').addEventListener('click', locate);
+  el('address').addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); locate(); }
+  });
+  el('manualToggle').addEventListener('click', () => {
+    el('manualCoords').classList.toggle('hidden');
+  });
+
+  function message(key, kind) {
+    el('message').textContent = key ? t(key) : '';
+    el('message').className = 'message ' + (kind || '');
+  }
+
+  /* ---- 既存の体験を読み込む ---- */
+  async function loadListing(id, uid) {
+    const snap = await getDoc(doc(db, 'listings', id));
+    if (!snap.exists()) return false;
+    const d = snap.data();
+    if (d.hostId !== uid) return false;      // 他人のものは編集させない
+
+    setType(d.type || 'land');
+    // 以前の形（日本語欄と英語欄）のデータは、日本語が空なら英語を入れる
+    const legacy = (f) => (d[f] && String(d[f]).trim()) ? d[f] : (d[f + '_en'] || '');
+    el('title').value       = legacy('title');
+    el('area').value        = legacy('area');
+    el('description').value = legacy('description');
+    el('doList').value      = (d.doList   || []).join('\n');
+    el('included').value    = (d.included || []).join('\n');
+    el('bring').value       = (d.bring    || []).join('\n');
+    TriArk.limits.refresh();
+    el('price').value          = d.price ?? 0;
+    el('capacity').value       = d.capacity ?? 2;
+    el('images').value         = (d.images || []).join('\n');
+    sessions = normalize(d);
+    renderDates();
+    el('address').value        = d.address || '';
+    el('dest').value           = d.destName || '';
+    dest = d.destName ? { name: d.destName, lat: d.destLat, lng: d.destLng, label: d.destLabel || '' } : null;
+    via  = Array.isArray(d.via) ? d.via.slice(0, 5) : [];
+    renderVia();
+    loadJmaAreas(d.jmaAreaCode || '', d.jmaCityCode || '');
+    addressLabel               = d.addressLabel || '';
+    el('lat').value            = d.lat ?? '';
+    el('lng').value            = d.lng ?? '';
+    if (d.lat != null && d.lng != null) showMap(d.lat, d.lng);
+
+    el('pageTitle').setAttribute('data-i18n', 'listing.editTitle');
+    document.title = t('listing.editTitle');
+    TriArk.i18n.set(TriArk.i18n.get());
+    return true;
+  }
+
+  /* ---- 保存 ---- */
+  /* 「1行に1つ」で書かれた欄を、配列にする（空行は捨てる。10個まで） */
+  function lines(text) {
+    return String(text || '').split('\n').map(x => x.trim()).filter(Boolean).slice(0, 10);
+  }
+
+  function numberOrNull(v) {
+    const n = parseFloat(String(v).trim());
+    return isNaN(n) ? null : n;
+  }
+
+  async function save(status) {
+    const user = getUser();
+    if (!user) return;
+
+    const title = el('title').value.trim();
+    if (!title) { message('listing.needTitle', 'error'); return; }
+    if (!TriArk.limits.check()) { message('limit.over', 'error'); return; }
+
+    const data = {
+      hostId         : user.uid,
+      type           : selectedType,
+      title          : title,
+      area           : el('area').value.trim(),
+      description    : el('description').value.trim(),
+      doList         : lines(el('doList').value),
+      included       : lines(el('included').value),
+      bring          : lines(el('bring').value),
+      // 以前の英語欄は、1欄にまとめたので消す（翻訳は自動で用意される）
+      title_en       : deleteField(),
+      area_en        : deleteField(),
+      description_en : deleteField(),
+      address_en     : deleteField(),
+      price          : parseInt(el('price').value, 10) || 0,
+      capacity       : parseInt(el('capacity').value, 10) || 1,
+      images         : el('images').value.split('\n').map(s => s.trim()).filter(Boolean),
+      sessions       : sessions,
+      openDates      : sessions.map(s => s.start),   // 古い形式の互換のため残す
+      address        : el('address').value.trim(),
+      addressLabel   : addressLabel,
+      lat            : numberOrNull(el('lat').value),
+      lng            : numberOrNull(el('lng').value),
+      ...jmaSaveFields(),
+      ...routeSaveFields(),
+      status         : status,
+      updatedAt      : serverTimestamp()
+    };
+
+    el('publishBtn').disabled = true;
+    el('draftBtn').disabled = true;
+    message('auth.processing', 'info');
+
+    try {
+      if (listingId) {
+        await updateDoc(doc(db, 'listings', listingId), data);
+      } else {
+        data.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'listings'), data);
+      }
+      location.href = 'my-listings.html' + q();
+    } catch (e) {
+      console.error(e);
+      message('listing.saveFailed', 'error');
+      el('publishBtn').disabled = false;
+      el('draftBtn').disabled = false;
+    }
+  }
+
+  el('publishBtn').addEventListener('click', () => save('published'));
+  el('draftBtn').addEventListener('click',   () => save('draft'));
+
+  /* ---- 起動 ---- */
+  onUser(async ({ user, profile }) => {
+    if (!user) {
+      const back = 'listing-edit.html' + (listingId ? '?id=' + listingId : '');
+      location.href = 'login.html?mode=signup&next=' + encodeURIComponent(back) +
+                      '&lang=' + TriArk.i18n.get();
+      return;
+    }
+
+    // ホストプロフィールを保存していない人は先にそちらへ
+    if (!profile || !profile.isHost) {
+      el('guardText').textContent = t('listing.needHost');
+      el('guardLink').textContent = t('nav.host');
+      el('guardLink').href = 'profile.html' + q() + '&host=1';
+      el('guardMode').classList.remove('hidden');
+      return;
+    }
+
+    el('formMode').classList.remove('hidden');
+    if (listingId) {
+      const ok = await loadListing(listingId, user.uid);
+      if (!ok) location.href = 'my-listings.html' + q();
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<title>TriArk</title>
+<!-- プロフィールは profile.html に一本化した。
+     以前のリンク（host-profile.html / host-profile.html?uid=…）で来た人を案内する。
+     ?uid= が無ければ「ホストの欄を開いた編集画面」へ -->
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search);
+    if (!q.get('uid')) q.set('host', '1');
+    location.replace('profile.html?' + q.toString() + location.hash);
+  })();
+</script>
+</head>
+<body></body>
+</html>

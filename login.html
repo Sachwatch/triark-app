@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.login.title">ログイン — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  :root{
+    --sea:#0B3A5B;
+    --sea-deep:#061F31;
+    --sun:#E8452B;
+    --earth:#C97B3C;
+    --sand:#F4EDE2;
+    --ink:#0A1622;
+    --mist:#8FA6B5;
+    --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
+    background:radial-gradient(ellipse at 50% 30%,var(--sea) 0%,var(--sea-deep) 70%);
+    color:var(--sand);
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:40px 20px;
+  }
+
+  /* 言語切替 */
+  .lang-toggle{
+    position:fixed;top:20px;right:24px;
+    display:flex;border:1.5px solid rgba(244,237,226,.5);border-radius:3px;overflow:hidden;
+    font-family:"Helvetica Neue",sans-serif;z-index:10;
+  }
+  .lang-toggle button{
+    border:none;background:transparent;color:var(--sand);
+    padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.05em;
+    transition:background .2s,color .2s;
+  }
+  .lang-toggle button.active{background:var(--sun);color:#fff}
+
+  .back-link{
+    position:fixed;top:20px;left:24px;z-index:10;
+    color:var(--sand);text-decoration:none;font-size:13px;letter-spacing:.08em;
+    font-family:"Helvetica Neue",sans-serif;
+    background:rgba(6,31,49,.5);padding:8px 14px;border-radius:3px;
+    transition:color .2s;
+  }
+  .back-link:hover{color:var(--sun)}
+
+  /* 本体 */
+  .auth-box{width:100%;max-width:420px;text-align:center}
+
+  .logo{width:88px;height:auto;margin:0 auto 22px;display:block}
+  .logo .arc-outer{stroke:var(--sun)}
+  .logo .arc-mid{stroke:var(--cyan)}
+  .logo .arc-inner{stroke:#ffffff}
+  .logo .mark{fill:#ffffff}
+  .logo .underline{fill:var(--sun)}
+
+  .lead{font-size:14px;line-height:1.9;color:var(--mist);margin-bottom:34px;letter-spacing:.04em}
+
+  /* タブ */
+  .tabs{
+    display:flex;border-bottom:1px solid rgba(244,237,226,.2);margin-bottom:30px;
+    font-family:"Helvetica Neue",sans-serif;
+  }
+  .tabs button{
+    flex:1;background:transparent;border:none;cursor:pointer;
+    color:var(--mist);font-size:14px;font-weight:600;letter-spacing:.08em;
+    padding:14px 0;border-bottom:2px solid transparent;margin-bottom:-1px;
+    transition:color .2s,border-color .2s;
+  }
+  .tabs button.active{color:var(--sand);border-bottom-color:var(--sun)}
+
+  /* 入力欄 */
+  .field{margin-bottom:18px;text-align:left}
+  .field label{
+    display:block;font-size:12px;letter-spacing:.1em;color:var(--mist);margin-bottom:7px;
+    font-family:"Helvetica Neue",sans-serif;
+  }
+  .field input{
+    width:100%;padding:13px 15px;
+    background:rgba(244,237,226,.06);
+    border:1px solid rgba(244,237,226,.22);border-radius:3px;
+    color:var(--sand);font-size:15px;font-family:inherit;
+    transition:border-color .2s,background .2s;
+  }
+  .field input::placeholder{color:rgba(143,166,181,.55)}
+  .field input:focus{outline:none;border-color:var(--sun);background:rgba(244,237,226,.1)}
+
+  .submit{
+    width:100%;padding:14px;margin-top:10px;
+    background:var(--sun);color:#fff;border:none;border-radius:3px;
+    font-size:15px;font-weight:600;letter-spacing:.1em;cursor:pointer;
+    font-family:"Helvetica Neue",sans-serif;
+    transition:opacity .2s;
+  }
+  .submit:hover{opacity:.88}
+  .submit:disabled{opacity:.5;cursor:default}
+
+  .message{
+    margin-top:18px;font-size:13px;line-height:1.7;min-height:20px;
+    font-family:"Helvetica Neue",sans-serif;
+  }
+  .message.error{color:#FF8B76}
+  .message.info{color:var(--mist)}
+
+  .switch{
+    margin-top:26px;font-size:13px;color:var(--mist);
+    font-family:"Helvetica Neue",sans-serif;
+  }
+  .switch button{
+    background:none;border:none;color:var(--sand);cursor:pointer;
+    font-size:13px;text-decoration:underline;padding:0 4px;font-family:inherit;
+  }
+  .switch button:hover{color:var(--sun)}
+
+  .hidden{display:none !important}
+
+  @media(max-width:560px){
+    body{align-items:flex-start;padding:76px 20px 50px}
+    .back-link{top:16px;left:16px;font-size:12px;padding:7px 12px}
+    .lang-toggle{top:14px;right:16px}
+    .lang-toggle button{padding:6px 10px;font-size:11px}
+  }
+</style>
+</head>
+<body>
+
+  <a href="index.html" class="back-link">← <span data-i18n="nav.home">トップへ戻る</span></a>
+
+  <div class="lang-toggle">
+    <button id="btn-ja" class="active" onclick="setLang('ja')">日本語</button>
+    <button id="btn-en" onclick="setLang('en')">EN</button>
+  </div>
+
+  <div class="auth-box">
+
+    <svg class="logo" viewBox="0 0 220 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TriArk">
+      <path class="arc-outer" d="M10,150 A100,100 0 0,1 210,150" fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path class="arc-mid"   d="M30,150 A80,80 0 0,1 190,150"  fill="none" stroke-width="10" stroke-linecap="round"/>
+      <path class="arc-inner" d="M50,150 A60,60 0 0,1 170,150"  fill="none" stroke-width="10" stroke-linecap="round"/>
+      <rect class="mark" x="103" y="18" width="12" height="134" rx="3"/>
+      <rect class="mark" x="55"  y="18" width="108" height="10" rx="3"/>
+      <text class="mark" x="110" y="192" font-family="Georgia, serif" font-size="24" font-weight="bold" letter-spacing="5" text-anchor="middle">TriArk</text>
+      <rect class="underline" x="56" y="199" width="108" height="2" rx="1"/>
+    </svg>
+
+    <p class="lead" id="lead" data-i18n="auth.loginLead">おかえりなさい。</p>
+
+    <div class="tabs">
+      <button id="tabLogin"  class="active" data-i18n="auth.tabLogin">ログイン</button>
+      <button id="tabSignup"              data-i18n="auth.tabSignup">新規登録</button>
+    </div>
+
+    <div class="field hidden" id="nameField">
+      <label for="name" data-i18n="auth.name">お名前</label>
+      <input type="text" id="name" maxlength="30" autocomplete="name" data-i18n-attr="placeholder:auth.namePh">
+    </div>
+
+    <div class="field">
+      <label for="email" data-i18n="auth.email">メールアドレス</label>
+      <input type="email" id="email" autocomplete="email" data-i18n-attr="placeholder:auth.emailPh">
+    </div>
+
+    <div class="field">
+      <label for="password" data-i18n="auth.password">パスワード</label>
+      <input type="password" id="password" autocomplete="current-password" data-i18n-attr="placeholder:auth.passwordPh">
+    </div>
+
+    <button class="submit" id="submitBtn" data-i18n="auth.login">ログイン</button>
+
+    <p class="message" id="message"></p>
+
+    <p class="switch">
+      <span id="switchText" data-i18n="auth.toSignup">アカウントをお持ちでない方</span>
+      <button id="switchBtn" data-i18n="auth.tabSignup">新規登録</button>
+    </p>
+
+  </div>
+
+<script src="i18n.js"></script>
+<script type="module">
+  import { signUp, logIn, onUser, errorKey } from './auth.js';
+
+  const t = (k) => TriArk.i18n.t(k);
+  const q = () => '?lang=' + TriArk.i18n.get();
+
+  let mode = 'login';   // 'login' | 'signup'
+
+  /* 登録・ログイン後に戻る先。
+     ?next=host-profile.html のように渡される。
+     外部サイトへ飛ばされないよう、同じフォルダの .html だけを許す。 */
+  function nextUrl() {
+    const raw = new URLSearchParams(location.search).get('next');
+    const safe = (raw && /^[a-zA-Z0-9_-]+\.html(\?[^#]*)?$/.test(raw)) ? raw : 'index.html';
+    return safe + (safe.indexOf('?') === -1 ? '?' : '&') + 'lang=' + TriArk.i18n.get();
+  }
+
+  const els = {
+    lead      : document.getElementById('lead'),
+    tabLogin  : document.getElementById('tabLogin'),
+    tabSignup : document.getElementById('tabSignup'),
+    nameField : document.getElementById('nameField'),
+    name      : document.getElementById('name'),
+    email     : document.getElementById('email'),
+    password  : document.getElementById('password'),
+    submit    : document.getElementById('submitBtn'),
+    message   : document.getElementById('message'),
+    switchText: document.getElementById('switchText'),
+    switchBtn : document.getElementById('switchBtn')
+  };
+
+  /* ---- 画面をモードに合わせる ---- */
+  function applyMode(next) {
+    mode = next;
+    const signup = (mode === 'signup');
+
+    els.tabLogin.classList.toggle('active', !signup);
+    els.tabSignup.classList.toggle('active', signup);
+    els.nameField.classList.toggle('hidden', !signup);
+
+    els.lead.setAttribute('data-i18n', signup ? 'auth.signupLead' : 'auth.loginLead');
+    els.submit.setAttribute('data-i18n', signup ? 'auth.signup' : 'auth.login');
+    els.switchText.setAttribute('data-i18n', signup ? 'auth.toLogin' : 'auth.toSignup');
+    els.switchBtn.setAttribute('data-i18n', signup ? 'auth.tabLogin' : 'auth.tabSignup');
+    els.password.setAttribute('autocomplete', signup ? 'new-password' : 'current-password');
+
+    clearMessage();
+    TriArk.i18n.set(TriArk.i18n.get());   // 文言を貼り直す
+  }
+
+  function showMessage(key, kind) {
+    els.message.textContent = t(key);
+    els.message.className = 'message ' + (kind || 'error');
+  }
+  function clearMessage() {
+    els.message.textContent = '';
+    els.message.className = 'message';
+  }
+
+  els.tabLogin .addEventListener('click', () => applyMode('login'));
+  els.tabSignup.addEventListener('click', () => applyMode('signup'));
+  els.switchBtn.addEventListener('click', () => applyMode(mode === 'login' ? 'signup' : 'login'));
+
+  /* ---- 送信 ---- */
+  async function submit() {
+    const email = els.email.value.trim();
+    const password = els.password.value;
+    const name = els.name.value.trim();
+
+    if (!email || !password || (mode === 'signup' && !name)) {
+      showMessage('auth.err.required');
+      return;
+    }
+
+    els.submit.disabled = true;
+    showMessage('auth.processing', 'info');
+
+    try {
+      if (mode === 'signup') {
+        await signUp(name, email, password);
+      } else {
+        await logIn(email, password);
+      }
+      location.href = nextUrl();
+    } catch (e) {
+      console.error(e);
+      showMessage(errorKey(e));
+      els.submit.disabled = false;
+    }
+  }
+
+  els.submit.addEventListener('click', submit);
+  [els.name, els.email, els.password].forEach(el => {
+    el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') submit(); });
+  });
+
+  /* ---- 起動時 ---- */
+  // URL に ?mode=signup が付いていれば新規登録で開く
+  const wanted = new URLSearchParams(location.search).get('mode');
+  applyMode(wanted === 'signup' ? 'signup' : 'login');
+
+  // 既にログイン済みならトップへ戻す
+  onUser(({ user }) => {
+    if (user) location.href = nextUrl();
+  });
+</script>
+</body>
+</html>

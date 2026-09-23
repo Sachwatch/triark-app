@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.listings.title">体験をさがす — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  :root{
+    --sea:#0B3A5B; --sea-deep:#061F31; --sun:#E8452B; --earth:#C97B3C;
+    --sand:#F4EDE2; --paper:#FBF8F4; --ink-40:#6b7d8a; --ink-25:#8c9aa6; --line:rgba(10,22,34,.14); --ink:#0A1622; --mist:#8FA6B5; --cyan:#00B4C8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+
+  .hero{padding:54px 6vw 30px;text-align:center}
+  .hero .eyebrow{font-size:12px;letter-spacing:.4em;color:var(--sun);font-family:"Helvetica Neue",sans-serif;font-weight:700;margin-bottom:14px;text-transform:uppercase}
+  .hero h1{font-size:clamp(28px,5vw,42px);letter-spacing:.06em;margin-bottom:12px;font-weight:700;color:var(--ink)}
+  .hero p{font-size:15px;line-height:2;color:var(--ink-40)}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 24px 90px}
+
+  .tabs{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:36px}
+  .tabs button{
+    border:1.5px solid var(--line);background:transparent;color:var(--ink);
+    border-radius:22px;padding:9px 24px;font-size:14px;cursor:pointer;
+    font-family:"Helvetica Neue",sans-serif;letter-spacing:.06em;transition:all .2s;
+  }
+  .tabs button.on{background:var(--sun);border-color:var(--sun);color:#fff}
+
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:26px}
+  a.card{text-decoration:none;color:inherit;display:flex;height:100%}
+  .card{background:#fff;border:1px solid var(--line);border-radius:3px;overflow:hidden;transition:transform .25s,box-shadow .25s;display:flex;flex-direction:column;width:100%}
+  .card:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(10,22,34,.12)}
+  .card-img{height:200px;background:#e6e0d6 center/cover no-repeat;flex-shrink:0}
+  .card-body{padding:22px 22px 20px;flex:1;display:flex;flex-direction:column}
+  .card-body .loc{font-size:11px;letter-spacing:.22em;color:#9A5A26;font-family:"Helvetica Neue",sans-serif;margin-bottom:10px;text-transform:uppercase}
+  .card-body h3{font-size:19px;line-height:1.6;margin-bottom:10px;color:var(--ink);font-weight:700}
+  .card-body p{font-size:13px;line-height:1.9;color:var(--ink-40);margin-bottom:16px}
+  .card-body .meta{display:flex;justify-content:space-between;align-items:center;font-family:"Helvetica Neue",sans-serif;font-size:12px;color:var(--ink-40);border-top:1px solid var(--line);padding-top:14px;margin-top:auto}
+  .card-body .price{color:var(--ink);font-weight:600}
+
+  .state{padding:60px 0;text-align:center;color:var(--ink-40);font-size:15px;line-height:2}
+  .count{text-align:center;font-size:13px;color:var(--ink-40);font-family:"Helvetica Neue",sans-serif;margin-bottom:24px}
+  .hidden{display:none !important}
+  @media(max-width:600px){.wrap{padding:28px 20px 70px}}
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+
+  <div class="hero">
+    <p class="eyebrow">EXPERIENCES</p>
+    <h1 data-i18n="listings.title">体験をさがす</h1>
+    <p data-i18n="listings.lead"></p>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs" id="tabs"></div>
+    <p class="count" id="count"></p>
+    <p class="state" id="state" data-i18n="common.loading">読み込み中…</p>
+    <div class="card-grid" id="grid"></div>
+  </div>
+
+<script src="i18n.js"></script>
+<script type="module">
+  import { loadPublished, cardHtml } from './listings-shared.js';
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const el = (id) => document.getElementById(id);
+  const TYPES = ['all','land','sea','air'];
+
+  let items = [];
+  let picked = new URLSearchParams(location.search).get('type') || 'all';
+
+  function buildTabs() {
+    el('tabs').innerHTML = TYPES.map(c =>
+      '<button class="' + (picked === c ? 'on' : '') + '" data-type="' + c + '">' +
+      (c === 'all' ? t('listings.all') : t('listing.type.' + c)) + '</button>'
+    ).join('');
+    el('tabs').querySelectorAll('button').forEach(b =>
+      b.addEventListener('click', () => { picked = b.dataset.type; buildTabs(); render(); })
+    );
+  }
+
+  function render() {
+    const lang = TriArk.i18n.get();
+    const shown = picked === 'all' ? items : items.filter(i => (i.data.type || 'land') === picked);
+
+    if (!shown.length) {
+      el('state').textContent = t('listings.empty');
+      el('state').classList.remove('hidden');
+      el('grid').innerHTML = '';
+      el('count').textContent = '';
+      return;
+    }
+    el('state').classList.add('hidden');
+    el('count').textContent = shown.length + ' ' + t('listings.count');
+    el('grid').innerHTML = shown.map(i => cardHtml(i, lang, t)).join('');
+  }
+
+  (async () => {
+    try { items = await loadPublished(); }
+    catch (e) { console.error(e); items = []; }
+    buildTabs();
+    render();
+    TriArk.i18n.onChange(() => { buildTabs(); render(); });
+  })();
+</script>
+</body>
+</html>

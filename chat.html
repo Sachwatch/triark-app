@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.chat.title">やりとり — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  html,body{height:100%}
+  body{background:#fff;color:var(--ink);display:flex;flex-direction:column}
+
+  /* 上部 */
+
+  /* 予約の見出し */
+  .head{background:#fff;padding:15px 5vw;flex-shrink:0;border-bottom:1px solid var(--line)}
+  .head .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:5px}
+  .head h1{font-size:17px;color:var(--ink);font-weight:700;letter-spacing:.03em}
+  .head .meta{font-size:12px;color:var(--ink-40);font-family:var(--sans);line-height:1.8}
+  /* 天気と警報 */
+  .wx{padding:10px 5vw;background:#F7F5F1;border-bottom:1px solid var(--line);flex-shrink:0;font-family:var(--sans)}
+  .wx .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-60)}
+  .wx .now{display:flex;align-items:center;gap:7px;color:var(--ink)}
+  .wx .now b{font-size:15px}
+  .wx .alert{display:flex;align-items:center;gap:8px;font-size:13px}
+  .wx .alert .pill{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;letter-spacing:.06em}
+  .wx .alert.lv0 .pill{background:rgba(31,122,90,.14);color:#1F7A5A}
+  .wx .alert.lv1 .pill{background:rgba(201,123,60,.18);color:#9A5A26}
+  .wx .alert.lv2 .pill{background:rgba(232,69,43,.15);color:#C0392B}
+  .wx .alert.lv3 .pill{background:#C0392B;color:#fff}
+  .wx .names{color:var(--ink);font-weight:600}
+  .wx .place{color:var(--ink-60);font-size:12px}
+  .wx .judge{font-size:11px;color:var(--ink-40);margin-top:5px}
+  .wx .src{font-size:10px;color:var(--ink-25);margin-top:4px}
+
+  /* 会話 */
+  .thread{flex:1;overflow-y:auto;padding:26px 5vw;display:flex;flex-direction:column;gap:14px;background:#fff}
+  /* 相手の発言はアイコンと並べる */
+  .line{display:flex;gap:10px;align-items:flex-end;max-width:min(80%,580px)}
+  .line.me{align-self:flex-end;flex-direction:row-reverse}
+  .ava{
+    width:34px;height:34px;border-radius:50%;flex-shrink:0;
+    background:var(--sea) center/cover no-repeat;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:14px;margin-bottom:18px;
+  }
+  .ava.blank{background:none}
+
+  .msg{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .msg.me{align-items:flex-end}
+  .msg .bubble{
+    padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.9;
+    background:#F1EEE8;color:var(--ink);white-space:pre-wrap;word-break:break-word;
+  }
+  .msg.me .bubble{background:var(--sea);color:#fff}
+  .msg .when{font-size:10.5px;color:var(--ink-25);font-family:var(--sans);letter-spacing:.04em}
+  .msg .when .read{color:#087C8B;margin-left:8px}
+
+  .sys{
+    align-self:center;text-align:center;font-size:12px;color:var(--ink-40);
+    font-family:var(--sans);letter-spacing:.06em;padding:8px 18px;
+    background:#F4F1EB;border-radius:20px;max-width:90%;
+  }
+
+  /* 予約の操作 */
+  .actions{padding:14px 5vw;background:#FBF9F5;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+  .actions .note{font-size:12px;color:var(--ink-40);font-family:var(--sans)}
+  .actions button{
+    border:none;border-radius:3px;padding:11px 22px;font-size:13px;font-weight:600;
+    letter-spacing:.06em;cursor:pointer;font-family:"Helvetica Neue",sans-serif;
+  }
+  .actions .go{background:var(--sun);color:#fff}
+  .actions .sub{background:transparent;color:var(--ink-40);border:1px solid var(--line)}
+  .actions button:disabled{opacity:.5;cursor:default}
+
+  /* 入力 */
+  .composer{padding:14px 5vw 20px;background:#fff;border-top:1px solid var(--line);display:flex;gap:12px;align-items:flex-end;flex-shrink:0}
+  .composer textarea{
+    flex:1;resize:none;min-height:48px;max-height:140px;padding:13px 15px;
+    background:#F7F5F1;border:1px solid var(--line);border-radius:4px;
+    color:var(--ink);font-size:15px;font-family:inherit;line-height:1.7;
+  }
+  .composer textarea:focus{outline:none;border-color:var(--sun)}
+  .composer button{
+    background:var(--sun);color:#fff;border:none;border-radius:4px;padding:14px 26px;
+    font-size:14px;font-weight:600;cursor:pointer;font-family:"Helvetica Neue",sans-serif;letter-spacing:.06em;
+  }
+  .composer button:disabled{opacity:.5;cursor:default}
+
+  .state{padding:80px 24px;text-align:center;color:var(--ink-40);font-size:15px}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+  <div class="crumb-bar"><a class="crumb" href="messages.html">← <span data-i18n="nav.messages">メッセージ</span></a></div>
+
+  <p class="state" id="state" data-i18n="common.loading">読み込み中…</p>
+
+  <div class="head hidden" id="head">
+    <div class="row">
+      <span class="badge" id="statusBadge"></span>
+      <h1 id="title"></h1>
+    </div>
+    <p class="meta" id="meta"></p>
+  </div>
+
+  <div class="wx hidden" id="wx">
+    <div class="row">
+      <span class="now" id="wxNow"></span>
+      <span class="alert" id="wxAlert"></span>
+    </div>
+    <p class="judge hidden" id="wxJudge" data-i18n="alert.judge"></p>
+    <p class="src" data-i18n="wx.source"></p>
+  </div>
+
+  <div class="thread hidden" id="thread"></div>
+
+  <div class="actions hidden" id="actions"></div>
+
+  <div class="composer hidden" id="composer">
+    <textarea id="input" maxlength="2000" rows="1" data-i18n-attr="placeholder:chat.placeholder"></textarea>
+    <button id="sendBtn" data-i18n="chat.send">送信</button>
+  </div>
+
+<script src="i18n.js"></script>
+<script type="module">
+  import { db, onUser } from './auth.js';
+  import {
+    doc, getDoc, updateDoc, addDoc, collection, query, orderBy,
+    onSnapshot, serverTimestamp, arrayRemove
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  import { normalize } from './sessions.js';
+  import { fetchWeather, weatherFace, fetchAlerts, relevant } from './weather.js';
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const el = (id) => document.getElementById(id);
+  const roomId = new URLSearchParams(location.search).get('room');
+
+  let me = null, room = null, booking = null, bookingId = null;
+  let listing = null, otherUser = null, isHost = false;
+  let messages = [];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]
+    ));
+  }
+  function fail(key) {
+    el('state').textContent = t(key || 'chat.notAllowed');
+    el('state').classList.remove('hidden');
+  }
+  function fmtTime(ts) {
+    if (!ts || !ts.toDate) return '';
+    const d = ts.toDate();
+    const lang = TriArk.i18n.get();
+    return d.toLocaleString(lang === 'en' ? 'en-US' : 'ja-JP',
+      { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  function fmtDate(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const lang = TriArk.i18n.get();
+    return d.toLocaleDateString(lang === 'en' ? 'en-US' : 'ja-JP',
+      { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  /* ---------- 天気と警報 ----------
+     体験の座標から今の天気を、都道府県の区分から警報・注意報を取る。
+     催行の可否は機械が決めず、公式情報を示してホストが判断する。 */
+  async function loadWeather() {
+    if (!listing) return;
+    const box = el('wx');
+
+    // 天気
+    if (listing.lat != null && listing.lng != null) {
+      box.classList.remove('hidden');
+      el('wxNow').textContent = t('wx.loading');
+      try {
+        const w = await fetchWeather(listing.lat, listing.lng);
+        const f = weatherFace(w.code);
+        el('wxNow').innerHTML =
+          '<span>' + f.icon + '</span>' +
+          '<b>' + w.temp + '℃</b>' +
+          '<span>' + t(f.key) + '</span>' +
+          '<span>' + t('wx.wind') + ' ' + w.wind + 'km/h</span>';
+      } catch (e) {
+        console.warn(e);
+        el('wxNow').textContent = t('wx.failed');
+      }
+    }
+
+    // 警報・注意報
+    if (!listing.jmaAreaCode) return;
+    box.classList.remove('hidden');
+    el('wxAlert').textContent = t('alert.loading');
+    try {
+      const a = await fetchAlerts(listing.jmaAreaCode, listing.jmaCityCode || '');
+      const mine = relevant(a.names, listing.type || 'land');
+      const shown = mine.length ? mine : a.names;
+
+      const labelKey = a.level === 3 ? 'alert.emergency'
+                     : a.level === 2 ? 'alert.warning'
+                     : a.level === 1 ? 'alert.advisory' : 'alert.none';
+
+      // どの地域の発表かを添える
+      const en = TriArk.i18n.get() === 'en';
+      const pref = en ? (listing.jmaAreaName_en || listing.jmaAreaName || '') : (listing.jmaAreaName || '');
+      const city = en ? (listing.jmaCityName_en || listing.jmaCityName || '') : (listing.jmaCityName || '');
+      const place = en ? [city, pref].filter(Boolean).join(', ') : pref + city;
+
+      el('wxAlert').className = 'alert lv' + a.level;
+      el('wxAlert').innerHTML =
+        (place ? '<span class="place">' + esc(place) + '</span>' : '') +
+        '<span class="pill">' + t(labelKey) + '</span>' +
+        (shown.length ? '<span class="names">' + esc(shown.join('・')) + '</span>' : '');
+
+      el('wxJudge').classList.toggle('hidden', a.level === 0);
+    } catch (e) {
+      console.warn(e);
+      el('wxAlert').textContent = t('alert.failed');
+    }
+  }
+
+  /* ---------- 見出し ---------- */
+  function renderHead() {
+    if (!booking) return;
+    const title = listing ? (TriArk.i18n.pick(listing, 'title').text || '') : '';
+    el('title').textContent = title;
+    el('statusBadge').textContent = t('booking.' + booking.status);
+    el('statusBadge').className = 'badge ' + booking.status;
+    el('meta').textContent = [
+      t('bk.date') + '：' + fmtDate(booking.date),
+      t('bk.people') + '：' + booking.people + t('bk.peopleUnit'),
+      t('bk.total') + '：¥' + Number(booking.priceTotal || 0).toLocaleString(),
+      (isHost ? t('bk.guest') : t('bk.host')) + '：' + ((otherUser && otherUser.name) || '')
+    ].join('　·　');
+  }
+
+  /* ---------- 会話 ---------- */
+  function renderThread() {
+    const otherUid = isHost ? booking.guestId : booking.hostId;
+    const otherRead = room && room.lastRead ? room.lastRead[otherUid] : null;
+
+    // 相手のアイコン（写真が無ければ頭文字）
+    const otherName = (otherUser && otherUser.name) || '';
+    const otherPhoto = (otherUser && otherUser.photoURL) || '';
+    function avatar(show) {
+      if (!show) return '<div class="ava blank"></div>';
+      return otherPhoto
+        ? '<div class="ava" style="background-image:url(\'' + esc(otherPhoto) + '\')"></div>'
+        : '<div class="ava">' + esc(otherName.slice(0, 1)) + '</div>';
+    }
+
+    el('thread').innerHTML = messages.map((m, i) => {
+      const d = m.data;
+      if (d.type === 'system') {
+        return '<div class="sys">' + t('sys.' + (d.code || 'booking_inquiry')) + '</div>';
+      }
+      const mine = d.senderId === me.uid;
+
+      // 同じ人が続けて書いたときは、最初の1通にだけアイコンを出す
+      const prev = messages[i - 1];
+      const sameAsPrev = prev && prev.data.type !== 'system' &&
+                         prev.data.senderId === d.senderId;
+
+      let read = '';
+      if (mine && otherRead && d.createdAt &&
+          otherRead.seconds >= d.createdAt.seconds) {
+        read = '<span class="read">' + t('chat.read') + '</span>';
+      }
+
+      return '<div class="line' + (mine ? ' me' : '') + '">' +
+        (mine ? '' : avatar(!sameAsPrev)) +
+        '<div class="msg' + (mine ? ' me' : '') + '">' +
+          '<div class="bubble">' + esc(d.text) + '</div>' +
+          '<div class="when">' + fmtTime(d.createdAt) + read + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    el('thread').scrollTop = el('thread').scrollHeight;
+  }
+
+  /* ---------- 予約の操作 ---------- */
+  function renderActions() {
+    const box = el('actions');
+    const s = booking.status;
+    let html = '';
+
+    if (s === 'inquiry') {
+      html = isHost
+        ? '<span class="note">' + t('chat.waitingGuest') + '</span>'
+        : '<button class="go" data-act="request">' + t('chat.request') + '</button>';
+    } else if (s === 'requested') {
+      html = isHost
+        ? '<button class="go" data-act="approve">' + t('chat.approve') + '</button>' +
+          '<button class="sub" data-act="decline">' + t('chat.decline') + '</button>'
+        : '<span class="note">' + t('chat.waitingHost') + '</span>' +
+          '<button class="sub" data-act="cancel">' + t('chat.cancel') + '</button>';
+    } else if (s === 'confirmed') {
+      html = '<span class="note">' + t('chat.doneNote') + '</span>' +
+             '<button class="sub" data-act="cancel">' + t('chat.cancel') + '</button>';
+    } else {
+      html = '<span class="note">' + t('chat.closedNote') + '</span>';
+    }
+
+    box.innerHTML = html;
+    box.querySelectorAll('button').forEach(b =>
+      b.addEventListener('click', () => act(b.dataset.act, b))
+    );
+  }
+
+  async function systemMessage(code) {
+    await addDoc(collection(db, 'rooms', roomId, 'messages'), {
+      senderId : me.uid,
+      text     : '',
+      type     : 'system',
+      code     : code,
+      createdAt: serverTimestamp()
+    });
+  }
+
+  async function act(action, btn) {
+    if (action === 'decline' && !confirm(t('chat.confirmDecline'))) return;
+    if (action === 'cancel'  && !confirm(t('chat.confirmCancel')))  return;
+
+    btn.disabled = true;
+    const map = {
+      request : 'requested',
+      approve : 'confirmed',
+      decline : 'declined',
+      cancel  : 'cancelled'
+    };
+    const next = map[action];
+
+    try {
+      const patch = { status: next, updatedAt: serverTimestamp() };
+      if (next === 'confirmed') patch.confirmedAt = serverTimestamp();
+      await updateDoc(doc(db, 'bookings', bookingId), patch);
+
+      // 確定したら、その日は他のゲストに出さない
+      if (next === 'confirmed' && isHost && booking.date && booking.listingId) {
+        const d = booking.date.toDate ? booking.date.toDate() : new Date(booking.date);
+        const key = d.getFullYear() + '-' +
+                    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(d.getDate()).padStart(2, '0');
+        try {
+          const snap = await getDoc(doc(db, 'listings', booking.listingId));
+          if (snap.exists()) {
+            const rest = normalize(snap.data()).filter(sn => sn.start !== key);
+            await updateDoc(doc(db, 'listings', booking.listingId), {
+              sessions : rest,
+              openDates: arrayRemove(key)
+            });
+          }
+        } catch (e) { console.warn('開催日程の更新に失敗', e); }
+      }
+
+      await systemMessage('booking_' + next);
+    } catch (e) {
+      console.error(e);
+      alert(t('chat.actionFailed'));
+      btn.disabled = false;
+    }
+  }
+
+  /* ---------- 送信 ---------- */
+  async function send() {
+    const text = el('input').value.trim();
+    if (!text) return;
+    el('sendBtn').disabled = true;
+    try {
+      await addDoc(collection(db, 'rooms', roomId, 'messages'), {
+        senderId : me.uid,
+        text     : text,
+        type     : 'user',
+        createdAt: serverTimestamp()
+      });
+      await updateDoc(doc(db, 'rooms', roomId), {
+        lastMessage  : text,
+        lastMessageAt: serverTimestamp()
+      });
+      el('input').value = '';
+    } catch (e) {
+      console.error(e);
+      alert(t('chat.actionFailed'));
+    }
+    el('sendBtn').disabled = false;
+    el('input').focus();
+  }
+  el('sendBtn').addEventListener('click', send);
+  el('input').addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)) { ev.preventDefault(); send(); }
+  });
+
+  /* 自分が読んだ時刻を記録する（相手の「既読」表示に使う） */
+  let readTimer = null;
+  function markRead() {
+    clearTimeout(readTimer);
+    readTimer = setTimeout(() => {
+      updateDoc(doc(db, 'rooms', roomId), {
+        ['lastRead.' + me.uid]: serverTimestamp()
+      }).catch(e => console.warn('既読の記録に失敗', e));
+    }, 1200);
+  }
+
+  /* ---------- 起動 ---------- */
+  onUser(async ({ user }) => {
+    if (!user) {
+      location.href = 'login.html?next=' +
+        encodeURIComponent('chat.html?room=' + roomId) + '&lang=' + TriArk.i18n.get();
+      return;
+    }
+    me = user;
+    if (!roomId) { fail(); return; }
+
+    try {
+      const roomSnap = await getDoc(doc(db, 'rooms', roomId));
+      if (!roomSnap.exists()) { fail(); return; }
+      room = roomSnap.data();
+      if (!(room.participants || []).includes(me.uid)) { fail(); return; }
+
+      bookingId = room.bookingId;
+      const bSnap = await getDoc(doc(db, 'bookings', bookingId));
+      if (!bSnap.exists()) { fail(); return; }
+      booking = bSnap.data();
+      isHost = booking.hostId === me.uid;
+
+      const [lSnap, uSnap] = await Promise.all([
+        getDoc(doc(db, 'listings', booking.listingId)),
+        getDoc(doc(db, 'users', isHost ? booking.guestId : booking.hostId))
+      ]);
+      listing   = lSnap.exists() ? lSnap.data() : null;
+      otherUser = uSnap.exists() ? uSnap.data() : null;
+    } catch (e) {
+      console.error(e);
+      fail();
+      return;
+    }
+
+    el('state').classList.add('hidden');
+    ['head','thread','actions','composer'].forEach(x => el(x).classList.remove('hidden'));
+    renderHead();
+    renderActions();
+    loadWeather();
+
+    // メッセージを見張る（相手の書き込みがその場で出る）
+    onSnapshot(
+      query(collection(db, 'rooms', roomId, 'messages'), orderBy('createdAt')),
+      (snap) => {
+        messages = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+        renderThread();
+        markRead();
+      },
+      (e) => console.error(e)
+    );
+
+    // 部屋（既読）を見張る
+    onSnapshot(doc(db, 'rooms', roomId), (snap) => {
+      if (!snap.exists()) return;
+      room = snap.data();
+      if (messages.length) renderThread();
+    });
+
+    // 予約の状態を見張る（相手が承認したらその場で変わる）
+    onSnapshot(doc(db, 'bookings', bookingId), (snap) => {
+      if (!snap.exists()) return;
+      booking = snap.data();
+      renderHead();
+      renderActions();
+    });
+  });
+
+  TriArk.i18n.onChange(() => {
+    if (!booking) return;
+    renderHead(); renderActions(); renderThread(); loadWeather();
+  });
+</script>
+</body>
+</html>

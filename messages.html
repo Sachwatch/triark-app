@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="page.messages.title">メッセージ — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TriArk">
+<meta name="theme-color" content="#0B3A5B">
+<style>
+  body{background:var(--paper);color:var(--ink);min-height:100vh}
+
+
+  .wrap{max-width:760px;margin:0 auto;padding:50px 24px 90px}
+  h1{font-size:clamp(26px,4.6vw,38px);letter-spacing:.05em;font-weight:700;color:var(--ink);margin-bottom:34px}
+
+  .rooms{display:flex;flex-direction:column}
+  .room{
+    display:flex;gap:16px;align-items:center;padding:18px 4px;
+    border-bottom:1px solid var(--line);
+    text-decoration:none;color:inherit;transition:background .18s;
+  }
+  .room:hover{background:rgba(10,22,34,.03)}
+  .room .ava{
+    width:52px;height:52px;border-radius:50%;flex-shrink:0;
+    background:var(--sea) center/cover no-repeat;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;color:#fff;
+  }
+  .room .th{width:52px;height:52px;border-radius:4px;background:#e6e0d6 center/cover no-repeat;flex-shrink:0}
+  .room .body{flex:1;min-width:0}
+  .room .line1{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:5px}
+  .room .who{font-size:17px;color:var(--ink);letter-spacing:.03em}
+  .room .when{font-size:11px;color:var(--ink-25);font-family:var(--sans);flex-shrink:0}
+  .room .title{font-size:12px;color:#9A5A26;font-family:var(--sans);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .room .last{font-size:13px;color:var(--ink-40);font-family:var(--sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .room.unread .last{color:var(--ink);font-weight:600}
+  .room .dot{width:10px;height:10px;border-radius:50%;background:var(--sun);flex-shrink:0}
+  .room .dot.off{background:transparent}
+
+  .hidden{display:none !important}
+  @media(max-width:600px){.wrap{padding:34px 20px 70px}}
+</style>
+</head>
+<body>
+
+  <header class="site-header" id="siteHeader"></header>
+  <script src="header.js"></script>
+
+  <div class="wrap">
+    <p class="eyebrow">MESSAGES</p>
+    <h1 data-i18n="msg.title">メッセージ</h1>
+
+    <p class="state" id="state" data-i18n="common.loading">読み込み中…</p>
+    <div class="rooms" id="rooms"></div>
+  </div>
+
+<script src="i18n.js"></script>
+<script type="module">
+  import { db, onUser } from './auth.js';
+  import { collection, query, where, onSnapshot, doc, getDoc, getDocs }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const t  = (k) => TriArk.i18n.t(k);
+  const el = (id) => document.getElementById(id);
+
+  let me = null, rooms = [];
+  const listingCache = {}, userCache = {};
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]
+    ));
+  }
+  function fmtWhen(ts) {
+    if (!ts || !ts.toDate) return '';
+    const d = ts.toDate();
+    const lang = TriArk.i18n.get();
+    const today = new Date();
+    const sameDay = d.toDateString() === today.toDateString();
+    return sameDay
+      ? d.toLocaleTimeString(lang === 'en' ? 'en-US' : 'ja-JP', { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString(lang === 'en' ? 'en-US' : 'ja-JP', { month: 'numeric', day: 'numeric' });
+  }
+
+  async function fetchListing(id) {
+    if (!id || listingCache[id] !== undefined) return;
+    try {
+      const s = await getDoc(doc(db, 'listings', id));
+      listingCache[id] = s.exists() ? s.data() : null;
+    } catch (e) { listingCache[id] = null; }
+  }
+  async function fetchUser(uid) {
+    if (!uid || userCache[uid] !== undefined) return;
+    try {
+      const s = await getDoc(doc(db, 'users', uid));
+      userCache[uid] = s.exists() ? s.data() : null;
+    } catch (e) { userCache[uid] = null; }
+  }
+
+  /** 相手の最後の書き込みより、自分が読んだ時刻が古ければ未読 */
+  function isUnread(r) {
+    const mine = r.lastRead && r.lastRead[me.uid];
+    if (!r.lastMessageAt) return false;
+    if (!mine) return true;
+    return r.lastMessageAt.seconds > mine.seconds;
+  }
+
+  function render() {
+    const lang = TriArk.i18n.get();
+    el('state').classList.toggle('hidden', rooms.length > 0);
+    if (!rooms.length) { el('state').textContent = t('msg.empty'); el('rooms').innerHTML = ''; return; }
+
+    el('rooms').innerHTML = rooms.map(r => {
+      const other = (r.participants || []).find(u => u !== me.uid);
+      const u = userCache[other] || {};
+      const L = listingCache[r.listingId] || {};
+      const title = TriArk.i18n.pick(L, 'title').text || '';
+      const img = (L.images && L.images[0]) ? L.images[0] : '';
+      const unread = isUnread(r);
+
+      const name = u.name || '';
+      const ava = u.photoURL
+        ? '<div class="ava" style="background-image:url(\'' + esc(u.photoURL) + '\')"></div>'
+        : '<div class="ava">' + esc(name.slice(0, 1)) + '</div>';
+
+      return '<a class="room' + (unread ? ' unread' : '') + '" href="chat.html?room=' + esc(r.id) + '&lang=' + lang + '">' +
+        ava +
+        '<div class="th"' + (img ? ' style="background-image:url(\'' + esc(img) + '\')"' : '') + '></div>' +
+        '<div class="body">' +
+          '<div class="line1">' +
+            '<span class="who">' + esc(name) + '</span>' +
+            '<span class="when">' + fmtWhen(r.lastMessageAt) + '</span>' +
+          '</div>' +
+          '<div class="title">' + esc(title) + '</div>' +
+          '<div class="last">' + esc(r.lastMessage || t('msg.system')) + '</div>' +
+        '</div>' +
+        '<span class="dot' + (unread ? '' : ' off') + '"></span>' +
+      '</a>';
+    }).join('');
+  }
+
+  onUser(({ user }) => {
+    if (!user) {
+      location.href = 'login.html?next=messages.html&lang=' + TriArk.i18n.get();
+      return;
+    }
+    me = user;
+
+    /* 自分の予約から、対応する会話をたどる。
+       会話そのものを一覧で引くより確実で、権限の条件も単純になる。 */
+    (async () => {
+      let roomIds = [];
+      try {
+        const [g, h] = await Promise.all([
+          getDocs(query(collection(db, 'bookings'), where('guestId', '==', user.uid))),
+          getDocs(query(collection(db, 'bookings'), where('hostId',  '==', user.uid)))
+        ]);
+        const seen = {};
+        g.docs.concat(h.docs).forEach(d => {
+          const rid = d.data().roomId;
+          if (rid && !seen[rid]) { seen[rid] = true; roomIds.push(rid); }
+        });
+      } catch (e) {
+        console.error(e);
+        el('state').textContent = '読み込みに失敗しました：' + (e.code || e.message || e);
+        el('state').style.color = '#FF8B76';
+        el('state').classList.remove('hidden');
+        return;
+      }
+
+      if (!roomIds.length) { rooms = []; render(); return; }
+
+      const byId = {};
+      roomIds.forEach(rid => {
+        // 1部屋ずつ見張る。新しい書き込みがあればその場で並び替わる
+        onSnapshot(doc(db, 'rooms', rid), async (snap) => {
+          if (!snap.exists()) return;
+          byId[rid] = { id: rid, ...snap.data() };
+          rooms = Object.values(byId).sort((a, b) =>
+            (b.lastMessageAt?.seconds || 0) - (a.lastMessageAt?.seconds || 0));
+
+          await Promise.all([
+            ...rooms.map(r => fetchListing(r.listingId)),
+            ...rooms.map(r => fetchUser((r.participants || []).find(u => u !== me.uid)))
+          ]);
+          render();
+        }, (e) => console.error(e));
+      });
+    })();
+  });
+
+  TriArk.i18n.onChange(() => { if (me) render(); });
+</script>
+</body>
+</html>
