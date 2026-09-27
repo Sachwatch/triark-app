@@ -22,21 +22,64 @@
   body{font-family:"Yu Mincho","Hiragino Mincho ProN",serif;background:var(--sea-deep);color:var(--sand);min-height:100vh}
 
 
-  .cover{height:min(52vh,460px);background:#123 center/cover no-repeat;position:relative}
-  .cover::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(6,31,49,.15),rgba(6,31,49,.9))}
+  .wrap{max-width:820px;margin:0 auto;padding:34px 24px 90px;position:relative;z-index:2}
 
-  .wrap{max-width:820px;margin:-90px auto 0;padding:0 24px 90px;position:relative;z-index:2}
+  /* 題名の下に並べる3枚。
+     1枚目＝この体験の写真、2枚目＝ホストの Ark、3枚目＝入れた順の次の1枚。
+     暗くする加工はしない。写真はそのままの明るさで見せる */
+  /* 1枚目を大きく、残り2枚を右に積む。この体験の写真が主役なので、ここをいちばん大きく見せる */
+  .shots{
+    display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;
+    gap:8px;margin-bottom:34px;aspect-ratio:3/2;
+  }
+  .shots .shot:first-child{grid-row:1 / span 2}
+  .shots.n1{grid-template-columns:1fr;grid-template-rows:1fr}
+  .shots.n2{grid-template-columns:1fr 1fr;grid-template-rows:1fr}
+  .shots.n1 .shot:first-child,
+  .shots.n2 .shot:first-child{grid-row:auto}
+  .shots .shot{position:relative;border-radius:3px;overflow:hidden;background:#0f2a40}
+  .shots .shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .more{
+    position:absolute;right:10px;bottom:10px;z-index:2;cursor:pointer;
+    background:rgba(6,31,49,.86);color:var(--sand);border:1px solid rgba(244,237,226,.4);
+    border-radius:3px;padding:8px 14px;font-size:12px;font-weight:600;letter-spacing:.04em;
+    font-family:"Helvetica Neue",sans-serif;
+  }
+  .more:hover{background:var(--sea);border-color:var(--sand)}
+  /* 狭い画面では、1枚目を大きく、残り2枚を下に並べる */
+  @media(max-width:600px){
+    .shots{aspect-ratio:auto;grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+    .shots .shot{aspect-ratio:4/3}
+    .shots .shot:first-child{grid-column:1 / -1;grid-row:auto;aspect-ratio:3/2}
+  }
 
   .kicker{font-size:11px;letter-spacing:.26em;color:var(--earth);font-family:"Helvetica Neue",sans-serif;text-transform:uppercase;margin-bottom:14px}
   h1{font-size:clamp(26px,4.6vw,40px);line-height:1.45;color:#fff;font-weight:700;letter-spacing:.04em;margin-bottom:16px}
-  .facts{display:flex;flex-wrap:wrap;gap:10px 22px;font-family:"Helvetica Neue",sans-serif;font-size:13px;color:var(--mist);margin-bottom:34px}
-  .facts .fee{color:var(--sand);font-weight:600;font-size:15px}
+  /* 定員・貸切・料金の一行。
+     大きさや書体が項目ごとに違うとバラバラに見えるので、すべて同じにして
+     文字の足もと（ベースライン）を揃える。料金だけは色と太さで際立たせる。 */
+  .facts{
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 0;
+    font-family:"Helvetica Neue",sans-serif;font-size:13px;line-height:1.9;
+    color:var(--mist);margin-bottom:34px;
+  }
+  /* 区切りの点は入れない。狭い画面で折り返したとき、
+     行の先頭に点だけが残ってしまうため。間隔で分ける */
+  .facts{gap:4px 22px}
+  .facts .fee{color:var(--sand);font-weight:600}
 
   .block{background:rgba(244,237,226,.05);border:1px solid rgba(244,237,226,.12);border-radius:3px;padding:28px;margin-bottom:22px}
   .block h2{font-size:12px;letter-spacing:.2em;color:var(--earth);font-family:"Helvetica Neue",sans-serif;font-weight:700;margin-bottom:16px;text-transform:uppercase}
   .desc{font-size:16px;line-height:2.1;white-space:pre-wrap}
 
   .host-row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+  /* ホストの顔。写真が無ければ名前の頭文字を出す */
+  .h-ava{
+    width:76px;height:76px;border-radius:50%;flex-shrink:0;overflow:hidden;
+    background:#3d5a6c center/cover no-repeat;text-decoration:none;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font:600 30px/1 "Helvetica Neue",sans-serif;
+  }
   .host-row .who{flex:1;min-width:220px}
   .host-row .name{font-size:21px;color:#fff;margin-bottom:8px}
   .host-row .headline{font-size:14px;line-height:1.9;color:var(--sand);margin-bottom:10px}
@@ -49,7 +92,21 @@
   .map-box{border:1px solid rgba(244,237,226,.15);border-radius:3px;overflow:hidden;margin-top:16px}
   .map-box iframe{display:block;width:100%;height:260px;border:0}
 
-  .cta{position:sticky;bottom:0;background:rgba(6,31,49,.96);border-top:1px solid rgba(244,237,226,.15);padding:18px 24px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  /* 画面の下に貼り付く申し込みの帯。
+     以前は背景がほぼ透けていたため、上の細い線だけが本文の途中に浮かんで見えていた。
+     背景をはっきり置き、線のかわりに影で浮かせる。
+     中身は本文と同じ幅（820px）に収めて、上の文章と左端を揃える。 */
+  .cta{
+    position:sticky;bottom:0;z-index:3;
+    background:var(--sea-deep);
+    box-shadow:0 -10px 30px rgba(0,0,0,.45);
+    border-top:1px solid rgba(244,237,226,.10);
+  }
+  .cta-in{
+    max-width:820px;margin:0 auto;padding:16px 24px;
+    display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  }
+  .cta .price{display:flex;flex-direction:column;gap:3px;min-width:0}
   .cta .fee{font-size:17px;color:#fff}
   .cta .fee small{font-size:12px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;margin-left:8px}
   .cta button{
@@ -57,7 +114,7 @@
     font-size:15px;font-weight:600;letter-spacing:.08em;cursor:pointer;font-family:"Helvetica Neue",sans-serif;
   }
   .cta button:disabled{opacity:.45;cursor:default}
-  .cta .note{font-size:11px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;width:100%}
+  .cta .note{font-size:11px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;line-height:1.7}
 
   /* 問い合わせパネル */
   .sheet{position:fixed;inset:0;background:rgba(6,31,49,.86);display:flex;align-items:center;justify-content:center;padding:20px;z-index:300}
@@ -93,6 +150,12 @@
   .ph{break-inside:avoid;margin:0 0 10px}
   .ph img{width:100%;height:auto;min-height:40px;display:block;border-radius:2px;background:#123249}
   @media(max-width:700px){ .ph-grid{columns:1} }
+  /* Ark の写真は、上の写真より控えめに。3枚ずつ横に並べる */
+  .v-veh .ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;columns:auto}
+  .v-veh .ph{position:relative;aspect-ratio:4/3;margin:0;border-radius:3px;overflow:hidden;background:#0f2a40}
+  .v-veh .ph-grid + .ph-grid{margin-top:8px}
+  .v-veh .ph img{width:100%;height:100%;object-fit:cover}
+  @media(max-width:600px){ .v-veh .ph-grid{grid-template-columns:1fr 1fr} }
   .v-veh{margin-bottom:24px}
   .v-veh .n{font-size:15px;font-weight:600;letter-spacing:.03em;color:var(--sand)}
   .v-veh .k{font-size:11px;letter-spacing:.14em;color:var(--earth);font-family:"Helvetica Neue",sans-serif;font-weight:600;margin-bottom:3px}
@@ -108,7 +171,7 @@
   .textlink:hover{color:var(--sun)}
   .cal{--cal-fg:var(--sand);--cal-muted:rgba(244,237,226,.4);--cal-line:rgba(244,237,226,.22);margin-bottom:6px}
   .cal-hint{font-size:12px;color:var(--mist);font-family:"Helvetica Neue",sans-serif;margin-bottom:16px}
-  @media(max-width:600px){.wrap{margin-top:-60px;padding:0 20px 80px}}
+  @media(max-width:600px){.wrap{padding:24px 20px 80px}}
 </style>
 </head>
 <body>
@@ -120,21 +183,29 @@
   <p class="state" id="state" data-i18n="common.loading">読み込み中…</p>
 
   <div id="main" class="hidden">
-    <div class="cover" id="cover"></div>
-
     <div class="wrap">
       <p class="kicker" id="kicker"></p>
       <h1 id="title"></h1>
       <div class="facts" id="facts"></div>
+
+      <!-- 写真3枚。押すと画面いっぱいで見られる -->
+      <div class="shots hidden" id="shots"></div>
 
       <div class="block">
         <h2 data-i18n="detail.about">この体験について</h2>
         <p class="desc" id="desc"></p>
       </div>
 
+      <!-- 「すべての写真を表示」を押したときに現れる。最初は畳んである -->
+      <div class="block hidden" id="photoBlock">
+        <h2 data-i18n="detail.photos">写真</h2>
+        <div class="ph-grid" id="photoGrid"></div>
+      </div>
+
       <div class="block">
         <h2 data-i18n="detail.hostedBy">案内するホスト</h2>
         <div class="host-row">
+          <a class="h-ava" id="hostAva" href="#"></a>
           <div class="who">
             <p class="name" id="hostName"></p>
             <p class="headline" id="hostHeadline"></p>
@@ -185,9 +256,16 @@
     </div>
 
     <div class="cta">
-      <p class="fee" id="ctaFee"></p>
-      <button id="inquireBtn" disabled data-i18n="detail.inquire">問い合わせる</button>
-      <p class="note" data-i18n="detail.inquireSoon"></p>
+      <div class="cta-in">
+        <div class="price">
+          <p class="fee" id="ctaFee"></p>
+          <!-- 中身は script が入れる。
+               「これはあなた自身の体験です」など、その時々の一言を出す場所。
+               空でも消してはいけない（script がこの場所を探しにくる） -->
+          <p class="note" id="ctaNote"></p>
+        </div>
+        <button id="inquireBtn" disabled data-i18n="detail.inquire">問い合わせる</button>
+      </div>
     </div>
   </div>
 
@@ -229,6 +307,9 @@
 <script src="lightbox.js"></script>
 <script type="module">
   import { db, onUser, getUser } from './auth.js';
+  /* 地図の鍵。config.js に mapsEmbedKey があれば使う。
+     まとめて読み込むので、その欄が無くてもページは止まらない */
+  import * as CFG from './config.js';
   import {
     doc, getDoc, addDoc, updateDoc, collection, serverTimestamp,
     query, where, getDocs
@@ -244,13 +325,99 @@
 
   let listing = null, host = null, hostUser = null;
 
+  /* 地図に何を出すか決める
+     ・陸で、出発地と行き先が両方そろっていれば → 道のりを線で描く
+     ・それ以外（海・空、行き先が無い）        → 場所を1つ出すだけ
+       海と空には道路が無いので、道のりは出せない。図（●─●─●）の方で見せる。
+     鍵が無いときは、これまでどおり鍵なしの地図にする（何も壊さないため） */
+  const MAPS_KEY = (CFG && CFG.mapsEmbedKey) || '';
+
+  function mapEmbedSrc(d, lang) {
+    const from = (d.lat != null && d.lng != null) ? d.lat + ',' + d.lng : '';
+    const to   = (d.destLat != null && d.destLng != null)
+      ? d.destLat + ',' + d.destLng
+      : (d.destName || '');
+    const hl = (lang === 'en') ? 'en' : 'ja';
+
+    /* region=JP … 同じ名前の場所が世界中にあるとき、日本を優先させる。
+       これが無いと「勝どき」や「大島」が海外の同名の土地になることがある */
+    const tail = '&language=' + hl + '&region=JP';
+
+    if (MAPS_KEY && (d.type || 'land') === 'land' && from && to) {
+      const via = (d.via || []).filter(Boolean).slice(0, 5);
+      return 'https://www.google.com/maps/embed/v1/directions' +
+             '?key=' + encodeURIComponent(MAPS_KEY) +
+             '&origin=' + encodeURIComponent(from) +
+             '&destination=' + encodeURIComponent(to) +
+             (via.length ? '&waypoints=' + via.map(encodeURIComponent).join('%7C') : '') +
+             '&mode=driving' + tail;
+    }
+    if (MAPS_KEY) {
+      /* 海と空は道のりを描けない。
+         ゲストが実際に向かうのは集合場所なので、そちらを映す。
+         出発地は座標を持っているので、別の土地と取り違えることもない。 */
+      const q = ((d.type || 'land') === 'land') ? (to || from) : (from || to);
+      if (q) {
+        return 'https://www.google.com/maps/embed/v1/place' +
+               '?key=' + encodeURIComponent(MAPS_KEY) +
+               '&q=' + encodeURIComponent(q) +
+               '&zoom=13' + tail;
+      }
+    }
+    return from ? 'https://maps.google.com/maps?q=' + from + '&z=14&output=embed' : '';
+  }
+
+  /* この体験に合う Ark を選ぶ。同じ種別を優先し、無ければすべて */
+  function arkOf(d) {
+    if (!host) return [];
+    const all = TriArk.i18n.pickObjList(host, 'vehicles', ['name', 'note']);
+    const same = all.filter(v => (v.type || 'land') === (d.type || 'land'));
+    return same.length ? same : all;
+  }
+
   function render() {
     if (!listing) return;
     const lang = TriArk.i18n.get();
     const d = listing;
 
-    const img = (d.images && d.images[0]) ? d.images[0] : '';
-    if (img) el('cover').style.backgroundImage = "url('" + img + "')";
+    /* ---- 写真 ----
+       題名の下に3枚だけ並べる。
+         1枚目 … この体験の写真（一覧に出るもの）
+         2枚目 … ホストの Ark
+         3枚目 … 体験の写真の続き（入れた順）
+       残りは「すべての写真を表示」を押すと下に開く。 */
+    const imgs = (d.images || []).filter(Boolean);
+    const ark  = arkOf(d).reduce((a, v) => a.concat((v.photos || []).filter(Boolean)), []);
+
+    /* 並べる順。Ark は「最初の1枚だけ」ここに混ぜる。
+       残りの Ark の写真は、下の Ark の欄で見てもらう */
+    const all = [imgs[0], ark[0]].concat(imgs.slice(1))
+      .filter(Boolean)
+      .filter((u, i, a) => a.indexOf(u) === i);
+
+    const strip = all.slice(0, 3);
+    const rest  = all.length > strip.length;
+    el('shots').innerHTML = strip.map((u, i) =>
+      '<div class="shot" data-full="' + esc(u) + '">' +
+        '<img src="' + esc(u) + '" alt="" loading="lazy">' +
+        ((rest && i === strip.length - 1)
+          ? '<button type="button" class="more" id="showAll">' + esc(t('detail.allPhotos')) + '</button>'
+          : '') +
+      '</div>').join('');
+    el('shots').className = 'shots' + (strip.length === 1 ? ' n1' : strip.length === 2 ? ' n2' : '');
+    el('shots').classList.toggle('hidden', !strip.length);
+
+    const more = el('showAll');
+    if (more) more.addEventListener('click', () => {
+      el('photoBlock').classList.remove('hidden');
+      el('photoBlock').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    el('photoGrid').innerHTML = all.map(u =>
+      '<div class="ph" data-full="' + esc(u) + '">' +
+        '<img src="' + esc(u) + '" alt="" loading="lazy">' +
+      '</div>').join('');
+    el('photoBlock').classList.add('hidden');
 
     el('kicker').textContent = t('listing.type.' + (d.type || 'land'));
     el('title').textContent  = TriArk.i18n.pick(d, 'title').text || '';
@@ -284,27 +451,52 @@
     const place = picked.text +
       ((lang === 'ja' && d.addressLabel) ? '（' + d.addressLabel + '）' : '');
     el('placeText').textContent = place;
-    if (d.lat != null && d.lng != null) {
-      el('mapFrame').src = 'https://maps.google.com/maps?q=' + d.lat + ',' + d.lng + '&z=14&output=embed';
+    const mapSrc = mapEmbedSrc(d, lang);
+    if (mapSrc) {
+      el('mapFrame').src = mapSrc;
       el('mapBox').classList.remove('hidden');
+    } else {
+      el('mapBox').classList.add('hidden');
     }
     // ホストの Ark（プロフィールにあるものを、そのまま見せる）
     if (host) {
       const hostFirst = String((hostUser && hostUser.name) || '').trim().split(/[\s\u3000]+/)[0] || '';
       el('hostVehHead').textContent = hostFirst
         ? t('veh.of').replace('{name}', hostFirst) : t('veh.hostVehicle');
-      const all = TriArk.i18n.pickObjList(host, 'vehicles', ['name', 'note']);
-      // この体験と同じ種別のものを優先し、無ければすべて出す
-      const same = all.filter(v => (v.type || 'land') === (d.type || 'land'));
-      const vehs = same.length ? same : all;
-      el('hostVeh').innerHTML = vehs.map(v =>
-        '<div class="v-veh">' +
-          '<p class="k">' + esc(t('listing.type.' + (v.type || 'land'))) + '</p>' +
+      const vehs = arkOf(d);
+      /* 写真は3枚だけ出す。4枚目からは、押して開く。
+         中途半端に2段目が欠けて並ぶと、見た目が寂しくなるため */
+      const tile = (u) =>
+        '<div class="ph" data-full="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy">';
+
+      el('hostVeh').innerHTML = vehs.map((v, vi) => {
+        const ps   = (v.photos || []).filter(Boolean);
+        const head = ps.slice(0, 3);
+        const more = ps.slice(3);
+        return '<div class="v-veh">' +
+          /* 陸・海・空は題名の上にも出ていて、写真を見れば分かるので、ここには書かない */
           '<p class="n">' + esc(v.name || '') + '</p>' +
           (v.note ? '<p class="note">' + esc(v.note) + '</p>' : '') +
-          '<div class="ph-grid">' + (v.photos || []).map(u =>
-            '<div class="ph" data-full="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy"></div>').join('') + '</div>' +
-        '</div>').join('');
+          '<div class="ph-grid">' + head.map((u, i) =>
+            tile(u) +
+            ((more.length && i === head.length - 1)
+              ? '<button type="button" class="more" data-veh="' + vi + '">' + esc(t('detail.allPhotos')) + '</button>'
+              : '') +
+            '</div>').join('') + '</div>' +
+          (more.length
+            ? '<div class="ph-grid hidden" data-rest="' + vi + '">' +
+                more.map(u => tile(u) + '</div>').join('') + '</div>'
+            : '') +
+        '</div>';
+      }).join('');
+
+      el('hostVeh').querySelectorAll('button.more').forEach(b =>
+        b.addEventListener('click', () => {
+          const box = el('hostVeh').querySelector('[data-rest="' + b.dataset.veh + '"]');
+          if (box) box.classList.remove('hidden');
+          b.remove();
+        }));
+
       el('hostVehBlock').classList.toggle('hidden', !vehs.length);
     }
 
@@ -337,18 +529,41 @@
 
     el('placeBlock').classList.toggle('hidden', !place && d.lat == null);
 
-    // ホスト
+    /* ---- ホスト ----
+       ここは「プロフィールへの入口」なので、何があってもリンクだけは必ず張る。
+       いちばん先に行き先を入れておき、そのあとで中身を埋める。
+       途中で何かが欠けても、リンクは生きたまま残る。 */
+    const hostHref = 'profile.html?uid=' + esc(d.hostId) + '&lang=' + lang;
+    const ava = el('hostAva');
+    if (ava) ava.href = hostHref;
+    el('hostLink').href = hostHref;
+
     if (hostUser) {
-      el('hostName').textContent = hostUser.name || '';
-      const langs = Object.keys(hostUser.languages || {})
-        .map(c => t('lang.' + c) + '（' + t('level.' + hostUser.languages[c]) + '）').join(' / ');
-      const based = host ? TriArk.i18n.pick(host, 'basedIn').text : '';
+      const nm = String(hostUser.name || '').trim();
+      el('hostName').textContent = nm;
+
+      // 顔写真。無ければ名前の頭文字を丸の中に出す
+      if (ava) {
+        if (hostUser.photoURL) {
+          ava.style.backgroundImage = "url('" + hostUser.photoURL + "')";
+          ava.textContent = '';
+        } else {
+          ava.style.backgroundImage = '';
+          ava.textContent = nm.slice(0, 1);
+        }
+      }
+
+      const i18n  = TriArk.i18n;
+      const langs = i18n.langLine  ? i18n.langLine(hostUser.languages) : '';
+      const based = i18n.basedLine
+        ? i18n.basedLine(host ? i18n.pick(host, 'basedIn').text : '')
+        : (host ? i18n.pick(host, 'basedIn').text : '');
       el('hostMeta').textContent = [based, langs].filter(Boolean).join('　·　');
+
       el('hostTags').innerHTML = (hostUser.interests || [])
         .map(c => '<span class="tag">' + t('interest.' + c) + '</span>').join('') +
-        TriArk.i18n.pickList(hostUser, 'tags')
+        i18n.pickList(hostUser, 'tags')
         .map(x => '<span class="tag">' + esc(x) + '</span>').join('');
-      el('hostLink').href = 'profile.html?uid=' + esc(d.hostId) + '&lang=' + lang;
     }
     if (host) {
       el('hostHeadline').textContent = TriArk.i18n.pick(host, 'headline').text || '';
@@ -467,7 +682,21 @@
         return;
       }
 
-      // 1. 予約（問い合わせ中）を作る
+      /* 1. 先に会話を作る。
+         以前は「予約 → 会話 → 予約に roomId を書き足す」の順だったが、
+         最後の書き足しが落ちると、会話があるのに一覧から消えてしまった。
+         会話を先に作れば、予約は最初から roomId を持てる。 */
+      const roomRef = await addDoc(collection(db, 'rooms'), {
+        bookingId    : '',
+        listingId    : id,
+        participants : [me.uid, listing.hostId],
+        lastMessage  : text,
+        lastMessageAt: serverTimestamp(),
+        lastRead     : {},
+        createdAt    : serverTimestamp()
+      });
+
+      // 2. 予約（問い合わせ中）を作る
       const bookingRef = await addDoc(collection(db, 'bookings'), {
         listingId : id,
         hostId    : listing.hostId,
@@ -477,24 +706,13 @@
         people    : people,
         priceTotal: (listing.price || 0) * people,
         status    : 'inquiry',
-        roomId    : '',
+        roomId    : roomRef.id,
         createdAt : serverTimestamp(),
         updatedAt : serverTimestamp()
       });
 
-      // 2. この予約のための会話を作る
-      const roomRef = await addDoc(collection(db, 'rooms'), {
-        bookingId    : bookingRef.id,
-        listingId    : id,
-        participants : [me.uid, listing.hostId],
-        lastMessage  : text,
-        lastMessageAt: serverTimestamp(),
-        lastRead     : {},
-        createdAt    : serverTimestamp()
-      });
-
-      // 3. 予約に会話を結びつける
-      await updateDoc(bookingRef, { roomId: roomRef.id });
+      // 3. 会話に予約を結びつける（ここが落ちても、会話も予約も残る）
+      await updateDoc(roomRef, { bookingId: bookingRef.id });
 
       // 4. 最初の一言を、そのまま会話の1通目にする
       await addDoc(collection(db, 'rooms', roomRef.id, 'messages'), {
@@ -519,7 +737,9 @@
     // 自分の体験には問い合わせできない
     const own = user && listing.hostId === user.uid;
     el('inquireBtn').disabled = !!own;
-    if (own) document.querySelector('.cta .note').textContent = t('detail.ownListing');
+    // 置き場所が無くても、ここで止まらないようにする
+    const note = el('ctaNote');
+    if (note && own) note.textContent = t('detail.ownListing');
   });
 
   (async () => {
@@ -547,8 +767,8 @@
     // 問い合わせを受け付けられる状態にする
     const own = me && listing.hostId === me.uid;
     el('inquireBtn').disabled = !!own;
-    document.querySelector('.cta .note').textContent =
-      own ? t('detail.ownListing') : '';
+    const note = el('ctaNote');
+    if (note) note.textContent = own ? t('detail.ownListing') : '';
 
     render();
     TriArk.i18n.onChange(() => {

@@ -151,6 +151,30 @@
   .note{margin-top:34px;padding:16px 18px;background:rgba(0,180,200,.08);border-left:3px solid var(--cyan);font-size:13px;line-height:1.9;color:#42586a;font-family:"Helvetica Neue",sans-serif}
   .hidden{display:none !important}
   @media(max-width:600px){.wrap{padding:36px 20px 70px}.two{flex-direction:column;gap:0}}
+
+  /* 写真（プロフィールと同じ作り） */
+  .photo-btn{
+    display:inline-block;cursor:pointer;border:1.5px solid var(--ink);border-radius:3px;
+    padding:9px 18px;font:600 13px/1 var(--sans);letter-spacing:.06em;background:#fff;
+  }
+  .photo-btn:hover{border-color:var(--sun);color:var(--sun)}
+  /* この欄の見出しと同じ形にされないよう、ボタンとしての見た目を取り戻す */
+  .field > label.photo-btn{
+    display:inline-block;width:auto;margin-bottom:0;
+    font-size:13px;letter-spacing:.06em;color:var(--ink);
+  }
+  .field > .label{display:block;font-size:12px;letter-spacing:.14em;color:#5d6f7c;margin-bottom:8px;font-family:"Helvetica Neue",sans-serif;font-weight:600}
+  .ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:12px 0}
+  .ph{position:relative;aspect-ratio:4/3;background:#efe9e0;border-radius:2px;overflow:hidden}
+  .ph img{width:100%;height:100%;object-fit:contain;display:block}
+  .ph button{
+    position:absolute;top:4px;right:4px;width:22px;height:22px;border:none;border-radius:50%;
+    background:rgba(10,22,34,.65);color:#fff;font-size:13px;line-height:1;cursor:pointer;
+  }
+  .ph .cover-tag{
+    position:absolute;left:0;bottom:0;background:rgba(10,22,34,.72);color:#fff;
+    font:600 11px var(--sans);letter-spacing:.08em;padding:4px 9px;border-radius:0 2px 0 0;
+  }
 </style>
 </head>
 <body>
@@ -236,10 +260,11 @@
 
       <!-- 写真 -->
       <div class="field">
-        <label for="images" data-i18n="listing.images">写真のURL</label>
-        <textarea id="images" style="min-height:110px" placeholder="https://..."></textarea>
+        <span class="label" data-i18n="listing.images">写真</span>
+        <div class="ph-grid" id="imgGrid"></div>
+        <label class="photo-btn" for="imgFile" data-i18n="veh.addPhotos">写真を足す</label>
+        <input type="file" id="imgFile" accept="image/*" multiple hidden>
         <p class="help" data-i18n="listing.imagesHelp"></p>
-        <p class="help" data-i18n="listing.imagesLocal"></p>
       </div>
 
       <!-- 開催日程 -->
@@ -289,6 +314,10 @@
           </div>
           <p class="help" data-i18n="listing.destHelp"></p>
           <p class="addr-status" id="destStatus"></p>
+          <!-- 入れた名前が Google マップで通じるか、ホスト自身が確かめるための出口。
+               新しいタブで開くだけなので、お金はかからない -->
+          <p><a class="textlink hidden" id="destCheck" target="_blank" rel="noopener"
+                data-i18n="listing.destCheck"></a></p>
 
           <label for="viaInput" style="margin-top:18px" data-i18n="listing.via">途中で寄るところ</label>
           <div class="tag-box" id="viaBox">
@@ -318,7 +347,6 @@
       </div>
       <p class="message" id="message"></p>
 
-      <p class="note" data-i18n="listing.imagesHelp"></p>
     </div>
 
     <!-- ホストプロフィール未作成 -->
@@ -332,7 +360,10 @@
 <script src="i18n.js"></script>
 <script src="limits.js"></script>
 <script type="module">
-  import { db, onUser, getUser, getProfile } from './auth.js';
+  import { app, db, onUser, getUser, getProfile } from './auth.js';
+  import {
+    getStorage, ref as storageRef, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
   import { normalize, label as sessionLabel, nightsOf } from './sessions.js';
   import { mountCalendar } from './calendar.js';
   import { routeHtml } from './route.js';
@@ -572,6 +603,20 @@
     }, escHtml);
     box.classList.remove('hidden');
   }
+  /* 入れた名前を Google マップで開くためのリンクを用意する。
+     地図の表示と同じ名前を渡すので、ここで見つかれば経路も描ける。 */
+  function updateDestCheck() {
+    const a = el('destCheck');
+    const v = el('dest').value.trim();
+    if (v) {
+      a.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(v);
+      a.classList.remove('hidden');
+    } else {
+      a.classList.add('hidden');
+    }
+  }
+  el('dest').addEventListener('input', updateDestCheck);
+
   el('dest').addEventListener('input', renderRoute);
   el('address').addEventListener('input', renderRoute);
 
@@ -582,21 +627,24 @@
     el('destBtn').disabled = true;
     p.textContent = t('listing.locating'); p.className = 'addr-status info';
 
-    let found = null;
-    try { found = await geocodeGSI(qstr); } catch (e) { console.warn('GSI', e); }
-    if (!found) { try { found = await geocodeOSM(qstr); } catch (e) { console.warn('OSM', e); } }
+    try {
+      const found = await findPlace(qstr);
 
-    if (found) {
-      dest = { name: qstr, lat: found.lat, lng: found.lng, label: toCityLevel(found.label) };
-      p.textContent = t('listing.locateOk') + (dest.label ? '（' + dest.label + '）' : '');
-      p.className = 'addr-status ok';
-    } else {
-      dest = { name: qstr, lat: null, lng: null, label: '' };
-      p.textContent = t('listing.destNotFound');
-      p.className = 'addr-status';
+      if (found) {
+        dest = { name: qstr, lat: found.lat, lng: found.lng, label: toCityLevel(found.label) };
+        p.textContent = t('listing.locateOk') + (dest.label ? '（' + dest.label + '）' : '');
+        p.className = 'addr-status ok';
+      } else {
+        dest = { name: qstr, lat: null, lng: null, label: '' };
+        p.textContent = t('listing.destNotFound');
+        p.className = 'addr-status';
+      }
+    } finally {
+      // 何が起きても、ボタンは必ず押せる状態に戻す
+      el('destBtn').disabled = false;
+      updateDestCheck();
+      renderRoute();
     }
-    el('destBtn').disabled = false;
-    renderRoute();
   }
   el('destBtn').addEventListener('click', locateDest);
   el('dest').addEventListener('keydown', (ev) => {
@@ -632,11 +680,25 @@
     el('mapBox').classList.remove('hidden');
   }
 
+  /* 外の検索につなぐときは、必ず待ち時間の上限を決める。
+     相手が黙り込んだままだと、画面が「探しています…」のまま永久に固まってしまう。
+     8秒で打ち切り、失敗として扱う。 */
+  async function fetchJson(url, ms) {
+    const ctrl  = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms || 6000);
+    try {
+      const res = await fetch(url, { signal: ctrl.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function geocodeGSI(qstr) {
     const url = 'https://msearch.gsi.go.jp/address-search/AddressSearch?q=' +
                 encodeURIComponent(qstr);
-    const res = await fetch(url);
-    const json = await res.json();
+    const json = await fetchJson(url);
     if (!json || !json.length) return null;
     const c = json[0].geometry.coordinates;   // [経度, 緯度]
     return { lat: c[1], lng: c[0], label: (json[0].properties || {}).title || '' };
@@ -645,14 +707,31 @@
   async function geocodeOSM(qstr) {
     const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' +
                 encodeURIComponent(qstr);
-    const res = await fetch(url);
-    const json = await res.json();
+    const json = await fetchJson(url);
     if (!json || !json.length) return null;
     return {
       lat   : parseFloat(json[0].lat),
       lng   : parseFloat(json[0].lon),
       label : json[0].display_name || ''
     };
+  }
+
+  /* 場所をさがす順番
+       1. 国土地理院      … 住所に強い
+       2. OpenStreetMap   … 地名もある程度ひろう
+     どちらも無料・鍵なし。先に見つかった時点で終わり。
+     見つからなくても構わない。地図の経路は、名前のままでも描ける。 */
+  async function findPlace(qstr) {
+    const tries = [['GSI', geocodeGSI], ['OSM', geocodeOSM]];
+    for (const [name, fn] of tries) {
+      try {
+        const got = await fn(qstr);
+        if (got) return got;
+      } catch (e) {
+        console.warn('[場所さがし] ' + name, e);
+      }
+    }
+    return null;
   }
 
   /* 検索で得た住所から「東京都東村山市」までを取り出す。
@@ -691,25 +770,24 @@
     el('locateBtn').disabled = true;
     addrStatus('listing.locating', 'info');
 
-    let found = null;
-    try { found = await geocodeGSI(qstr); } catch (e) { console.warn('GSI', e); }
-    if (!found) {
-      try { found = await geocodeOSM(qstr); } catch (e) { console.warn('OSM', e); }
-    }
+    try {
+      const found = await findPlace(qstr);
 
-    if (found) {
-      el('lat').value = found.lat;
-      el('lng').value = found.lng;
-      addressLabel = toCityLevel(found.label);
-      showMap(found.lat, found.lng);
-      autoPickJma(found.lat, found.lng);
-      addrStatus(null, 'ok',
-        t('listing.locateOk') + (addressLabel ? '（' + addressLabel + '）' : ''));
-    } else {
-      addrStatus('listing.locateFailed', 'error');
-      el('manualCoords').classList.remove('hidden');
+      if (found) {
+        el('lat').value = found.lat;
+        el('lng').value = found.lng;
+        addressLabel = toCityLevel(found.label);
+        showMap(found.lat, found.lng);
+        autoPickJma(found.lat, found.lng);
+        addrStatus(null, 'ok',
+          t('listing.locateOk') + (addressLabel ? '（' + addressLabel + '）' : ''));
+      } else {
+        addrStatus('listing.locateFailed', 'error');
+        el('manualCoords').classList.remove('hidden');
+      }
+    } finally {
+      el('locateBtn').disabled = false;
     }
-    el('locateBtn').disabled = false;
   }
 
   el('locateBtn').addEventListener('click', locate);
@@ -718,6 +796,82 @@
   });
   el('manualToggle').addEventListener('click', () => {
     el('manualCoords').classList.toggle('hidden');
+  });
+
+  /* ============================================================
+     写真（プロフィールと同じ仕組み）
+     ------------------------------------------------------------
+     選んだ写真を、送る前にブラウザ側で小さくしてから保管庫へ上げる。
+     出来上がった URL を images に並べる。1枚目が表紙になる。
+     ============================================================ */
+  const storage   = getStorage(app);
+  const IMG_MAX   = 10;
+  let   images    = [];
+
+  /* 長辺を max に縮めた JPEG にする。そのまま上げると重すぎるため */
+  async function wideJpeg(file, max) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      return await new Promise(res => c.toBlob(res, 'image/jpeg', 0.82));
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  async function uploadPhoto(file) {
+    const user = getUser();
+    if (!user) return null;
+    const blob = await wideJpeg(file, 1600);
+    if (!blob) return null;
+    const path = 'users/' + user.uid + '/photos/' + Date.now() + '-' +
+                 Math.random().toString(36).slice(2, 7) + '.jpg';
+    const r = storageRef(storage, path);
+    await uploadBytes(r, blob, { contentType: 'image/jpeg' });
+    return await getDownloadURL(r);
+  }
+
+  function renderImages() {
+    el('imgGrid').innerHTML = images.map((u, i) =>
+      '<div class="ph" data-full="' + escHtml(u) + '">' +
+        '<img src="' + escHtml(u) + '" alt="" loading="lazy">' +
+        (i === 0 ? '<span class="cover-tag">' + escHtml(t('listing.coverTag')) + '</span>' : '') +
+        '<button type="button" data-i="' + i + '" aria-label="remove">×</button>' +
+      '</div>').join('');
+    el('imgGrid').querySelectorAll('.ph button').forEach(b =>
+      b.addEventListener('click', () => {
+        images.splice(parseInt(b.dataset.i, 10), 1);
+        renderImages();
+      }));
+    document.querySelector('label[for=imgFile]')
+      .classList.toggle('hidden', images.length >= IMG_MAX);
+  }
+
+  el('imgFile').addEventListener('change', async (e) => {
+    // 先に取り出しておく。input を空にすると、この一覧も消えてしまう
+    const files = Array.from(e.target.files);
+    e.target.value = '';
+    const room = IMG_MAX - images.length;
+    const picked = files.slice(0, Math.max(0, room));
+    if (!picked.length) { message('veh.full', 'error'); return; }
+    message('veh.uploading', 'info');
+    for (const f of picked) {
+      try {
+        const url = await uploadPhoto(f);
+        if (url) { images.push(url); renderImages(); }
+      } catch (err) {
+        console.error('[listing] 写真のアップロードに失敗', err);
+        message('profile.photoFailed', 'error');
+        return;
+      }
+    }
+    message('veh.uploaded', 'ok');
   });
 
   function message(key, kind) {
@@ -744,7 +898,8 @@
     TriArk.limits.refresh();
     el('price').value          = d.price ?? 0;
     el('capacity').value       = d.capacity ?? 2;
-    el('images').value         = (d.images || []).join('\n');
+    images = Array.isArray(d.images) ? d.images.filter(Boolean) : [];
+    renderImages();
     sessions = normalize(d);
     renderDates();
     el('address').value        = d.address || '';
@@ -752,6 +907,7 @@
     dest = d.destName ? { name: d.destName, lat: d.destLat, lng: d.destLng, label: d.destLabel || '' } : null;
     via  = Array.isArray(d.via) ? d.via.slice(0, 5) : [];
     renderVia();
+    updateDestCheck();
     loadJmaAreas(d.jmaAreaCode || '', d.jmaCityCode || '');
     addressLabel               = d.addressLabel || '';
     el('lat').value            = d.lat ?? '';
@@ -799,7 +955,7 @@
       address_en     : deleteField(),
       price          : parseInt(el('price').value, 10) || 0,
       capacity       : parseInt(el('capacity').value, 10) || 1,
-      images         : el('images').value.split('\n').map(s => s.trim()).filter(Boolean),
+      images         : images,
       sessions       : sessions,
       openDates      : sessions.map(s => s.start),   // 古い形式の互換のため残す
       address        : el('address').value.trim(),

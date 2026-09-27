@@ -17,3 +17,11 @@ export const firebaseConfig = {
   messagingSenderId: "x",
   appId: "x"
 };
+
+/* 地図を埋め込むための鍵（Maps Embed API）。
+   道のりを線で描くのに使う。無くてもページは動く（地図が簡易なものになるだけ）。
+
+   この鍵はブラウザから見えるので、Google Cloud の「認証情報」で
+   ウェブサイトの制限（https://triark-chat.web.app/*）を必ずかけること。
+   制限をかけていれば、見えても他人には使えない。 */
+export const mapsEmbedKey = "";

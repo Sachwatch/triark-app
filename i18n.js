@@ -191,8 +191,9 @@ window.TriArk = window.TriArk || {};
       'listing.fee'          : '体験料',
       'listing.feeNote'      : '体験そのものへの対価です。',
       'listing.capacity'     : '最大人数',
-      'listing.images'       : '写真のURL',
-      'listing.imagesHelp'   : '1行に1つ。1枚目が表紙になります。写真の直接アップロードは次の段階で追加します。',
+      'listing.images'       : '写真',
+      'listing.imagesHelp'   : '1枚目が、体験の一覧と詳細の先頭に出ます。並べ替えたいときは、いったん消して入れ直してください。10枚まで。',
+      'listing.coverTag'     : '表紙',
       'listing.address'      : '出発地の住所',
       'listing.addressPh'    : '神奈川県足柄下郡箱根町湯本',
       'listing.addressHelp'  : '地図で示す場所と、天気の取得に使います。番地まで入れなくても構いません。駅名や施設名でも構いません。',
@@ -282,10 +283,15 @@ window.TriArk = window.TriArk || {};
       'profile.hostTitle'    : 'ホストとしての紹介',
       'profile.viewMine'     : '公開されている自分のプロフィールを見る',
       'profile.notFound'     : 'このプロフィールは見つかりませんでした。',
-      'profile.trTitle'      : 'ほかの言語での見え方',
+      'profile.trTitle'      : 'ほかの言語での表示',
       'profile.trHelp'       : '保存すると、書いた文章が自動で翻訳されます。反映まで数十秒かかることがあります。',
       'profile.trPending'    : 'まだ翻訳が用意されていません。少し待ってから「最新にする」を押してください。',
       'profile.trReload'     : '最新にする',
+      'profile.trSave'       : 'この訳を保存する',
+      'profile.trEditHelp'   : '訳は直せます。日本語にしかない言い回しは、自分の言葉に置き換えてください。',
+      'profile.trSaving'     : '訳を保存しています…',
+      'profile.trSaved'      : '訳を保存しました。',
+      'profile.trFailed'     : '訳を保存できませんでした。時間をおいてもう一度お試しください。',
       'profile.photo'        : 'プロフィール写真のURL',
       'profile.photoHelp'    : 'メッセージ一覧やホスト一覧に丸く表示されます。imagesフォルダの写真なら images/me.jpg のように書けます。',
       'interests.label'      : '好きなこと・分かち合いたいこと',
@@ -315,6 +321,8 @@ window.TriArk = window.TriArk || {};
       'listings.count'       : '件',
       'detail.hostedBy'      : 'ホスト',
       'detail.about'         : 'この体験について',
+      'detail.photos'        : '写真',
+      'detail.allPhotos'     : 'すべての写真を表示',
       'detail.meetingPoint'  : '出発地',
       'detail.capacity'      : '定員',
       'detail.people'        : '名まで',
@@ -431,11 +439,12 @@ window.TriArk = window.TriArk || {};
       'listing.descriptionHelp': 'どんな時間になるか、あなたの言葉で。細かい流れは下の「やること」に書けます。',
       'listing.dest'         : '行き先',
       'listing.destPh'       : '富士山',
-      'listing.destHelp'     : 'その日、どこへ向かうか。地図で確認を押すと場所が特定され、将来ホストを乗り継ぐ道のりを探すときにも使われます。',
-      'listing.destNotFound' : '場所を特定できませんでしたが、名前はそのまま表示されます。',
+      'listing.destHelp'     : 'その日、どこへ向かうか。Google マップで出てくる書き方で入れてください。体験のページで、ここまでの道のりが地図に描かれます。',
+      'listing.destNotFound' : '地図の上の点は決められませんでしたが、この名前のまま道のりは描かれます。下のリンクで確かめられます。',
+      'listing.destCheck'    : 'Google マップで確かめる',
       'listing.via'          : '途中で寄るところ',
       'listing.viaPh'        : '例：河口湖、道の駅なるさわ',
-      'listing.viaHelp'      : '入力して Enter で足せます。5つまで。',
+      'listing.viaHelp'      : '入力して Enter で足せます。5つまで。こちらも Google マップで出てくる書き方で。',
       'listing.startDate'    : '開始日',
       'listing.endDate'      : '終了日（日帰りなら空欄）',
       'listing.startTime'    : '集合',
@@ -617,8 +626,9 @@ window.TriArk = window.TriArk || {};
       'listing.fee'          : 'Experience fee',
       'listing.feeNote'      : 'This is the fee for the experience itself.',
       'listing.capacity'     : 'Maximum guests',
-      'listing.images'       : 'Photo URLs',
-      'listing.imagesHelp'   : 'One per line. The first becomes the cover. Direct uploads come in the next step.',
+      'listing.images'       : 'Photos',
+      'listing.imagesHelp'   : 'The first one appears in the list and at the top of the page. To reorder, remove and add again. Up to ten.',
+      'listing.coverTag'     : 'Cover',
       'listing.address'      : 'Meeting point address',
       'listing.addressPh'    : 'Hakone-machi, Ashigarashimo, Kanagawa',
       'listing.addressHelp'  : 'Used to show the place on a map and to fetch the weather. A rough address is fine. A station or venue name works too.',
@@ -708,10 +718,15 @@ window.TriArk = window.TriArk || {};
       'profile.hostTitle'    : 'As a host',
       'profile.viewMine'     : 'See my public profile',
       'profile.notFound'     : 'This profile could not be found.',
-      'profile.trTitle'      : 'How it reads in other languages',
+      'profile.trTitle'      : 'How it appears in other languages',
       'profile.trHelp'       : 'Your text is translated automatically when you save. It can take up to a minute to appear.',
       'profile.trPending'    : 'No translation yet. Wait a moment and press "Refresh".',
       'profile.trReload'     : 'Refresh',
+      'profile.trSave'       : 'Save this wording',
+      'profile.trEditHelp'   : 'You can edit these. Replace anything the machine got wrong with your own words.',
+      'profile.trSaving'     : 'Saving…',
+      'profile.trSaved'      : 'Saved.',
+      'profile.trFailed'     : 'Could not save. Please try again later.',
       'profile.photo'        : 'Profile photo URL',
       'profile.photoHelp'    : 'Shown as a round image in messages and host listings. A photo in your images folder can be written as images/me.jpg.',
       'interests.label'      : 'What you love, and want to share',
@@ -741,6 +756,8 @@ window.TriArk = window.TriArk || {};
       'listings.count'       : 'found',
       'detail.hostedBy'      : 'Host',
       'detail.about'         : 'About this experience',
+      'detail.photos'        : 'Photos',
+      'detail.allPhotos'     : 'Show all photos',
       'detail.meetingPoint'  : 'Meeting point',
       'detail.capacity'      : 'Capacity',
       'detail.people'        : 'guests',
@@ -857,11 +874,12 @@ window.TriArk = window.TriArk || {};
       'listing.descriptionHelp': 'What the time together will be like, in your own words. The step-by-step goes in "What you will do" below.',
       'listing.dest'         : 'Where you are heading',
       'listing.destPh'       : 'Mount Fuji',
-      'listing.destHelp'     : 'Where this journey goes. Press "Show on map" to pin it — this is also what lets guests find connecting hosts later.',
-      'listing.destNotFound' : 'The place could not be pinned, but the name will still be shown.',
+      'listing.destHelp'     : 'Where this journey goes. Write it the way it appears on Google Maps. The route there is drawn on the map of your experience page.',
+      'listing.destNotFound' : 'It could not be pinned on the map, but the route is still drawn from this name. Check it with the link below.',
+      'listing.destCheck'    : 'Check on Google Maps',
       'listing.via'          : 'Stops along the way',
       'listing.viaPh'        : 'e.g. Lake Kawaguchi',
-      'listing.viaHelp'      : 'Type and press Enter to add. Up to five.',
+      'listing.viaHelp'      : 'Type and press Enter to add. Up to five. Write these the way they appear on Google Maps too.',
       'listing.startDate'    : 'Start date',
       'listing.endDate'      : 'End date (leave empty for a day trip)',
       'listing.startTime'    : 'Meet at',
@@ -897,6 +915,44 @@ window.TriArk = window.TriArk || {};
     // 片方に無ければもう片方で補う。それも無ければキーをそのまま返す（表示で気づけるように）
     var fb = DICT[DEFAULT_LANG];
     return fb[key] !== undefined ? fb[key] : key;
+  }
+
+  /* ---------- 話せる言語を、決まった順で一行にする ----------
+     {ja:'native', en:'fluent'} → 「日本語（母語）/ 英語（流暢）」
+
+     保存されている対応表は、入力した順や保存のされ方で中身の並びが変わる。
+     そのままでは人によって順番がバラバラに見えるので、ここで必ず並べ直す。
+       1. 水準の高い順（母語 → 流暢 → ビジネス → 日常会話 → 初級）
+       2. 同じ水準なら、下の LANG_ORDER の順
+     カッコは、日本語のときは全角、英語のときは半角にする。 */
+  var LEVEL_ORDER = ['native', 'fluent', 'business', 'conversational', 'beginner'];
+  var LANG_ORDER  = ['ja', 'en', 'zh', 'ko', 'fr', 'es'];   // profile.html の LANG_CODES と揃える
+
+  function orderOf(list, v) {
+    var i = list.indexOf(v);
+    return i < 0 ? 99 : i;              // 見覚えのない値は、いちばん後ろへ
+  }
+
+  function langLine(map) {
+    var m = map || {};
+    var open  = (current === 'en') ? ' (' : '（';
+    var close = (current === 'en') ? ')'  : '）';
+    return Object.keys(m)
+      .sort(function (a, b) {
+        var d = orderOf(LEVEL_ORDER, m[a]) - orderOf(LEVEL_ORDER, m[b]);
+        return d || (orderOf(LANG_ORDER, a) - orderOf(LANG_ORDER, b));
+      })
+      .map(function (c) { return t('lang.' + c) + open + t('level.' + m[c]) + close; })
+      .join(' / ');
+  }
+
+  /* 拠点を、それと分かる形にする
+     日本語 →「拠点：東京→日本全国」 / 英語 →「Based in Tokyo→all over Japan」
+     地名だけを置くと、何の地名か読む人に伝わらないため */
+  function basedLine(text) {
+    var v = String(text == null ? '' : text).trim();
+    if (!v) return '';
+    return t('host.basedIn') + ((current === 'en') ? ' ' : '：') + v;
   }
 
   /* ---------- ユーザー投稿の日英を出し分ける ----------
@@ -1065,6 +1121,8 @@ window.TriArk = window.TriArk || {};
     pick: pick,
     pickList: pickList,
     pickObjList: pickObjList,
+    langLine: langLine,
+    basedLine: basedLine,
     onChange: onChange,
     dict: DICT,
     langs: LANGS

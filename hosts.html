@@ -189,9 +189,8 @@
 
     el('cards').innerHTML = shown.map(h => {
       const headline = TriArk.i18n.pick(h.host, 'headline').text;
-      const based    = TriArk.i18n.pick(h.host, 'basedIn').text;
-      const langs = Object.keys(h.user.languages || {})
-        .map(c => t('lang.' + c) + '（' + t('level.' + h.user.languages[c]) + '）').join(' / ');
+      const based    = TriArk.i18n.basedLine(TriArk.i18n.pick(h.host, 'basedIn').text);
+      const langs = TriArk.i18n.langLine(h.user.languages);
       const tags = (h.user.interests || []).map(c =>
         '<span class="tag' + (pickedInterests.includes(c) ? ' hit' : '') + '">' +
         t('interest.' + c) + '</span>'

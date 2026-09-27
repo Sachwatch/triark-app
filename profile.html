@@ -170,6 +170,20 @@
   .tr-item .k{font:600 11px var(--sans);letter-spacing:.14em;color:var(--earth);margin-bottom:5px}
   .tr-item .v{font-size:14px;line-height:1.9;white-space:pre-wrap;color:#42586a}
   .tr-empty{margin-top:14px;font:13px var(--sans);color:#8c9aa6}
+  /* 自分で訳を直せるようにする */
+  .tr-item textarea{
+    width:100%;padding:10px 12px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    color:#42586a;font-size:14px;font-family:inherit;line-height:1.9;min-height:70px;resize:vertical;
+  }
+  .tr-item textarea:focus{outline:none;border-color:var(--sun)}
+  .tr-tags{display:flex;flex-wrap:wrap;gap:8px}
+  .tr-tags input{
+    padding:7px 11px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:16px;
+    color:#42586a;font:13px var(--sans);width:auto;min-width:90px;
+  }
+  .tr-tags input:focus{outline:none;border-color:var(--sun)}
+  .tr-foot{margin-top:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .tr-foot .btn-line{padding:9px 18px;font:600 13px var(--sans)}
 
   /* 閲覧 */
   .v-head{display:flex;align-items:center;gap:24px;margin-bottom:26px}
@@ -317,6 +331,10 @@
         </div>
         <p class="help" data-i18n="profile.trHelp"></p>
         <div id="trBody"></div>
+        <div class="tr-foot hidden" id="trFoot">
+          <button type="button" class="btn-line" id="trSave" data-i18n="profile.trSave">この訳を保存する</button>
+          <span class="help" style="margin:0" data-i18n="profile.trEditHelp"></span>
+        </div>
       </div>
       <p style="margin-top:22px"><a class="textlink" id="viewMine" href="profile.html" data-i18n="profile.viewMine"></a></p>
     </div>
@@ -834,6 +852,7 @@
      （数十秒かかることがあるので「最新にする」で読み直せる）
      ============================================================ */
   const TR_TEXT = [['bio','profile.bio'],['headline','host.headline'],['basedIn','host.basedIn'],['intro','host.intro']];
+  const TR_HOST = ['headline', 'basedIn', 'intro'];   // hosts の書類に入る欄
 
   async function loadTranslations() {
     const user = getUser();
@@ -849,15 +868,58 @@
     if (u.tr && u.tr[lang]) Object.assign(got, u.tr[lang]);
     if (h.tr && h.tr[lang]) Object.assign(got, h.tr[lang]);
 
+    /* 自動翻訳の結果を、そのまま直せる形で出す。
+       日本語にしかない言い回しは機械が苦手なので、本人が直せた方がいい */
     let html = TR_TEXT.filter(([f]) => got[f]).map(([f, key]) =>
-      '<div class="tr-item"><p class="k">' + esc(t(key)) + '</p><p class="v">' + esc(got[f]) + '</p></div>'
+      '<div class="tr-item">' +
+        '<p class="k">' + esc(t(key)) + '</p>' +
+        '<textarea data-f="' + f + '">' + esc(got[f]) + '</textarea>' +
+      '</div>'
     ).join('');
     if (Array.isArray(got.tags) && got.tags.length) {
       html += '<div class="tr-item"><p class="k">' + esc(t('interests.label')) + '</p>' +
-              '<p class="v">' + esc(got.tags.join('　·　')) + '</p></div>';
+              '<div class="tr-tags">' + got.tags.map((x, i) =>
+                '<input type="text" data-tag="' + i + '" value="' + esc(x) + '">').join('') +
+              '</div></div>';
     }
     el('trBody').innerHTML = html || '<p class="tr-empty">' + esc(t('profile.trPending')) + '</p>';
+    el('trFoot').classList.toggle('hidden', !html);
   }
+
+  /* 直した訳を保存する。
+     元の文章には触らないので、自動翻訳がこれを上書きすることはない。
+     （上書きが起きるのは、元の文章を書き直して保存したときだけ） */
+  async function saveTranslations() {
+    const user = getUser();
+    if (!user) return;
+    const lang = el('trLang').value;
+    const uPatch = {}, hPatch = {};
+
+    el('trBody').querySelectorAll('textarea[data-f]').forEach(inp => {
+      const f = inp.dataset.f;
+      const box = TR_HOST.indexOf(f) !== -1 ? hPatch : uPatch;
+      box['tr.' + lang + '.' + f] = inp.value.trim();
+    });
+    const tagInputs = el('trBody').querySelectorAll('input[data-tag]');
+    if (tagInputs.length) {
+      uPatch['tr.' + lang + '.tags'] =
+        Array.prototype.map.call(tagInputs, i => i.value.trim()).filter(Boolean);
+    }
+
+    el('trSave').disabled = true;
+    message('profile.trSaving', 'info');
+    try {
+      if (Object.keys(uPatch).length) await updateDoc(doc(db, 'users', user.uid), uPatch);
+      if (Object.keys(hPatch).length) await updateDoc(doc(db, 'hosts', user.uid), hPatch);
+      message('profile.trSaved', 'ok');
+    } catch (e) {
+      console.error('[profile] 訳の保存に失敗', e);
+      message('profile.trFailed', 'error');
+    } finally {
+      el('trSave').disabled = false;
+    }
+  }
+  el('trSave').addEventListener('click', saveTranslations);
 
   function buildTrLangs(srcLang) {
     const others = TriArk.i18n.langs.filter(l => l !== (srcLang || TriArk.i18n.get()));
@@ -892,10 +954,8 @@
     el('viewHeadline').textContent = headline || '';
     el('viewHeadline').classList.toggle('hidden', !headline);
 
-    const based = h ? TriArk.i18n.pick(h, 'basedIn').text : '';
-    const langMap = toLangMap(u.languages);
-    const langNames = Object.keys(langMap)
-      .map(c => t('lang.' + c) + '（' + t('level.' + langMap[c]) + '）').join(' / ');
+    const based = TriArk.i18n.basedLine(h ? TriArk.i18n.pick(h, 'basedIn').text : '');
+    const langNames = TriArk.i18n.langLine(toLangMap(u.languages));
     el('viewMeta').textContent = [based, langNames].filter(Boolean).join('　·　');
 
     const own = TriArk.i18n.pickList ? TriArk.i18n.pickList(u, 'tags') : (u.tags || []);

@@ -28,10 +28,19 @@ service cloud.firestore {
       return !(f in d) || !(d[f] is string) || d[f].size() <= n;
     }
     // 翻訳（tr / trSrc / srcLang / trAt）はサーバー側の関数だけが書く。
-    // 画面から送られた内容が、いま保存されているものと同じなら通す
+    // 新しく作るときは入っていないこと、書き換えるときは前と同じであること
+    function noTr(now) {
+      return !('tr' in now) && !('trSrc' in now);
+    }
     function keepsTr(now, before) {
-      return (!('tr'      in now) && !('trSrc' in now))
-          || (before != null && now.tr == before.tr && now.trSrc == before.trSrc);
+      return noTr(now) || (now.tr == before.tr && now.trSrc == before.trSrc);
+    }
+    /* 本人が訳を直せるようにする。
+       元の文章の指紋（trSrc）はサーバーだけが書くので、ここは変えさせない。
+       訳だけを書き換える分には、自動翻訳が上書きしにいくこともない。 */
+    function trEditOk(now, before) {
+      return keepsTr(now, before)
+          || now.get('trSrc', '') == before.get('trSrc', '');
     }
     function userOk(d) {
       return fits(d, 'name', 60) && fits(d, 'photoURL', 1000)
@@ -56,7 +65,8 @@ service cloud.firestore {
           && (!('via' in d) || (d.via is list && d.via.size() <= 5))
           && (!('doList' in d)   || (d.doList is list   && d.doList.size()   <= 10))
           && (!('included' in d) || (d.included is list && d.included.size() <= 10))
-          && (!('bring' in d)    || (d.bring is list    && d.bring.size()    <= 10));
+          && (!('bring' in d)    || (d.bring is list    && d.bring.size()    <= 10))
+          && (!('images' in d)   || (d.images is list   && d.images.size()   <= 10));
     }
 
     // users/{uid} を読んでホストかどうか判定する
@@ -73,9 +83,9 @@ service cloud.firestore {
     match /users/{uid} {
       allow read  : if true;
       allow create: if isSelf(uid) && userOk(request.resource.data)
-                    && keepsTr(request.resource.data, null);
+                    && noTr(request.resource.data);
       allow update: if isSelf(uid) && userOk(request.resource.data)
-                    && keepsTr(request.resource.data, resource.data);
+                    && trEditOk(request.resource.data, resource.data);
       allow delete: if false;
 
       // 本人だけが読み書きできる場所（連絡先など）
@@ -94,9 +104,9 @@ service cloud.firestore {
     match /hosts/{uid} {
       allow read : if true;
       allow create: if isSelf(uid) && hostOk(request.resource.data)
-                    && keepsTr(request.resource.data, null);
+                    && noTr(request.resource.data);
       allow update: if isSelf(uid) && hostOk(request.resource.data)
-                    && keepsTr(request.resource.data, resource.data);
+                    && trEditOk(request.resource.data, resource.data);
       allow delete: if isSelf(uid);
     }
 
@@ -109,7 +119,7 @@ service cloud.firestore {
       allow create: if isHost()
                     && request.resource.data.hostId == request.auth.uid
                     && listingOk(request.resource.data)
-                    && keepsTr(request.resource.data, null);
+                    && noTr(request.resource.data);
 
       allow update: if signedIn()
                     && resource.data.hostId == request.auth.uid

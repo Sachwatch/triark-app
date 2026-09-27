@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>データ確認 — TriArk</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ============================================================
+     debug.html — 自分に関わるデータを、そのまま並べて見るための画面
+     ------------------------------------------------------------
+     問い合わせが届かない、会話が出てこない、といったときに
+     「どこまで作られていて、どこから欠けているか」を一目で見るための道具。
+     読むだけで、何も書き換えない。
+     ルールにより、見えるのは自分が当事者のものだけ。
+     原因が分かったら、このファイルは消して構わない。
+     ============================================================ */
+  body{background:#0E1B26;color:#E8E3DA;font-family:var(--sans);padding:24px;line-height:1.7}
+  h1{font-size:19px;margin-bottom:6px;letter-spacing:.06em}
+  h2{font-size:15px;margin:26px 0 8px;color:#7FD3E0;letter-spacing:.06em}
+  .note{font-size:12px;color:#8FA6B5;margin-bottom:18px}
+  table{border-collapse:collapse;width:100%;font-size:12px;margin-bottom:6px}
+  th,td{border:1px solid rgba(232,227,218,.18);padding:6px 8px;text-align:left;vertical-align:top;
+        word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace}
+  th{background:rgba(232,227,218,.08);white-space:nowrap}
+  .ok{color:#7ED9A6}
+  .bad{color:#FF8B76;font-weight:700}
+  .empty{color:#8FA6B5;font-size:13px;margin-bottom:6px}
+  .err{color:#FF8B76;font-size:13px;margin-bottom:6px}
+  .me{font-size:13px;color:#8FA6B5;margin-bottom:4px}
+  .me b{color:#E8E3DA;font-family:ui-monospace,Menlo,Consolas,monospace}
+  a{color:#7FD3E0}
+</style>
+</head>
+<body>
+  <h1>データ確認</h1>
+  <p class="note">この画面は読むだけで、何も変更しません。原因が分かったら消して構いません。</p>
+
+  <div id="who" class="me">確認中…</div>
+  <div id="out"></div>
+
+<script type="module">
+  import { db, onUser } from './auth.js';
+  import { collection, query, where, getDocs, doc, getDoc }
+    from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  const el = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function when(ts) {
+    if (!ts || !ts.seconds) return '（なし）';
+    return new Date(ts.seconds * 1000).toLocaleString('ja-JP');
+  }
+  function add(html) { el('out').insertAdjacentHTML('beforeend', html); }
+
+  /** 1つの調べものを実行して、失敗しても次へ進む */
+  async function step(title, fn) {
+    add('<h2>' + esc(title) + '</h2>');
+    try {
+      const html = await fn();
+      add(html || '<p class="empty">0 件でした</p>');
+    } catch (e) {
+      add('<p class="err">読み取りに失敗：' + esc(e.code || e.message || e) + '</p>');
+    }
+  }
+
+  function table(rows, cols) {
+    if (!rows.length) return '';
+    return '<table><tr>' + cols.map(c => '<th>' + esc(c[0]) + '</th>').join('') + '</tr>' +
+      rows.map(r => '<tr>' + cols.map(c => '<td>' + c[1](r) + '</td>').join('') + '</tr>').join('') +
+      '</table>';
+  }
+
+  onUser(async ({ user }) => {
+    if (!user) {
+      el('who').innerHTML = '<span class="bad">ログインしていません。</span> ' +
+        '<a href="login.html?next=debug.html">ログイン</a>してから開いてください。';
+      return;
+    }
+    el('out').innerHTML = '';
+    el('who').innerHTML = 'いまログインしている人： <b>' + esc(user.email || '') + '</b><br>' +
+                          'その人の ID（uid）： <b>' + esc(user.uid) + '</b>';
+
+    const roomIds = {};   // 見つかった部屋
+
+    /* ---- 1. 自分がホストの予約 ---- */
+    await step('1. 自分がホストの予約（bookings / hostId が自分）', async () => {
+      const s = await getDocs(query(collection(db, 'bookings'), where('hostId', '==', user.uid)));
+      const rows = s.docs.map(d => ({ id: d.id, ...d.data() }));
+      rows.forEach(r => { if (r.roomId) roomIds[r.roomId] = '予約から'; });
+      return table(rows, [
+        ['予約ID',   r => esc(r.id)],
+        ['状態',     r => esc(r.status)],
+        ['ゲストID', r => esc(r.guestId)],
+        ['roomId',   r => r.roomId
+            ? '<span class="ok">' + esc(r.roomId) + '</span>'
+            : '<span class="bad">空です</span>'],
+        ['作られた日時', r => esc(when(r.createdAt))]
+      ]);
+    });
+
+    /* ---- 2. 自分がゲストの予約 ---- */
+    await step('2. 自分がゲストの予約（bookings / guestId が自分）', async () => {
+      const s = await getDocs(query(collection(db, 'bookings'), where('guestId', '==', user.uid)));
+      const rows = s.docs.map(d => ({ id: d.id, ...d.data() }));
+      rows.forEach(r => { if (r.roomId) roomIds[r.roomId] = '予約から'; });
+      return table(rows, [
+        ['予約ID',   r => esc(r.id)],
+        ['状態',     r => esc(r.status)],
+        ['ホストID', r => esc(r.hostId)],
+        ['roomId',   r => r.roomId
+            ? '<span class="ok">' + esc(r.roomId) + '</span>'
+            : '<span class="bad">空です</span>'],
+        ['作られた日時', r => esc(when(r.createdAt))]
+      ]);
+    });
+
+    /* ---- 3. 自分が参加者になっている会話 ---- */
+    await step('3. 自分が入っている会話（rooms / participants に自分）', async () => {
+      const s = await getDocs(
+        query(collection(db, 'rooms'), where('participants', 'array-contains', user.uid)));
+      const rows = s.docs.map(d => ({ id: d.id, ...d.data() }));
+      rows.forEach(r => { roomIds[r.id] = (roomIds[r.id] ? '両方から' : '会話から'); });
+      return table(rows, [
+        ['会話ID',     r => esc(r.id)],
+        ['参加者',     r => (r.participants || []).map(esc).join('<br>')],
+        ['bookingId',  r => esc(r.bookingId || '（空）')],
+        ['最後の一言', r => esc(r.lastMessage || '')],
+        ['最後の時刻', r => esc(when(r.lastMessageAt))]
+      ]);
+    });
+
+    /* ---- 4. 見つかった会話それぞれの中身 ---- */
+    await step('4. それぞれの会話の中身（messages）', async () => {
+      const ids = Object.keys(roomIds);
+      if (!ids.length) return '<p class="empty">会話が1つも見つかりませんでした</p>';
+      let html = '';
+      for (const rid of ids) {
+        html += '<p class="me">会話 <b>' + esc(rid) + '</b>（' + esc(roomIds[rid]) + '見つかった）</p>';
+        try {
+          const r = await getDoc(doc(db, 'rooms', rid));
+          if (!r.exists()) {
+            html += '<p class="err">この会話は存在しません（予約だけが残っている状態）</p>';
+            continue;
+          }
+          const m = await getDocs(collection(db, 'rooms', rid, 'messages'));
+          const rows = m.docs.map(d => ({ id: d.id, ...d.data() }));
+          html += rows.length
+            ? table(rows, [
+                ['送った人', r => esc(r.senderId)],
+                ['種類',     r => esc(r.type || '')],
+                ['本文',     r => esc(r.text || '')],
+                ['時刻',     r => esc(when(r.createdAt))]
+              ])
+            : '<p class="err">この会話には1通も入っていません</p>';
+        } catch (e) {
+          html += '<p class="err">読み取りに失敗：' + esc(e.code || e.message || e) + '</p>';
+        }
+      }
+      return html;
+    });
+
+    /* ---- 5. 自分の体験 ---- */
+    await step('5. 自分が登録した体験（listings / hostId が自分）', async () => {
+      const s = await getDocs(query(collection(db, 'listings'), where('hostId', '==', user.uid)));
+      return table(s.docs.map(d => ({ id: d.id, ...d.data() })), [
+        ['体験ID', r => esc(r.id)],
+        ['題名',   r => esc(r.title || '')],
+        ['種類',   r => esc(r.type || '')],
+        ['状態',   r => esc(r.status || '')]
+      ]);
+    });
+
+    add('<p class="note" style="margin-top:24px">以上です。この画面を撮って送ってください。</p>');
+  });
+</script>
+</body>
+</html>
