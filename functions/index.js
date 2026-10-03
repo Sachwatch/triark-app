@@ -40,7 +40,8 @@ const FIELDS = {
   },
   listings: {
     text: ['title', 'area', 'description', 'destName', 'address'],
-    list: ['via', 'doList', 'included', 'bring']
+    // imageNotes は写真と同じ並び。空の場所も空のまま残す
+    list: ['via', 'doList', 'included', 'bring', 'imageNotes']
   }
 };
 
@@ -112,10 +113,21 @@ async function handle(collection, event) {
         out[f] = text;
       }
       for (const f of (conf.list || [])) {
-        const arr = (Array.isArray(d[f]) ? d[f] : []).filter(Boolean);
+        /* 写真の一言メモのように、並び順に意味がある配列もある。
+           空の場所は訳に出さず、元の場所に戻してから書き戻す */
+        const src = Array.isArray(d[f]) ? d[f] : [];
+        const at  = [];                       // 訳すものが、元の何番目だったか
+        const arr = [];
+        src.forEach((v, i) => {
+          const s = String(v == null ? '' : v).trim();
+          if (s) { at.push(i); arr.push(s); }
+        });
         if (!arr.length) continue;
         const [res] = await translate.translate(arr, { from: srcLang || undefined, to: lang, format: 'text' });
-        out[f] = Array.isArray(res) ? res : [res];
+        const got = Array.isArray(res) ? res : [res];
+        const row = src.map(() => '');
+        at.forEach((pos, k) => { row[pos] = got[k] == null ? '' : got[k]; });
+        out[f] = row;
       }
       for (const o of (conf.objList || [])) {
         const arr = Array.isArray(d[o.field]) ? d[o.field] : [];

@@ -5,6 +5,20 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="page.about.title">About TriArk — 旅が、人生になる。</title>
+<!-- SNSで共有したときに出るカード（Open Graph）。
+     これが無いと、Facebook や LINE に貼っても題名も写真も出ない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TriArk">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="TriArk について — 陸・海・空をつなぐ旅">
+<meta property="og:description" content="旅が、人生になる。乗り物を持っているホストが、自分の旅に人を乗せる。陸・海・空をつなぐ旅のプラットフォームです。">
+<meta property="og:url" content="https://triark-chat.web.app/about.html">
+<meta property="og:image" content="https://triark-chat.web.app/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="夕暮れの山並みと、光るススキ">
+<meta name="twitter:card" content="summary_large_image">
+
 <link rel="stylesheet" href="style.css">
 <link rel="apple-touch-icon" href="images/icon-v2-180.png">
 <link rel="icon" href="images/icon-v2-64.png" type="image/png">
@@ -347,5 +361,7 @@
   },{threshold:.18});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
+<script src="trial.js"></script>
+<script src="tabbar.js"></script>
 </body>
 </html>

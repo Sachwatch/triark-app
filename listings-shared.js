@@ -31,11 +31,15 @@ export function cardHtml(item, lang, t) {
   const area  = TriArk.i18n.pick(d, 'area').text || '';
   const desc  = TriArk.i18n.pick(d, 'description').text || '';
   const img   = (d.images && d.images[0]) ? d.images[0] : '';
-  const fee   = d.price ? '¥' + Number(d.price).toLocaleString() : '';
+  const fee   = d.price ? TriArk.i18n.money(d.price, d.currency, lang) : '';
   const to    = TriArk.i18n.pick(d, 'destName').text || '';
   const route = to ? esc(area || '') + ' → ' + esc(to) : esc(area || '');
 
+  // お試し公開のあいだは「準備中」の札を付ける（trial.js が出し入れする）
+  const badge = (window.TriArk && TriArk.trialBadge) ? TriArk.trialBadge() : '';
+
   return '<a class="card" href="listing.html?id=' + esc(item.id) + '&lang=' + lang + '">' +
+    badge +
     '<div class="card-img"' + (img ? ' style="background-image:url(\'' + esc(img) + '\')"' : '') + '></div>' +
     '<div class="card-body">' +
       '<div class="loc">' + route + '</div>' +

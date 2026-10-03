@@ -54,7 +54,11 @@ service cloud.firestore {
           && fits(d, 'basedIn', 60)  && fits(d, 'basedIn_en', 120)
           && fits(d, 'intro', 10000) && fits(d, 'intro_en', 20000)
           && (!('vehicles' in d) || (d.vehicles is list && d.vehicles.size() <= 5))
-          && (!('gallery' in d)  || (d.gallery is list  && d.gallery.size()  <= 12));
+          && (!('gallery' in d)  || (d.gallery is list  && d.gallery.size()  <= 12))
+          && (!('galleryNotes' in d) || (d.galleryNotes is list && d.galleryNotes.size() <= 12))
+          // 資格・登録・保険。10件まで。中身は {k, no, exp} の短い文字列
+          && (!('certs' in d) || (d.certs is list && d.certs.size() <= 10))
+          && (!('insConfirmed' in d) || d.insConfirmed is bool);
     }
     function listingOk(d) {
       return fits(d, 'title', 80)  && fits(d, 'title_en', 160)
@@ -62,11 +66,13 @@ service cloud.firestore {
           && fits(d, 'description', 6000) && fits(d, 'description_en', 12000)
           && fits(d, 'address', 200) && fits(d, 'address_en', 400)
           && fits(d, 'destName', 200) && fits(d, 'destLabel', 200)
+          && fits(d, 'currency', 8)
           && (!('via' in d) || (d.via is list && d.via.size() <= 5))
           && (!('doList' in d)   || (d.doList is list   && d.doList.size()   <= 10))
           && (!('included' in d) || (d.included is list && d.included.size() <= 10))
           && (!('bring' in d)    || (d.bring is list    && d.bring.size()    <= 10))
-          && (!('images' in d)   || (d.images is list   && d.images.size()   <= 10));
+          && (!('images' in d)   || (d.images is list   && d.images.size()   <= 10))
+          && (!('imageNotes' in d) || (d.imageNotes is list && d.imageNotes.size() <= 10));
     }
 
     // users/{uid} を読んでホストかどうか判定する
@@ -81,7 +87,13 @@ service cloud.firestore {
     // ログインしていない人も読める（体験を見に来た人がホストの言語を確認できるように）。
     // メールや電話は users には置かず、下の private に入れる。
     match /users/{uid} {
-      allow read  : if true;
+      /* get  … 1件だけ開く。体験ページからホストを見る、やりとりの相手を見る、など。
+         list … まとめて引く。ホストを探す画面が「isHost が true の人」だけを引いている。
+         read（＝get＋list）のまま「誰でも」にしておくと、サイトを経由せず
+         直接問い合わせて、登録者全員の名簿を一度に取り出せてしまう。
+         list を「ホストだけ」に絞ることで、ゲストは名簿から外れる。 */
+      allow get   : if true;
+      allow list  : if resource.data.isHost == true;
       allow create: if isSelf(uid) && userOk(request.resource.data)
                     && noTr(request.resource.data);
       allow update: if isSelf(uid) && userOk(request.resource.data)
@@ -102,7 +114,12 @@ service cloud.firestore {
     // ---------- hosts ----------
     // ホストの紹介文。ゲストが見るものなので誰でも読める
     match /hosts/{uid} {
-      allow read : if true;
+      /* ホストの紹介文・乗り物・写真。1件ずつ見るのは誰でもよいが、
+         まとめて引く必要はどこにもない（ホストを探す画面も、
+         users から uid を得てから1件ずつ取っている）。
+         まとめ取りを閉じておくと、紹介文や写真を一括で持って行かれない。 */
+      allow get  : if true;
+      allow list : if false;
       allow create: if isSelf(uid) && hostOk(request.resource.data)
                     && noTr(request.resource.data);
       allow update: if isSelf(uid) && hostOk(request.resource.data)

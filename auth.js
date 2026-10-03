@@ -235,6 +235,15 @@ function stopWatch() {
 }
 
 function renderAuthNav() {
+  // スマホの下の帯にも、同じログイン状態を伝える
+  if (window.TriArk && window.TriArk.tabbar) {
+    window.TriArk.tabbar.set({
+      signedIn: !!currentUser,
+      isHost  : !!(profile && profile.isHost),
+      unread  : !!unread
+    });
+  }
+
   const box = document.getElementById('authNav');
   if (!box) return;
   const q = '?lang=' + lang();

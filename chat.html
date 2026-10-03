@@ -24,6 +24,8 @@
   .head .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:5px}
   .head h1{font-size:17px;color:var(--ink);font-weight:700;letter-spacing:.03em}
   .head .meta{font-size:12px;color:var(--ink-40);font-family:var(--sans);line-height:1.8}
+  .head .prof-link{color:var(--sea);text-decoration:underline}
+  .head .prof-link:hover{color:var(--sun)}
   /* 天気と警報 */
   .wx{padding:10px 5vw;background:#F7F5F1;border-bottom:1px solid var(--line);flex-shrink:0;font-family:var(--sans)}
   .wx .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-60)}
@@ -52,6 +54,8 @@
     color:#fff;font-size:14px;margin-bottom:18px;
   }
   .ava.blank{background:none}
+  a.ava{text-decoration:none}
+  a.ava:hover{box-shadow:0 0 0 2px var(--sun)}
 
   .msg{display:flex;flex-direction:column;gap:5px;min-width:0}
   .msg.me{align-items:flex-end}
@@ -112,6 +116,8 @@
       <h1 id="title"></h1>
     </div>
     <p class="meta" id="meta"></p>
+    <!-- 相手がどんな人か、受ける前に確かめられるようにする -->
+    <p class="meta"><a class="prof-link hidden" id="profLink" href="#"></a></p>
   </div>
 
   <div class="wx hidden" id="wx">
@@ -241,9 +247,21 @@
     el('meta').textContent = [
       t('bk.date') + '：' + fmtDate(booking.date),
       t('bk.people') + '：' + booking.people + t('bk.peopleUnit'),
-      t('bk.total') + '：¥' + Number(booking.priceTotal || 0).toLocaleString(),
+      t('bk.total') + '：' + TriArk.i18n.money(booking.priceTotal || 0, booking.currency),
       (isHost ? t('bk.guest') : t('bk.host')) + '：' + ((otherUser && otherUser.name) || '')
     ].join('　·　');
+
+    // 相手のプロフィールへ
+    const link = el('profLink');
+    const otherUid = isHost ? booking.guestId : booking.hostId;
+    if (otherUid) {
+      link.href = 'profile.html?uid=' + encodeURIComponent(otherUid) +
+                  '&lang=' + TriArk.i18n.get();
+      link.textContent = t(isHost ? 'bk.viewGuest' : 'bk.viewHost');
+      link.classList.remove('hidden');
+    } else {
+      link.classList.add('hidden');
+    }
   }
 
   /* ---------- 会話 ---------- */
@@ -254,11 +272,15 @@
     // 相手のアイコン（写真が無ければ頭文字）
     const otherName = (otherUser && otherUser.name) || '';
     const otherPhoto = (otherUser && otherUser.photoURL) || '';
+    // アイコンからも相手のプロフィールへ行けるようにする
+    const otherHref = 'profile.html?uid=' + encodeURIComponent(otherUid) +
+                      '&lang=' + TriArk.i18n.get();
     function avatar(show) {
       if (!show) return '<div class="ava blank"></div>';
+      const open = '<a class="ava" href="' + esc(otherHref) + '"';
       return otherPhoto
-        ? '<div class="ava" style="background-image:url(\'' + esc(otherPhoto) + '\')"></div>'
-        : '<div class="ava">' + esc(otherName.slice(0, 1)) + '</div>';
+        ? open + ' style="background-image:url(\'' + esc(otherPhoto) + '\')"></a>'
+        : open + '>' + esc(otherName.slice(0, 1)) + '</a>';
     }
 
     el('thread').innerHTML = messages.map((m, i) => {

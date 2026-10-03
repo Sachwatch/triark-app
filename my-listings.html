@@ -133,7 +133,7 @@
       const area  = TriArk.i18n.pick(d, 'area').text;
       const imgs = (d.images || []).filter(Boolean);
       const cover = imgs[0] || '';
-      const price = d.price ? '¥' + Number(d.price).toLocaleString() : '—';
+      const price = d.price ? TriArk.i18n.money(d.price, d.currency, lang) : '—';
       const addr = TriArk.i18n.pick(d, 'address').text;
       const from = addr
         ? t('listing.departure') + '：' + addr +
@@ -211,5 +211,7 @@
 
   TriArk.i18n.onChange(() => { if (cache.length) render(); });
 </script>
+<script src="trial.js"></script>
+<script src="tabbar.js"></script>
 </body>
 </html>

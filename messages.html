@@ -153,16 +153,25 @@
     }
     me = user;
 
-    /* 自分の予約から、対応する会話をたどる。
-       会話そのものを一覧で引くより確実で、権限の条件も単純になる。 */
+    /* 会話を2つの道からたどって、重なりを取り除く。
+       1. 会話そのもの（participants に自分が入っている部屋）
+       2. 自分の予約に書かれている roomId
+       どちらか一方が欠けても会話が消えないように、両方から集める。
+       ・1 だけだと、予約を作ったのに部屋が作られなかった場合に気づけない
+       ・2 だけだと、予約の roomId を書き込む処理が途中で落ちた会話が、
+         部屋は在るのに一覧から消えてしまう（これが実際に起きた） */
     (async () => {
       let roomIds = [];
       try {
-        const [g, h] = await Promise.all([
+        const [r, g, h] = await Promise.all([
+          getDocs(query(collection(db, 'rooms'),    where('participants', 'array-contains', user.uid))),
           getDocs(query(collection(db, 'bookings'), where('guestId', '==', user.uid))),
           getDocs(query(collection(db, 'bookings'), where('hostId',  '==', user.uid)))
         ]);
         const seen = {};
+        r.docs.forEach(d => {
+          if (!seen[d.id]) { seen[d.id] = true; roomIds.push(d.id); }
+        });
         g.docs.concat(h.docs).forEach(d => {
           const rid = d.data().roomId;
           if (rid && !seen[rid]) { seen[rid] = true; roomIds.push(rid); }
@@ -198,5 +207,7 @@
 
   TriArk.i18n.onChange(() => { if (me) render(); });
 </script>
+<script src="trial.js"></script>
+<script src="tabbar.js"></script>
 </body>
 </html>

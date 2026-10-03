@@ -35,7 +35,8 @@
   .bk .row1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .bk h3{font-size:18px;line-height:1.5;color:var(--ink)}
   .bk .meta{font-size:12px;color:var(--ink-40);font-family:var(--sans);line-height:1.9}
-  .bk .links{margin-top:auto;padding-top:8px;font-family:"Helvetica Neue",sans-serif;font-size:13px}
+  .bk .links{margin-top:auto;padding-top:8px;font-family:"Helvetica Neue",sans-serif;font-size:13px;
+             display:flex;flex-wrap:wrap;gap:6px 18px}
   .bk .links a{color:var(--sea);text-decoration:underline}
   .bk .links a:hover{color:var(--sun)}
 
@@ -133,13 +134,14 @@
       const title = TriArk.i18n.pick(L, 'title').text || '';
       const img = (L.images && L.images[0]) ? L.images[0] : '';
 
-      const other = tab === 'guest' ? userCache[d.hostId] : userCache[d.guestId];
+      const otherUid = tab === 'guest' ? d.hostId : d.guestId;
+      const other = userCache[otherUid];
       const otherLabel = tab === 'guest' ? t('bk.host') : t('bk.guest');
 
       const meta = [
         t('bk.date') + '：' + fmtDate(d.date),
         t('bk.people') + '：' + d.people + t('bk.peopleUnit'),
-        t('bk.total') + '：¥' + Number(d.priceTotal || 0).toLocaleString(),
+        t('bk.total') + '：' + TriArk.i18n.money(d.priceTotal || 0, d.currency, lang),
         otherLabel + '：' + ((other && other.name) || '')
       ].join('　·　');
 
@@ -154,6 +156,11 @@
           '<p class="links">' +
             (d.roomId
               ? '<a href="chat.html?room=' + esc(d.roomId) + '&lang=' + lang + '">' + t('bk.openChat') + '</a>'
+              : '') +
+            // 相手がどんな人かを、ここからも見られるようにする
+            (otherUid
+              ? '<a class="prof" href="profile.html?uid=' + esc(otherUid) + '&lang=' + lang + '">' +
+                  t(tab === 'guest' ? 'bk.viewHost' : 'bk.viewGuest') + '</a>'
               : '') +
           '</p>' +
         '</div>' +
@@ -206,5 +213,7 @@
 
   TriArk.i18n.onChange(() => { if (me) render(); });
 </script>
+<script src="trial.js"></script>
+<script src="tabbar.js"></script>
 </body>
 </html>

@@ -103,18 +103,82 @@ window.TriArk = window.TriArk || {};
       'veh.title'            : 'あなたの Ark',
       'veh.help'             : 'あなたが旅を運ぶもの。陸なら車、海なら船、空なら飛行機。一度ここに入れておけば、すべての体験ページに出ます。体験ごとに入れ直す必要はありません。',
       'veh.add'              : 'Ark を足す',
-      'veh.namePh'           : '例：ボンゴフレンディ（ルーフテント付き）',
-      'veh.notePh'           : 'ひとこと（例：船はレンタルのため、写真と異なる場合があります）',
+      'veh.namePh.land'      : '車種（例：ハイエース キャンピング仕様）',
+      'veh.namePh.sea'       : '船の種類（例：プレジャーボート 24ft）',
+      'veh.namePh.air'       : '機体（例：セスナ172）',
+      'veh.notePh.land'      : 'ひとこと（例：4人まで。シンクと冷蔵庫、ルーフテントつき）',
+      'veh.notePh.sea'       : 'ひとこと（例：6人まで。トイレと日よけつき。レンタルのため写真と異なる場合があります）',
+      'veh.notePh.air'       : 'ひとこと（例：3人まで。遊覧飛行に使っています）',
       'veh.addPhotos'        : '写真を足す',
-      'veh.gallery'          : 'これまでの旅の様子',
-      'veh.galleryHelp'      : '車内の様子、道具、旅先の風景など。12枚まで。体験ページの下にも並びます。',
+      'veh.common'           : '各体験に共通して表示する写真',
+      'veh.commonHelp'       : 'どの体験にも出したい写真を、ここに一度だけ入れておきます。体験ごとに入れ直さずに済みます。'
+                               + '体験ページの写真の最後に並びます。12枚まで。',
       'veh.uploading'        : '写真をアップロードしています…',
       'veh.uploaded'         : '写真を追加しました。保存を忘れずに。',
       'veh.full'             : 'これ以上は追加できません。',
       'veh.of'               : '{name}さんの Ark',
-      'veh.galleryOf'        : '{name}さんの旅',
       'veh.hostVehicle'      : 'このホストの Ark',
       'veh.hostGallery'      : 'このホストの旅',
+
+      /* ---- 資格・登録・保険 ----
+         法令で許可や登録が要る体験では、ここに書いたものが信頼の根拠になる。
+         TriArk が保証するものではないので、断り書きを必ず添えること */
+      'cert.title'           : '資格・登録・保険',
+      'cert.help'            : 'お持ちの免許・事業登録・保険を書いておけます。ゲストはここを見て、誰とどんな備えで出かけるのかを確かめます。'
+                               + '番号は、発行した役所の名前と一緒に書いてください（例：群馬県知事 第123号）。10件まで。',
+      'cert.add'             : '項目を足す',
+      'cert.noPh'            : '発行者と番号（例：群馬県知事 第123号）',
+      'cert.expPh'           : '有効期限（任意）',
+      'cert.expOf'           : '有効期限 {d}',
+      'cert.note'            : 'お金をいただいて人を乗せる場合、陸でも海でも、法律で許可や登録が必要になることがあります。'
+                               + 'ご自身の体験にどれが必要かは、管轄の運輸支局または都道府県の窓口にご確認ください（無料です）。',
+      'cert.insConfirm'      : '加入している保険について、この使い方で同乗者が補償されるかを保険会社に確認しました',
+      'cert.insConfirmHelp'  : '自動車保険には「日常・レジャー」「通勤・通学」「業務」の区分があり、申告と実態が違うと、事故のときに補償されないことがあります。'
+                               + '「使用目的の区分はこれで合っているか」「ガイドの一環でお客様を乗せているときの事故は補償されるか」の二点を、保険会社にご確認ください。',
+      'cert.insConfirmedLabel' : '保険の適用範囲を保険会社に確認済み',
+      'cert.disclaimer'      : 'ここに表示している内容は、ホストご本人が記載したものです。TriArk は記載を保証するものではなく、'
+                               + '内容および有効性の管理はホストご自身の責任で行われています。',
+      'cert.k.license2'      : '第二種運転免許',
+      'cert.k.taxiBiz'       : '一般乗用旅客自動車運送事業（許可）',
+      'cert.k.charterBiz'    : '一般貸切旅客自動車運送事業（許可）',
+      'cert.k.jikayou'       : '自家用有償旅客運送（登録）',
+      'cert.k.rentacar'      : '自家用自動車有償貸渡業・レンタカー（許可）',
+      'cert.k.boatLic'       : '小型船舶操縦士',
+      'cert.k.boatTokutei'   : '特定操縦免許',
+      'cert.k.futeiki'       : '一般不定期航路事業（登録）',
+      'cert.k.ryokakuFutei'  : '旅客不定期航路事業（許可）',
+      'cert.k.yugyosen'      : '遊漁船業（登録）',
+      'cert.k.guideNat'      : '全国通訳案内士',
+      'cert.k.guideLocal'    : '地域通訳案内士',
+      'cert.k.insCar'        : '自動車保険（任意保険）',
+      'cert.k.insBoat'       : '船客傷害保険',
+      'cert.k.insLiability'  : '賠償責任保険',
+      'cert.k.other'         : 'その他',
+      'cert.insTitle'        : '自動車保険の確認',
+      'sea.title'            : 'この船でお客様を乗せるための登録',
+      'sea.todo'             : 'あと少し',
+      'sea.done'             : '揃いました',
+      'sea.pickBiz'          : '事業の登録を選ぶ',
+      'sea.bizNoPh'          : '登録番号（例：群馬県知事 第123号）',
+      'sea.licNoPh'          : '免許証番号',
+      'sea.ins'              : '船客傷害保険に加入しています',
+      'sea.insShort'         : '加入',
+      'sea.note'             : 'お金をいただいて船にお客様を乗せるには、法律でこれらが必要です。揃うまで、この船の体験は公開できません（下書きの保存はできます）。',
+      'sea.need.biz'         : '事業の登録',
+      'sea.need.lic'         : '特定操縦免許',
+      'sea.need.ins'         : '船客傷害保険',
+      'sea.need.none'        : '海の Ark の登録',
+      'listing.needSea'      : '海の体験を公開するには、プロフィールの Ark に次のものが必要です：{list}',
+      'listing.needDesc'     : '説明文を入力してください。どんな体験なのかが読み取れないと公開できません。',
+      'listing.needDo'       : '「当日やること」を1つ以上入力してください。',
+      'listing.pickup'       : '送迎',
+      'listing.pickupOn'     : 'この体験では、私の車でお客様を送迎します',
+      'listing.pickupHelp'   : '駅や宿から体験の場所までお送りする場合はチェックしてください。体験ページに、自家用車を使うことと、道路運送法上の許可を要しない運送である旨が自動で表示されます。'
+                               + '送迎は無償です。体験料はあくまで案内の対価で、送迎の有無で料金を変えることはできません。'
+                               + '料金の内訳に「ガソリン代」「送迎代」と書くこともできません。',
+      'listing.pickupNote'   : 'この体験では、ホストの自家用自動車による送迎があります。'
+                               + 'ガイドに付随するもので、道路運送法上の許可又は登録を要しない運送です。送迎は無償で、体験料に送迎分は含まれていません。',
+
       'cal.open'             : '空いている日',
       'cal.openEdit'         : '開催できる日',
       'cal.pendingDot'       : '開始日',
@@ -192,7 +256,8 @@ window.TriArk = window.TriArk || {};
       'listing.feeNote'      : '体験そのものへの対価です。',
       'listing.capacity'     : '最大人数',
       'listing.images'       : '写真',
-      'listing.imagesHelp'   : '1枚目が、体験の一覧と詳細の先頭に出ます。並べ替えたいときは、いったん消して入れ直してください。10枚まで。',
+      'listing.imagesHelp'   : '1枚目が、体験の一覧と詳細の先頭に出ます。並べ替えたいときは、いったん消して入れ直してください。10枚まで。写真ごとに一言そえると、旅の様子が伝わります。',
+      'listing.photoNote'    : '一言そえる（任意）',
       'listing.coverTag'     : '表紙',
       'listing.address'      : '出発地の住所',
       'listing.addressPh'    : '神奈川県足柄下郡箱根町湯本',
@@ -314,6 +379,21 @@ window.TriArk = window.TriArk || {};
       'page.listings.title'  : '体験をさがす — TriArk',
       'page.listing.title'   : '体験 — TriArk',
       'nav.findListings'     : '体験をさがす',
+      /* スマホ下部の帯。狭いので、短く言い切る */
+      /* お試し公開中の表示（trial.js） */
+      'listing.currency'     : '通貨',
+      'listing.currencyHelp' : 'ホストが受け取る通貨です。ここで選んだ通貨のまま表示され、他の通貨への換算はしません。',
+      'trial.badge'          : '準備中',
+      'trial.bar'            : 'TriArk はいまお試し公開中です。掲載中の体験はすべて準備中で、実際のお申し込みはまだ受け付けていません。',
+      'trial.note'           : 'この体験はまだ準備中で、お申し込みは受け付けていません。気になることがあれば、問い合わせから聞いてください。',
+      'tab.find'             : 'さがす',
+      'tab.hosts'            : 'ホスト',
+      'tab.becomeHost'       : 'ホストになる',
+      'tab.myListings'       : '自分の体験',
+      'tab.messages'         : 'メッセージ',
+      'tab.bookings'         : '予約',
+      'tab.profile'          : 'プロフィール',
+      'tab.login'            : 'ログイン',
       'listings.title'       : '体験をさがす',
       'listings.lead'        : '',
       'listings.all'         : 'すべて',
@@ -354,6 +434,8 @@ window.TriArk = window.TriArk || {};
       'bk.asHost'            : 'ホストとして',
       'bk.empty'             : 'まだ予約はありません。',
       'bk.openChat'          : 'やりとりを見る',
+      'bk.viewGuest'         : 'ゲストのプロフィールを見る',
+      'bk.viewHost'          : 'ホストのプロフィールを見る',
       'bk.date'              : '希望日',
       'bk.people'            : '人数',
       'bk.peopleUnit'        : '名',
@@ -384,6 +466,7 @@ window.TriArk = window.TriArk || {};
       'chat.confirmCancel'   : 'この予約をキャンセルします。よろしいですか。',
       'chat.actionFailed'    : '処理できませんでした。もう一度お試しください。',
       'host.listings'        : 'このホストの体験',
+      'host.listingsOf'      : '{name}さんの体験',
 
       'page.becomeHost.title': 'ホストになる — TriArk',
       'bh.title'             : 'ホストになる',
@@ -538,18 +621,83 @@ window.TriArk = window.TriArk || {};
       'veh.title'            : 'Your Ark',
       'veh.add'              : 'Add an Ark',
       'veh.help'             : 'What carries your journeys — a van by land, a boat at sea, a plane in the sky. Add them once here and they appear on all your experiences.',
-      'veh.namePh'           : 'e.g. Bongo Friendee with a roof tent',
-      'veh.notePh'           : 'A note (e.g. the boat is a rental, so it may differ from the photos)',
+      'veh.namePh.land'      : 'Model (e.g. Toyota HiAce, camper conversion)',
+      'veh.namePh.sea'       : 'Type of boat (e.g. 24ft pleasure boat)',
+      'veh.namePh.air'       : 'Aircraft (e.g. Cessna 172)',
+      'veh.notePh.land'      : 'A note (e.g. up to 4 people. Sink, fridge and a roof tent)',
+      'veh.notePh.sea'       : 'A note (e.g. up to 6 people. Toilet and sun shade. It is a rental, so it may differ from the photos)',
+      'veh.notePh.air'       : 'A note (e.g. up to 3 people. Used for sightseeing flights)',
       'veh.addPhotos'        : 'Add photos',
-      'veh.gallery'          : 'Your travels so far',
-      'veh.galleryHelp'      : 'Inside the vehicle, your gear, places you have been. Up to twelve. They also appear on your experience pages.',
+      'veh.common'           : 'Photos shown on every experience',
+      'veh.commonHelp'       : 'Put photos here once and they appear on all of your experiences, '
+                               + 'so you do not have to add them again each time. '
+                               + 'They come after the photos of that experience. Up to twelve.',
       'veh.uploading'        : 'Uploading photos…',
       'veh.uploaded'         : 'Photos added. Remember to save.',
       'veh.full'             : 'That is as many as you can add.',
       'veh.of'               : "{name}'s Ark",
-      'veh.galleryOf'        : "{name}'s travels",
       'veh.hostVehicle'      : "This host's Ark",
       'veh.hostGallery'      : 'From this host\'s travels',
+
+      /* ---- Licences, registrations and insurance ---- */
+      'cert.title'           : 'Licences, registrations and insurance',
+      'cert.help'            : 'List the licences, business registrations and insurance you hold. Guests look here to see who they are '
+                               + 'travelling with and what cover is in place. Include the issuing authority with the number '
+                               + '(e.g. Governor of Gunma, No. 123). Up to 10 entries.',
+      'cert.add'             : 'Add an entry',
+      'cert.noPh'            : 'Issuer and number (e.g. Governor of Gunma, No. 123)',
+      'cert.expPh'           : 'Valid until (optional)',
+      'cert.expOf'           : 'Valid until {d}',
+      'cert.note'            : 'Carrying passengers for payment — by road or by sea — may require a licence or registration under Japanese law. '
+                               + 'Check with your regional transport bureau or prefectural office which ones apply to your experience. There is no charge for asking.',
+      'cert.insConfirm'      : 'I have confirmed with my insurer that passengers are covered when I carry them this way',
+      'cert.insConfirmHelp'  : 'Japanese motor policies are rated by stated use — everyday/leisure, commuting, or business. If the stated use does not match '
+                               + 'reality, a claim can be refused. Ask your insurer two things: whether your stated use is correct, and whether passengers are '
+                               + 'covered in an accident while you are carrying them as part of a guided experience.',
+      'cert.insConfirmedLabel' : 'Cover confirmed with insurer',
+      'cert.disclaimer'      : 'The entries above are supplied by the host. TriArk does not verify or guarantee them; keeping them accurate and current '
+                               + 'is the host\'s own responsibility.',
+      'cert.k.license2'      : 'Class 2 driving licence (commercial passenger)',
+      'cert.k.taxiBiz'       : 'Passenger car transport business (licensed)',
+      'cert.k.charterBiz'    : 'Chartered passenger transport business (licensed)',
+      'cert.k.jikayou'       : 'Private vehicle paid passenger transport (registered)',
+      'cert.k.rentacar'      : 'Vehicle rental business (licensed)',
+      'cert.k.boatLic'       : 'Small craft operator licence',
+      'cert.k.boatTokutei'   : 'Specified operator licence (carrying passengers)',
+      'cert.k.futeiki'       : 'General irregular route service (registered)',
+      'cert.k.ryokakuFutei'  : 'Irregular passenger route service (licensed)',
+      'cert.k.yugyosen'      : 'Fishing charter business (registered)',
+      'cert.k.guideNat'      : 'National Government Licensed Guide Interpreter',
+      'cert.k.guideLocal'    : 'Regionally Licensed Guide Interpreter',
+      'cert.k.insCar'        : 'Motor insurance (voluntary)',
+      'cert.k.insBoat'       : 'Passenger liability insurance (marine)',
+      'cert.k.insLiability'  : 'Public liability insurance',
+      'cert.k.other'         : 'Other',
+      'cert.insTitle'        : 'Motor insurance check',
+      'sea.title'            : 'Registration needed to carry guests on this boat',
+      'sea.todo'             : 'Not yet complete',
+      'sea.done'             : 'Complete',
+      'sea.pickBiz'          : 'Choose your business registration',
+      'sea.bizNoPh'          : 'Registration number (e.g. Governor of Gunma, No. 123)',
+      'sea.licNoPh'          : 'Licence number',
+      'sea.ins'              : 'I hold marine passenger liability insurance',
+      'sea.insShort'         : 'held',
+      'sea.note'             : 'Japanese law requires these before you may carry paying passengers by boat. Until they are complete, experiences using this boat cannot be published (drafts can still be saved).',
+      'sea.need.biz'         : 'business registration',
+      'sea.need.lic'         : 'specified operator licence',
+      'sea.need.ins'         : 'marine passenger liability insurance',
+      'sea.need.none'        : 'a boat listed as one of your Arks',
+      'listing.needSea'      : 'To publish a sea experience, your Ark in your profile needs: {list}',
+      'listing.needDesc'     : 'Please write a description. An experience cannot be published unless a guest can tell what it is.',
+      'listing.needDo'       : 'Please list at least one thing you will do on the day.',
+      'listing.pickup'       : 'Pick-up and drop-off',
+      'listing.pickupOn'     : 'I drive guests to and from this experience in my own vehicle',
+      'listing.pickupHelp'   : 'Tick this if you collect guests from a station or their accommodation. The experience page will then state that a private vehicle '
+                               + 'is used and that the transport requires no licence under the Road Transport Act. The transport must be free of charge: the fee is '
+                               + 'for your guiding only, it cannot differ depending on whether a guest is driven, and the price breakdown cannot list fuel or transport.',
+      'listing.pickupNote'   : 'The host drives guests to and from this experience in their own private vehicle. The transport is incidental to the guided experience '
+                               + 'and requires no licence or registration under Japan\'s Road Transport Act. The transport is free of charge and is not part of the fee.',
+
       'cal.open'             : 'Available',
       'cal.openEdit'         : 'Dates you can run this',
       'cal.pendingDot'       : 'Start date',
@@ -627,7 +775,8 @@ window.TriArk = window.TriArk || {};
       'listing.feeNote'      : 'This is the fee for the experience itself.',
       'listing.capacity'     : 'Maximum guests',
       'listing.images'       : 'Photos',
-      'listing.imagesHelp'   : 'The first one appears in the list and at the top of the page. To reorder, remove and add again. Up to ten.',
+      'listing.imagesHelp'   : 'The first one appears in the list and at the top of the page. To reorder, remove and add again. Up to ten. A line about each photo tells the story of the trip.',
+      'listing.photoNote'    : 'Say a word about this photo (optional)',
       'listing.coverTag'     : 'Cover',
       'listing.address'      : 'Meeting point address',
       'listing.addressPh'    : 'Hakone-machi, Ashigarashimo, Kanagawa',
@@ -749,6 +898,21 @@ window.TriArk = window.TriArk || {};
       'page.listings.title'  : 'Find an experience — TriArk',
       'page.listing.title'   : 'Experience — TriArk',
       'nav.findListings'     : 'Find an experience',
+      /* The bar at the bottom on phones. Keep every word short */
+      /* Shown while the site is in trial (trial.js) */
+      'listing.currency'     : 'Currency',
+      'listing.currencyHelp' : 'The currency you are paid in. Prices are shown exactly as you set them, with no conversion.',
+      'trial.badge'          : 'Coming soon',
+      'trial.bar'            : 'TriArk is open as a trial. Every experience listed here is still being prepared, and bookings are not open yet.',
+      'trial.note'           : 'This experience is still being prepared and cannot be booked yet. If you are curious about it, send a question.',
+      'tab.find'             : 'Search',
+      'tab.hosts'            : 'Hosts',
+      'tab.becomeHost'       : 'Host',
+      'tab.myListings'       : 'Listings',
+      'tab.messages'         : 'Messages',
+      'tab.bookings'         : 'Bookings',
+      'tab.profile'          : 'Profile',
+      'tab.login'            : 'Log in',
       'listings.title'       : 'Find an experience',
       'listings.lead'        : '',
       'listings.all'         : 'All',
@@ -789,6 +953,8 @@ window.TriArk = window.TriArk || {};
       'bk.asHost'            : 'As a host',
       'bk.empty'             : 'No bookings yet.',
       'bk.openChat'          : 'Open the conversation',
+      'bk.viewGuest'         : "View the guest's profile",
+      'bk.viewHost'          : "View the host's profile",
       'bk.date'              : 'Date',
       'bk.people'            : 'Guests',
       'bk.peopleUnit'        : '',
@@ -819,6 +985,7 @@ window.TriArk = window.TriArk || {};
       'chat.confirmCancel'   : 'Cancel this booking?',
       'chat.actionFailed'    : 'Could not complete that. Please try again.',
       'host.listings'        : 'Experiences by this host',
+      'host.listingsOf'      : "{name}'s experiences",
 
       'page.becomeHost.title': 'Become a host — TriArk',
       'bh.title'             : 'Become a host',
@@ -984,9 +1151,15 @@ window.TriArk = window.TriArk || {};
   function pickList(obj, field, lang) {
     var l = lang || current;
     obj = obj || {};
+    var src = Array.isArray(obj[field]) ? obj[field] : [];
     var tr = obj.tr && obj.tr[l] && obj.tr[l][field];
-    if (Array.isArray(tr) && tr.length) return tr;
-    return Array.isArray(obj[field]) ? obj[field] : [];
+    if (!Array.isArray(tr) || !tr.length) return src;
+    /* 写真の一言メモのように、並び順に意味がある配列もある。
+       訳が足りないときは、その場所だけ元の文を出す（ずらさない） */
+    if (tr.length < src.length) {
+      return src.map(function (v, i) { return tr[i] == null ? v : tr[i]; });
+    }
+    return tr;
   }
 
   /* 乗り物のような「配列の中の物」を、見る人の言語で取り出す
@@ -1114,8 +1287,43 @@ window.TriArk = window.TriArk || {};
   }
 
   /* ---------- 公開 ---------- */
+  /* ------------------------------------------------------------
+     金額の表示
+     ------------------------------------------------------------
+     ホストが自分の通貨で値段を付けられるようにする。
+     換算はしない（為替レートを取りに行くと、お金も手間もかかるうえ、
+     「いくら払うのか」が実際とずれる）。
+     ホストが書いた通貨で、そのまま見せる。
+
+     書き方は Intl.NumberFormat に任せる。
+     円は小数点なし、ドルは $、ユーロは €、というような違いを
+     自分で表を作って持たなくて済む。
+     ------------------------------------------------------------ */
+  var CURRENCIES = ['JPY','USD','EUR','GBP','AUD','CAD','SGD','KRW'];
+
+  function money(amount, currency, lang) {
+    var n = Number(amount);
+    if (!isFinite(n)) n = 0;
+    var cur = (CURRENCIES.indexOf(currency) !== -1) ? currency : 'JPY';
+    var loc = ((lang || current) === 'en') ? 'en-US' : 'ja-JP';
+    // 端数が無いときは小数点以下を出さない（$7,000.00 より $7,000 の方が読みやすい）
+    var whole = (n % 1 === 0);
+    try {
+      return new Intl.NumberFormat(loc, {
+        style: 'currency', currency: cur,
+        minimumFractionDigits: whole ? 0 : 2,
+        maximumFractionDigits: whole ? 0 : 2
+      }).format(n);
+    } catch (e) {
+      // 古い環境で Intl が通貨を知らない場合の逃げ道
+      return cur + ' ' + n.toLocaleString();
+    }
+  }
+
   window.TriArk.i18n = {
     get: get,
+    money: money,
+    currencies: CURRENCIES,
     set: set,
     t: t,
     pick: pick,

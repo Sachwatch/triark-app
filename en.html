@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ============================================================
+     en.html — 英語圏の人にリンクを送るための入口
+     ------------------------------------------------------------
+     なぜ必要か
+       Facebook や LINE がカードを作るとき、送り込んでくるのは
+       ページを読むだけのプログラムで、JavaScript を動かしません。
+       TriArk の日本語・英語の切り替えは JavaScript でやっているので、
+       ?lang=en を付けても、あちらが読むのは index.html に
+       書いてある日本語の og: タグだけになります。
+
+       そこで「英語の og: タグだけを持った小さなページ」を別に用意し、
+       人が開いたときは JavaScript で英語のトップへ送ります。
+       読みに来たプログラムは JavaScript を動かさないので、
+       英語のカードがそのまま作られます。
+
+     使い分け
+       日本語の人へ  https://triark-chat.web.app/
+       英語の人へ    https://triark-chat.web.app/en.html
+
+     中身を変えたくなったら
+       下の og:title / og:description だけ直せば足ります。
+       トップページ本体（index.html）とは別物なので、
+       こちらを触ってもサイトの見た目は変わりません。
+     ============================================================ -->
+
+<title>TriArk — Journey with a host, by land, sea and sky</title>
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TriArk">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="TriArk — Journey with a host, by land, sea and sky">
+<meta property="og:description" content="Where the journey becomes life. The host owns the vehicle, plans the route, and takes you along — by land, by sea, and one day by air.">
+<meta property="og:url" content="https://triark-chat.web.app/en.html">
+<meta property="og:image" content="https://triark-chat.web.app/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A mountain ridge at sunset, with pampas grass catching the light">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="apple-touch-icon" href="images/icon-v2-180.png">
+<link rel="icon" href="images/icon-v2-64.png" type="image/png">
+
+<!-- 人が開いたときだけ、英語のトップへ送る。
+     カードを作りに来たプログラムは JavaScript を動かさないので、
+     上の og: タグを読んで帰っていく -->
+<script>location.replace('/?lang=en');</script>
+
+<style>
+  body{
+    margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#061F31;color:#F4EDE2;
+    font-family:"Helvetica Neue",Arial,sans-serif;text-align:center;padding:24px;
+  }
+  a{color:#F4EDE2;font-size:17px;letter-spacing:.04em}
+</style>
+</head>
+<body>
+  <!-- JavaScript が動かない環境のための、ただのリンク -->
+  <p><a href="/?lang=en">Enter TriArk →</a></p>
+</body>
+</html>

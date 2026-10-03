@@ -5,6 +5,20 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="page.profile.title">プロフィール — TriArk</title>
+<!-- SNSで共有したときに出るカード（Open Graph）。
+     これが無いと、Facebook や LINE に貼っても題名も写真も出ない -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TriArk">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="プロフィール — TriArk">
+<meta property="og:description" content="旅が、人生になる。乗り物を持っているホストが、自分の旅に人を乗せる。陸・海・空をつなぐ旅のプラットフォームです。">
+<meta property="og:url" content="https://triark-chat.web.app/profile.html">
+<meta property="og:image" content="https://triark-chat.web.app/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="夕暮れの山並みと、光るススキ">
+<meta name="twitter:card" content="summary_large_image">
+
 <link rel="stylesheet" href="style.css">
 <link rel="apple-touch-icon" href="images/icon-v2-180.png">
 <link rel="icon" href="images/icon-v2-64.png" type="image/png">
@@ -126,6 +140,9 @@
   .message.error{color:#C0392B}
   .message.info{color:#7d8d99}
   a.textlink{color:var(--sea);text-decoration:underline;font-size:13px;font-family:var(--sans)}
+  button.out-btn{background:none;border:none;padding:0;cursor:pointer;
+    color:var(--sea);text-decoration:underline;font-size:13px;font-family:var(--sans)}
+  button.out-btn:hover{color:var(--sun)}
   a.textlink:hover{color:var(--sun)}
 
   /* 乗り物と写真 */
@@ -147,19 +164,130 @@
     background:rgba(10,22,34,.65);color:#fff;font-size:13px;line-height:1;cursor:pointer;
   }
   .ph.busy{opacity:.45}
+  /* 写真ごとの一言。写真のすぐ下に置いて、どの写真の話か迷わないようにする */
+  .ph-item{display:flex;flex-direction:column;gap:6px}
+  .ph-item .ph-note{
+    width:100%;padding:7px 9px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    color:var(--ink);font-size:13px;font-family:inherit;line-height:1.6;
+  }
+  .ph-item .ph-note:focus{outline:none;border-color:var(--sun)}
+  .ph-item .ph-note::placeholder{color:#a8b6c0}
   .v-veh{margin-bottom:26px}
   .v-veh .n{font-size:15px;font-weight:600;letter-spacing:.03em}
   .v-veh .k{font:600 11px var(--sans);letter-spacing:.14em;color:var(--earth);margin-bottom:3px}
   .v-veh .note{font-size:13px;color:var(--ink-40);line-height:1.8;margin-top:4px}
-  .v-veh .ph-grid,#galView{
-    display:block;columns:2;column-gap:10px;margin-top:12px;
-  }
-  .v-veh .ph-grid .ph,#galView .ph{
-    aspect-ratio:auto;break-inside:avoid;margin:0 0 10px;background:none;
-  }
-  .v-veh .ph-grid img,#galView img{width:100%;height:auto;min-height:40px;display:block;border-radius:2px;background:#efe9e0}
-  @media(max-width:600px){ .v-veh .ph-grid,#galView{columns:1} }
+  /* 体験の一覧と同じだけ間を空けて、区切りを分かりやすくする */
+  #vehSec{margin-top:50px}
+  /* Ark の写真は控えめに、3枚ずつ横に。
+     大きすぎると、上にある「この人の体験」から目が離れてしまう */
+  .v-veh .ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .v-veh .ph-grid .ph{aspect-ratio:4/3;margin:0;border-radius:2px;overflow:hidden;background:#efe9e0}
+  .v-veh .ph-grid img{width:100%;height:100%;object-fit:cover;display:block}
+  @media(max-width:600px){ .v-veh .ph-grid{grid-template-columns:1fr 1fr} }
   .veh .photo-btn{font-size:12px;padding:7px 14px}
+
+  /* Ark の写真は3枚まで。4枚目からは押して開く。
+     写真の下辺いっぱいに置く帯にする。日本語でも英語でも折り返さず、
+     はみ出さない。
+     ※ 上の「.ph button」（写真を消す丸い×）より後で、より細かく指定する。
+        そうしないと、こちらが 22px の丸にされて縦書きのようになる */
+  .v-veh .ph-grid .ph{position:relative}
+  .v-veh .ph button.more{
+    position:absolute;left:0;right:0;bottom:0;top:auto;width:auto;height:auto;z-index:2;
+    border:none;border-top:1px solid rgba(244,237,226,.22);border-radius:0;
+    background:rgba(6,31,49,.82);color:var(--sand);cursor:pointer;
+    padding:9px 8px;font:600 12px/1.4 var(--sans);letter-spacing:.04em;text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .v-veh .ph button.more:hover{background:var(--sea)}
+
+  /* ---------- 海の Ark の登録 ----------
+     お金をいただいて人を乗せるには、法律で事業の登録が要る。
+     船を選んだときだけ、その Ark の箱の中に出す。
+     陸は、ガイドに付随する送迎であれば許可も免許も要らないので何も出さない */
+  .sea-box.land{border-left-color:var(--earth)}
+  .sea-box{
+    margin:12px 0;padding:13px 14px;border-radius:3px;
+    background:#fbf8f3;border:1px solid var(--line);border-left:3px solid var(--sea);
+  }
+  .sea-head{
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+    font:600 13px var(--sans);letter-spacing:.03em;margin:0 0 10px;
+  }
+  .sea-state{font:600 11px var(--sans);letter-spacing:.08em;padding:2px 8px;border-radius:10px}
+  .sea-state.todo{background:#efe7dc;color:#8a7c6b}
+  .sea-state.done{background:var(--sea);color:#fff}
+  .sea-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+  .sea-row select,.sea-row input{
+    padding:8px 11px;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    font:14px var(--sans);background:#fff;
+  }
+  .sea-row select{flex:0 1 240px;min-width:0}
+  .sea-row input{flex:1 1 200px;min-width:0}
+  .sea-label{font-size:13px;color:var(--ink-40);flex:0 0 auto}
+  .sea-check{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.7;margin-top:4px}
+  .sea-check input{margin-top:3px;flex:0 0 auto}
+  .sea-note{margin:10px 0 0;font-size:11.5px;line-height:1.9;color:var(--ink-40)}
+  .cert-check{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.7}
+  .cert-check input{margin-top:3px;flex:0 0 auto}
+
+
+  /* 閲覧側 */
+  .v-cert{
+    display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;
+    padding:11px 0;border-bottom:1px solid var(--line);
+  }
+  .v-cert:last-of-type{border-bottom:none}
+  .v-cert .k{font-size:14px;font-weight:600;letter-spacing:.02em;flex:0 0 auto}
+  .v-cert .no{font:13px var(--sans);color:var(--ink-40);letter-spacing:.02em}
+  .v-cert .exp{font:12px var(--sans);color:var(--ink-40);margin-left:auto;white-space:nowrap}
+  .cert-disclaimer{
+    margin-top:16px;font-size:11.5px;line-height:1.9;color:var(--ink-40);
+  }
+
+  /* 目次。押すと、その欄まで画面が動く。
+     広い画面 … 左の余白に、縦に並べる
+     狭い画面 … 上の帯のすぐ下に貼り付いて、横に並べる
+     どちらも同じ中身。作るのは buildSideNav() ひとつ */
+  .side-nav{display:none}
+
+  /* --- 狭い画面：横に並ぶ小さな札 --- */
+  @media(max-width:1179px){
+    .side-nav{
+      display:flex;gap:8px;position:sticky;top:58px;z-index:40;
+      margin:0 -24px 22px;padding:10px 24px;
+      background:var(--paper);border-bottom:1px solid var(--line);
+      overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    }
+    .side-nav::-webkit-scrollbar{display:none}
+    .side-nav a{
+      flex:0 0 auto;padding:7px 14px;border-radius:16px;
+      border:1px solid rgba(10,22,34,.16);background:#fff;
+      font:13px/1.4 var(--sans);color:var(--ink-40);text-decoration:none;white-space:nowrap;
+    }
+    .side-nav a.on{border-color:var(--sun);background:var(--sun);color:#fff;font-weight:600}
+  }
+  @media(max-width:600px){
+    .side-nav{margin:0 -20px 20px}
+  }
+
+  /* --- 広い画面：左の余白に縦に並べる --- */
+  @media(min-width:1180px){
+    .side-nav{
+      display:block;position:fixed;top:50%;transform:translateY(-50%);
+      left:calc(50% - 380px - 216px);width:196px;z-index:50;
+    }
+    .side-nav a{
+      display:block;padding:10px 0 10px 14px;border-left:2px solid transparent;
+      font:15px/1.6 var(--sans);color:var(--ink-40);text-decoration:none;
+      transition:color .2s,border-color .2s;
+    }
+    .side-nav a:hover{color:var(--sun)}
+    .side-nav a.on{color:var(--sea);border-left-color:var(--sun);font-weight:600}
+  }
+  /* 押して動いたとき、上の帯や目次に見出しが隠れないようにする */
+  #viewListings,#vehSec,#certSec{scroll-margin-top:84px}
+  @media(max-width:1179px){ #viewListings,#vehSec,#certSec{scroll-margin-top:118px} }
 
   /* 翻訳の確認 */
   .tr-box{margin-top:40px;border:1px solid var(--line);background:#fff;border-radius:3px;padding:20px 22px}
@@ -309,14 +437,15 @@
           <button type="button" class="btn-line" id="vehAdd" data-i18n="veh.add">乗り物を足す</button>
         </div>
 
-        <!-- 旅の様子 -->
+        <!-- どの体験にも出したい写真。体験ごとに入れ直さずに済む -->
         <div class="field">
-          <span class="label" data-i18n="veh.gallery">これまでの旅の様子</span>
-          <p class="help" style="margin:0 0 12px" data-i18n="veh.galleryHelp"></p>
+          <span class="label" data-i18n="veh.common">各体験に共通して表示する写真</span>
+          <p class="help" style="margin:0 0 12px" data-i18n="veh.commonHelp"></p>
           <div class="ph-grid" id="galGrid"></div>
           <label class="photo-btn" for="galFile" data-i18n="veh.addPhotos">写真を足す</label>
           <input type="file" id="galFile" accept="image/*" multiple hidden>
         </div>
+
       </section>
 
       <button class="save" id="saveBtn" data-i18n="common.save">保存する</button>
@@ -337,6 +466,8 @@
         </div>
       </div>
       <p style="margin-top:22px"><a class="textlink" id="viewMine" href="profile.html" data-i18n="profile.viewMine"></a></p>
+      <!-- スマホでは上の三本線を出さないので、ここから出られるようにしておく -->
+      <p style="margin-top:14px"><button type="button" class="textlink out-btn" id="signOutBtn" data-i18n="nav.logout">ログアウト</button></p>
     </div>
 
     <!-- ================= 閲覧（誰でも） ================= -->
@@ -351,6 +482,10 @@
       </div>
       <p class="view-meta" id="viewMeta"></p>
       <div class="v-tags" id="viewTags"></div>
+
+      <!-- 目次。広い画面では左の余白に、狭い画面ではここに横並びで出る。
+           名前と人となりを見てもらってから並べたいので、この位置に置く -->
+      <nav class="side-nav hidden" id="sideNav"></nav>
 
       <div class="v-sec hidden" id="introSec">
         <h3 data-i18n="profile.hostTitle">ホストとしての紹介</h3>
@@ -368,19 +503,21 @@
         <p class="view-text" id="viewFree" style="font-size:15px;color:#42586a"></p>
       </div>
 
+      <div id="viewListings" class="hidden" style="margin-top:50px">
+        <p class="eyebrow" id="listHead">このホストの体験</p>
+        <div id="viewListingCards"></div>
+      </div>
+
       <div class="v-sec hidden" id="vehSec">
         <h3 id="vehHead"></h3>
         <div id="vehView"></div>
       </div>
 
-      <div class="v-sec hidden" id="galSec">
-        <h3 id="galHead"></h3>
-        <div class="ph-grid" id="galView"></div>
-      </div>
-
-      <div id="viewListings" class="hidden" style="margin-top:50px">
-        <p class="eyebrow" data-i18n="host.listings">このホストの体験</p>
-        <div id="viewListingCards"></div>
+      <!-- 資格・登録・保険。ホスト本人が書いたもので、TriArk が保証するものではない -->
+      <div class="v-sec hidden" id="certSec">
+        <h3 id="certHead" data-i18n="cert.title">資格・登録・保険</h3>
+        <div id="certView"></div>
+        <p class="cert-disclaimer" data-i18n="cert.disclaimer"></p>
       </div>
 
       <p style="margin-top:34px"><a class="textlink hidden" id="editMine" href="profile.html" data-i18n="host.editMine"></a></p>
@@ -391,10 +528,11 @@
   </div>
 
 <script src="i18n.js"></script>
+<script src="certs.js"></script>
 <script src="limits.js"></script>
 <script src="lightbox.js"></script>
 <script type="module">
-  import { app, db, onUser, getUser } from './auth.js';
+  import { app, db, onUser, getUser, logOut } from './auth.js';
   import {
     doc, getDoc, setDoc, updateDoc, serverTimestamp, deleteField,
     collection, query, where, getDocs
@@ -580,8 +718,11 @@
      ============================================================ */
   const VEH_TYPES = ['land', 'sea', 'air'];
   const VEH_MAX = 5, VEH_PHOTOS = 6, GAL_MAX = 12;
+
+  const NOTE_LEN = 60;   // 写真にそえる一言の長さ
   let vehicles = [];     // [{ type, name, note, photos:[url] }]
-  let gallery  = [];     // [url]
+  let gallery  = [];     // どの体験にも出す写真 [url]
+  let galNotes = [];     // gallery と同じ並びの一言メモ
 
   /* 長い辺を 1600px までに縮めた JPEG にする */
   async function wideJpeg(file, max) {
@@ -639,6 +780,49 @@
       '</div>').join('');
   }
 
+  /* その Ark に要るものを、Ark の箱の中に出す。
+     ・海 … お金をいただいて人を乗せるには事業の登録が要る（海上運送法・遊漁船業法）
+     ・陸 … 許可も免許も要らない形で設計しているので、保険の確認だけ
+     ・空 … 準備中 */
+  function arkBox(v) {
+    if (v.type === 'land') {
+      return '<div class="sea-box land">' +
+        '<p class="sea-head">' + esc(t('cert.insTitle')) + '</p>' +
+        '<label class="sea-check">' +
+          '<input type="checkbox" data-f="carInsOk"' + (v.carInsOk ? ' checked' : '') + '>' +
+          '<span>' + esc(t('cert.insConfirm')) + '</span>' +
+        '</label>' +
+        '<p class="sea-note">' + esc(t('cert.insConfirmHelp')) + '</p>' +
+      '</div>';
+    }
+    if (v.type !== 'sea') return '';
+    const miss = TriArk.certs.missingOf(v);
+    return '<div class="sea-box">' +
+      '<p class="sea-head">' + esc(t('sea.title')) +
+        '<span class="sea-state ' + (miss.length ? 'todo' : 'done') + '">' +
+          esc(t(miss.length ? 'sea.todo' : 'sea.done')) + '</span></p>' +
+      '<div class="sea-row">' +
+        '<select data-f="seaBizKind">' +
+          '<option value=""' + (!v.seaBizKind ? ' selected' : '') + '>' + esc(t('sea.pickBiz')) + '</option>' +
+          TriArk.certs.SEA_BIZ.map(k => '<option value="' + k + '"' +
+            (v.seaBizKind === k ? ' selected' : '') + '>' + esc(t('cert.k.' + k)) + '</option>').join('') +
+        '</select>' +
+        '<input type="text" data-f="seaBizNo" maxlength="60" value="' + esc(v.seaBizNo || '') + '"' +
+          ' placeholder="' + esc(t('sea.bizNoPh')) + '">' +
+      '</div>' +
+      '<div class="sea-row">' +
+        '<span class="sea-label">' + esc(t('cert.k.boatTokutei')) + '</span>' +
+        '<input type="text" data-f="seaLicNo" maxlength="60" value="' + esc(v.seaLicNo || '') + '"' +
+          ' placeholder="' + esc(t('sea.licNoPh')) + '">' +
+      '</div>' +
+      '<label class="sea-check">' +
+        '<input type="checkbox" data-f="seaInsOk"' + (v.seaInsOk ? ' checked' : '') + '>' +
+        '<span>' + esc(t('sea.ins')) + '</span>' +
+      '</label>' +
+      '<p class="sea-note">' + esc(t('sea.note')) + '</p>' +
+    '</div>';
+  }
+
   function renderVehicles() {
     const box = el('vehList');
     box.innerHTML = vehicles.map((v, i) =>
@@ -647,10 +831,11 @@
           '<select data-f="type">' + VEH_TYPES.map(k =>
             '<option value="' + k + '"' + (v.type === k ? ' selected' : '') + '>' +
             esc(t('listing.type.' + k)) + '</option>').join('') + '</select>' +
-          '<input type="text" data-f="name" maxlength="40" value="' + esc(v.name || '') + '" placeholder="' + esc(t('veh.namePh')) + '">' +
+          '<input type="text" data-f="name" maxlength="40" value="' + esc(v.name || '') + '" placeholder="' + esc(t('veh.namePh.' + (v.type || 'land'))) + '">' +
           '<button type="button" class="rm" aria-label="remove">×</button>' +
         '</div>' +
-        '<textarea data-f="note" maxlength="200" placeholder="' + esc(t('veh.notePh')) + '">' + esc(v.note || '') + '</textarea>' +
+        '<textarea data-f="note" maxlength="200" placeholder="' + esc(t('veh.notePh.' + (v.type || 'land'))) + '">' + esc(v.note || '') + '</textarea>' +
+        arkBox(v) +
         '<div class="ph-grid">' + photoGrid(v.photos || []) + '</div>' +
         '<label class="photo-btn" for="vehFile' + i + '">' + esc(t('veh.addPhotos')) + '</label>' +
         '<input type="file" id="vehFile' + i + '" accept="image/*" multiple hidden>' +
@@ -660,8 +845,17 @@
     box.querySelectorAll('.veh').forEach(row => {
       const i = parseInt(row.dataset.i, 10);
       row.querySelectorAll('[data-f]').forEach(inp => {
-        inp.addEventListener('change', () => { vehicles[i][inp.dataset.f] = inp.value; });
-        inp.addEventListener('input',  () => { vehicles[i][inp.dataset.f] = inp.value; });
+        const f = inp.dataset.f;
+        const put = () => {
+          vehicles[i][f] = (inp.type === 'checkbox') ? inp.checked : inp.value;
+          /* 種類を変えたら箱ごと作り直す（海なら登録の欄が出る）。
+             登録の中身を打っている間は、揃ったかどうかの札だけ差し替える
+             （作り直すと入力中のカーソルが飛ぶため） */
+          if (f === 'type') renderVehicles();
+          else if (f.indexOf('sea') === 0) refreshSeaState(row, vehicles[i]);
+        };
+        inp.addEventListener('change', put);
+        inp.addEventListener('input',  put);
       });
       row.querySelector('.rm').addEventListener('click', () => { vehicles.splice(i, 1); renderVehicles(); });
       row.querySelectorAll('.ph button').forEach(b => b.addEventListener('click', () => {
@@ -675,20 +869,66 @@
     el('vehAdd').classList.toggle('hidden', vehicles.length >= VEH_MAX);
   }
 
-  el('vehAdd').addEventListener('click', () => {
-    if (vehicles.length >= VEH_MAX) return;
-    vehicles.push({ type: 'land', name: '', note: '', photos: [] });
-    renderVehicles();
-  });
-
-  function renderGallery() {
-    el('galGrid').innerHTML = photoGrid(gallery);
-    el('galGrid').querySelectorAll('.ph button').forEach(b =>
-      b.addEventListener('click', () => { gallery.splice(parseInt(b.dataset.i, 10), 1); renderGallery(); }));
+  /* 打っているそばから「揃いました」に変える */
+  function refreshSeaState(row, v) {
+    const tag = row.querySelector('.sea-state');
+    if (!tag) return;
+    const miss = TriArk.certs.missingOf(v);
+    tag.className = 'sea-state ' + (miss.length ? 'todo' : 'done');
+    tag.textContent = t(miss.length ? 'sea.todo' : 'sea.done');
   }
+
+  /* 共通の写真。体験の編集画面と同じ形にして、ホストが迷わないようにする */
+  function renderGallery() {
+    el('galGrid').innerHTML = gallery.map((u, i) =>
+      '<div class="ph-item">' +
+        '<div class="ph" data-full="' + esc(u) + '">' +
+          '<img src="' + esc(u) + '" alt="" loading="lazy">' +
+          '<button type="button" data-i="' + i + '" aria-label="remove">×</button>' +
+        '</div>' +
+        '<input type="text" class="ph-note" data-i="' + i + '" maxlength="' + NOTE_LEN + '"' +
+          ' value="' + esc(galNotes[i] || '') + '"' +
+          ' placeholder="' + esc(t('listing.photoNote')) + '">' +
+      '</div>').join('');
+
+    el('galGrid').querySelectorAll('.ph button').forEach(b =>
+      b.addEventListener('click', () => {
+        const i = parseInt(b.dataset.i, 10);
+        gallery.splice(i, 1);
+        galNotes.splice(i, 1);      // 写真と一言は、必ず同じ並びに保つ
+        renderGallery();
+      }));
+
+    el('galGrid').querySelectorAll('input.ph-note').forEach(inp =>
+      inp.addEventListener('input', () => {
+        galNotes[parseInt(inp.dataset.i, 10)] = inp.value;
+      }));
+  }
+
+  /* 画面にある一言を控えに取り込む（保存の直前に呼ぶ） */
+  function collectGalNotes() {
+    el('galGrid').querySelectorAll('input.ph-note').forEach(inp => {
+      galNotes[parseInt(inp.dataset.i, 10)] = inp.value;
+    });
+    galNotes.length = gallery.length;
+    return gallery.map((_, i) => String(galNotes[i] || '').trim().slice(0, NOTE_LEN));
+  }
+
   el('galFile').addEventListener('change', async (e) => {
     const files = Array.from(e.target.files); e.target.value = '';
+    const before = gallery.length;
     await takePhotos(files, gallery, GAL_MAX, renderGallery);
+    // 増えたぶんだけ、空の一言を足しておく
+    while (galNotes.length < gallery.length) galNotes.push('');
+    if (gallery.length !== before) renderGallery();
+  });
+
+  el('vehAdd').addEventListener('click', () => {
+    if (vehicles.length >= VEH_MAX) return;
+    vehicles.push({ type: 'land', name: '', note: '', photos: [],
+                    seaBizKind: '', seaBizNo: '', seaLicNo: '', seaInsOk: false,
+                    carInsOk: false });
+    renderVehicles();
   });
 
   /* ============================================================
@@ -738,9 +978,23 @@
 
     vehicles = Array.isArray(h.vehicles) ? h.vehicles.map(v => ({
       type: v.type || 'land', name: v.name || '', note: v.note || '',
-      photos: Array.isArray(v.photos) ? v.photos.slice(0, VEH_PHOTOS) : []
+      photos: Array.isArray(v.photos) ? v.photos.slice(0, VEH_PHOTOS) : [],
+      seaBizKind: v.seaBizKind || '', seaBizNo: v.seaBizNo || '',
+      seaLicNo  : v.seaLicNo   || '', seaInsOk : !!v.seaInsOk,
+      carInsOk  : !!v.carInsOk
     })).slice(0, VEH_MAX) : [];
-    gallery = Array.isArray(h.gallery) ? h.gallery.slice(0, GAL_MAX) : [];
+
+    // 写真と一言は対で読む。片方だけ間引くと並びがずれる
+    const rawGal   = Array.isArray(h.gallery)      ? h.gallery      : [];
+    const rawNotes = Array.isArray(h.galleryNotes) ? h.galleryNotes : [];
+    gallery = []; galNotes = [];
+    rawGal.forEach((u, i) => {
+      if (!u || gallery.length >= GAL_MAX) return;
+      gallery.push(u);
+      galNotes.push(String(rawNotes[i] || ''));
+    });
+
+
     renderVehicles();
     renderGallery();
 
@@ -819,9 +1073,19 @@
           intro   : el('intro').value.trim(),
           vehicles: vehicles
             .filter(v => v.name || (v.photos && v.photos.length))
-            .map(v => ({ type: v.type || 'land', name: (v.name || '').trim(),
-                         note: (v.note || '').trim(), photos: v.photos || [] })),
-          gallery : gallery,
+            .map(v => ({
+              type: v.type || 'land', name: (v.name || '').trim(),
+              note: (v.note || '').trim(), photos: v.photos || [],
+              /* 海のときだけ意味のある欄。陸に戻したときは空にして、
+                 使っていない登録番号が残らないようにする */
+              seaBizKind: v.type === 'sea' ? (v.seaBizKind || '') : '',
+              seaBizNo  : v.type === 'sea' ? String(v.seaBizNo || '').trim().slice(0, 60) : '',
+              seaLicNo  : v.type === 'sea' ? String(v.seaLicNo || '').trim().slice(0, 60) : '',
+              seaInsOk  : v.type === 'sea'  ? !!v.seaInsOk : false,
+              carInsOk  : v.type === 'land' ? !!v.carInsOk : false
+            })),
+          gallery      : gallery,
+          galleryNotes : collectGalNotes(),
           headline_en: deleteField(),
           basedIn_en : deleteField(),
           intro_en   : deleteField(),
@@ -966,24 +1230,64 @@
     // 見出しは「○○さんの Ark」。ゲストが読む場所なので、名前を主語にする
     const firstName = String(u.name || '').trim().split(/[\s\u3000]+/)[0] || '';
     el('vehHead').textContent = t('veh.of').replace('{name}', firstName);
-    el('galHead').textContent = t('veh.galleryOf').replace('{name}', firstName);
+    el('listHead').textContent = firstName
+      ? t('host.listingsOf').replace('{name}', firstName) : t('host.listings');
 
     // Ark と旅の写真（体験ページからも同じものを参照する）
     const vehs = h ? TriArk.i18n.pickObjList(h, 'vehicles', ['name', 'note']) : [];
-    el('vehView').innerHTML = vehs.map(v =>
-      '<div class="v-veh">' +
+    /* 写真は3枚だけ並べ、4枚目からは「すべての写真を表示」で開く。
+       中途半端に2段目が欠けて並ぶと寂しく見えるため */
+    const tile = (p) => '<div class="ph" data-full="' + esc(p) + '"><img src="' + esc(p) + '" alt="" loading="lazy">';
+    el('vehView').innerHTML = vehs.map((v, vi) => {
+      const ps   = (v.photos || []).filter(Boolean);
+      const head = ps.slice(0, 3);
+      const rest = ps.slice(3);
+      return '<div class="v-veh">' +
         '<p class="k">' + esc(t('listing.type.' + (v.type || 'land'))) + '</p>' +
         '<p class="n">' + esc(v.name || '') + '</p>' +
         (v.note ? '<p class="note">' + esc(v.note) + '</p>' : '') +
-        '<div class="ph-grid">' + (v.photos || []).map(u =>
-          '<div class="ph" data-full="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy"></div>').join('') + '</div>' +
-      '</div>').join('');
+        '<div class="ph-grid">' + head.map((p, i) =>
+          tile(p) +
+          ((rest.length && i === head.length - 1)
+            ? '<button type="button" class="more" data-veh="' + vi + '">' + esc(t('detail.allPhotos')) + '</button>'
+            : '') + '</div>').join('') + '</div>' +
+        (rest.length
+          ? '<div class="ph-grid hidden" data-rest="' + vi + '">' +
+              rest.map(p => tile(p) + '</div>').join('') + '</div>'
+          : '') +
+      '</div>';
+    }).join('');
+    el('vehView').querySelectorAll('button.more').forEach(b =>
+      b.addEventListener('click', () => {
+        const box = el('vehView').querySelector('[data-rest="' + b.dataset.veh + '"]');
+        if (box) box.classList.remove('hidden');
+        b.remove();
+      }));
     el('vehSec').classList.toggle('hidden', !vehs.length);
 
-    const gal = (h && Array.isArray(h.gallery)) ? h.gallery : [];
-    el('galView').innerHTML = gal.map(u =>
-      '<div class="ph" data-full="' + esc(u) + '"><img src="' + esc(u) + '" alt="" loading="lazy"></div>').join('');
-    el('galSec').classList.toggle('hidden', !gal.length);
+    /* 船の登録。番号は固有名詞なので訳さず、見出しだけ訳す。
+       どの船のものかがわかるように、右端に Ark の名前を出す */
+    const raw = (h && Array.isArray(h.vehicles)) ? h.vehicles : [];
+    const rows = [];
+    raw.forEach((v, n) => {
+      if (!v || v.type !== 'sea') return;
+      const nm = (vehs[n] && vehs[n].name) || v.name || '';
+      if (v.seaBizKind && v.seaBizNo) rows.push([t('cert.k.' + v.seaBizKind), v.seaBizNo, nm]);
+      if (v.seaLicNo)                 rows.push([t('cert.k.boatTokutei'),     v.seaLicNo, nm]);
+      if (v.seaInsOk)                 rows.push([t('cert.k.insBoat'),         t('sea.insShort'), nm]);
+    });
+    raw.forEach((v, n) => {
+      if (!v || v.type !== 'land' || !v.carInsOk) return;
+      rows.push([t('cert.insConfirmedLabel'), '', (vehs[n] && vehs[n].name) || v.name || '']);
+    });
+
+    el('certView').innerHTML = rows.map(r =>
+      '<div class="v-cert">' +
+        '<span class="k">' + esc(r[0]) + '</span>' +
+        (r[1] ? '<span class="no">' + esc(r[1]) + '</span>' : '') +
+        (r[2] ? '<span class="exp">' + esc(r[2]) + '</span>' : '') +
+      '</div>').join('');
+    el('certSec').classList.toggle('hidden', !rows.length);
 
     const intro = h ? TriArk.i18n.pick(h, 'intro') : { text: '' };
     el('viewIntro').textContent = intro.text || '';
@@ -1001,7 +1305,88 @@
 
     if (isHost) await renderHostListings(uid);
     else el('viewListings').classList.add('hidden');
+    // 目次は、中身を出したあとで作る。
+    // 隠れているうちは、どの欄も画面の位置が 0 と返ってくるので、
+    // 「いま見ている欄」を正しく決められない
     show('viewMode');
+    buildSideNav();
+  }
+
+  /* ------------------------------------------------------------
+     左の余白に出す目次
+     ・出ている欄だけを並べる
+     ・見出しの文字をそのまま使うので、言語を変えても中身とずれない
+     ・押すと、その欄まで画面が動く
+     ------------------------------------------------------------ */
+  let navScroll = null;
+
+  function buildSideNav() {
+    const nav = el('sideNav');
+    if (!nav) return;
+    if (navScroll) { window.removeEventListener('scroll', navScroll); navScroll = null; }
+
+    const items = [
+      ['viewListings', 'listHead'],
+      ['vehSec',       'vehHead'],
+      ['certSec',      'certHead']
+    ].filter(([sec]) => {
+      const s = el(sec);
+      return s && !s.classList.contains('hidden');
+    });
+
+    // 1つしかないときは、目次にする意味がない
+    nav.classList.toggle('hidden', items.length < 2);
+    if (items.length < 2) { nav.innerHTML = ''; return; }
+
+    nav.innerHTML = items.map(([sec, head]) =>
+      '<a href="#' + sec + '" data-sec="' + sec + '">' +
+        esc((el(head) && el(head).textContent) || '') + '</a>').join('');
+
+    /* 押された欄は、その場で印を移す。
+       画面が動き終わるまで待つと、指を離してから一呼吸おいて色が変わり、
+       押したことが伝わらない。動いている間は、この印を優先する */
+    let picked = null, pickTimer = null;
+
+    const atBottom = () =>
+      window.innerHeight + window.scrollY >=
+      (document.documentElement.scrollHeight || document.body.scrollHeight) - 4;
+
+    nav.querySelectorAll('a').forEach(a =>
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const s = el(a.dataset.sec);
+        if (!s) return;
+        picked = a.dataset.sec;
+        clearTimeout(pickTimer);
+        pickTimer = setTimeout(() => { picked = null; mark(); }, 1000);
+        s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        mark();
+      }));
+
+    // いま見ている欄に印を付ける。
+    // まだ下りていないときは、いちばん上の欄（体験）に印を付けておく
+    const mark = () => {
+      let on = items[0][0];
+      if (picked) {
+        on = picked;
+      } else if (atBottom()) {
+        /* いちばん下の欄は、画面の上まで来られないことがある。
+           （その下に中身が無いので、それ以上ページが動かない）
+           いちばん下まで来ているなら、最後の欄を見ているとみなす */
+        on = items[items.length - 1][0];
+      } else {
+        items.forEach(([sec]) => {
+          const s = el(sec);
+          if (!s || !s.offsetHeight) return;   // まだ画面に出ていない欄は数えない
+          if (s.getBoundingClientRect().top <= 140) on = sec;
+        });
+      }
+      nav.querySelectorAll('a').forEach(a =>
+        a.classList.toggle('on', a.dataset.sec === on));
+    };
+    navScroll = mark;
+    window.addEventListener('scroll', navScroll, { passive: true });
+    mark();
   }
 
   async function renderHostListings(uid) {
@@ -1019,7 +1404,7 @@
       const title = TriArk.i18n.pick(d, 'title').text || '';
       const area  = TriArk.i18n.pick(d, 'area').text || '';
       const img   = (d.images && d.images[0]) ? d.images[0] : '';
-      const fee   = d.price ? '¥' + Number(d.price).toLocaleString() : '';
+      const fee   = d.price ? TriArk.i18n.money(d.price, d.currency, lang) : '';
       const meta  = [area, fee ? t('listing.fee') + ' ' + fee : ''].filter(Boolean).join('　·　');
       return '<a class="mini-card" href="listing.html?id=' + i.id + '&lang=' + lang + '">' +
         '<div class="mc-img"' + (img ? ' style="background-image:url(\'' + esc(img) + '\')"' : '') + '></div>' +
@@ -1047,6 +1432,10 @@
     }
     show('editMode');
     el('viewMine').href = 'profile.html?uid=' + user.uid + '&lang=' + TriArk.i18n.get();
+    el('signOutBtn').onclick = async () => {
+      await logOut();
+      location.href = 'index.html?lang=' + TriArk.i18n.get();
+    };
     try { await loadIntoForm(user.uid); }
     catch (e) { console.error(e); buildLangChecks({}); buildInterests([]); }
   });
@@ -1059,5 +1448,7 @@
     }
   });
 </script>
+<script src="trial.js"></script>
+<script src="tabbar.js"></script>
 </body>
 </html>

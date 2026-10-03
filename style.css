@@ -179,34 +179,60 @@ body.surface-dark .state{color:var(--mist)}
 @media(max-width:900px){
   .site-header{padding:6px 18px;min-height:58px}
   .site-header .sh-logo svg{height:42px}
-  .site-header .sh-toggle{display:block}
+  /* 行き先は画面の下の帯（tabbar.js）に移した。
+     三本線の引き出しは出さず、言語の切り替えだけを上に残す。
+     どの画面からでも、日本語と英語を一押しで替えられるようにしておきたい */
+  .site-header .sh-toggle{display:none}
+  .site-header .sh-shade{display:none}
   .site-header .sh-nav{
-    position:fixed;top:0;right:0;bottom:0;width:min(78vw,320px);z-index:110;
-    background:var(--sea-deep);
-    flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;
-    padding:84px 28px 40px;overflow-y:auto;
-    transform:translateX(100%);visibility:hidden;
-    transition:transform .3s ease,visibility 0s linear .3s;
+    position:static;width:auto;z-index:auto;background:none;
+    flex-direction:row;align-items:center;gap:0;padding:0;overflow:visible;
+    transform:none;visibility:visible;transition:none;box-shadow:none;
   }
-  .site-header .sh-nav.open{
-    transform:translateX(0);visibility:visible;transition:transform .3s ease;
-    box-shadow:-10px 0 40px rgba(0,0,0,.3);
+  .site-header .auth-nav{display:none}
+  .site-header .lang-toggle{margin:0;align-self:auto}
+  .site-header .lang-toggle button{padding:7px 12px;font-size:12px}
+}
+
+/* ============================================================
+   スマホの画面の下に出す帯（tabbar.js が中身を作る）
+   ------------------------------------------------------------
+   ・狭い画面のときだけ出す。広い画面では上のヘッダーが行き先を持つ
+   ・色はヘッダーと同じ墨色。明るい画面でも濃紺の画面でも浮かない
+   ・iPhone の下端の余白（ホームバー）ぶんを足しておく
+   ============================================================ */
+.tabbar{display:none}
+
+@media(max-width:900px){
+  .tabbar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:95;
+    background:var(--ink);border-top:1px solid rgba(244,237,226,.12);
+    padding:7px 2px;padding-bottom:calc(7px + env(safe-area-inset-bottom, 0px));
+    font-family:var(--sans);
   }
-  .site-header .auth-nav{flex-direction:column;align-items:stretch;gap:0;width:100%}
-  .site-header .auth-nav a,
-  .site-header .auth-nav .auth-name{
-    display:block;width:100%;padding:15px 0;font-size:16px;text-align:left;
-    border-bottom:1px solid var(--line-dark);
+  .tabbar a{
+    flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:2px 2px;text-decoration:none;color:rgba(244,237,226,.60);
+    font-size:10px;line-height:1.25;letter-spacing:.01em;text-align:center;
+    transition:color .18s;
   }
-  .site-header .auth-nav .btn-outline{border:none;border-bottom:1px solid var(--line-dark);border-radius:0;padding:15px 0}
-  .site-header .auth-nav .btn-fill{text-align:center;padding:14px 0;margin-top:22px;font-size:15px;width:100%}
-  .site-header .lang-toggle{margin-top:26px;align-self:flex-start}
-  .site-header .lang-toggle button{padding:10px 18px}
-  .site-header .sh-shade{
-    display:block;position:fixed;inset:0;z-index:105;background:rgba(6,31,49,.45);
-    opacity:0;pointer-events:none;transition:opacity .3s;
+  .tabbar a span:last-child{
+    display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   }
-  .site-header .sh-shade.open{opacity:1;pointer-events:auto}
+  .tabbar a.current{color:var(--sun)}
+  .tabbar a:active{color:var(--sand)}
+  .tabbar .tb-ico{position:relative;display:block;line-height:0}
+  .tabbar svg{
+    width:23px;height:23px;display:block;
+    fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  }
+  /* 未読のしるし */
+  .tabbar .tb-dot{
+    position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
+    background:var(--sun);border:1.5px solid var(--ink);
+  }
+  /* 帯のぶんだけ、本文の下に余白を作る（最後の行が隠れないように） */
+  body{padding-bottom:calc(62px + env(safe-area-inset-bottom, 0px))}
 }
 
 /* ヘッダーの下に置く「← 一覧へ」などの小さな戻り道 */

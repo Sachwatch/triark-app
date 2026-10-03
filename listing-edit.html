@@ -175,6 +175,17 @@
     position:absolute;left:0;bottom:0;background:rgba(10,22,34,.72);color:#fff;
     font:600 11px var(--sans);letter-spacing:.08em;padding:4px 9px;border-radius:0 2px 0 0;
   }
+  /* 写真ごとの一言メモ。写真のすぐ下に置いて、どの写真の話か迷わないようにする */
+  .ph-item{display:flex;flex-direction:column;gap:6px}
+  .ph-item .ph-note{
+    width:100%;padding:7px 9px;background:#fff;border:1px solid rgba(10,22,34,.18);border-radius:3px;
+    color:var(--ink);font-size:13px;font-family:inherit;line-height:1.6;
+  }
+  .ph-item .ph-note:focus{outline:none;border-color:var(--sun)}
+  .ph-item .ph-note::placeholder{color:#a8b6c0}
+  /* 送迎のチェック。道路運送法の表示につながる欄なので、他より少し目立たせる */
+  .pickup-check{display:flex;gap:9px;align-items:flex-start;font-size:14px;line-height:1.7}
+  .pickup-check input{margin-top:4px;flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -244,6 +255,16 @@
         <p class="help" data-i18n="listing.linesHelp"></p>
       </div>
 
+      <!-- 送迎があるなら、体験ページにそう書く義務がある（道路運送法） -->
+      <div class="field">
+        <span class="label" data-i18n="listing.pickup">送迎</span>
+        <label class="pickup-check">
+          <input type="checkbox" id="pickup">
+          <span data-i18n="listing.pickupOn"></span>
+        </label>
+        <p class="help" style="margin:8px 0 0 27px" data-i18n="listing.pickupHelp"></p>
+      </div>
+
       <p class="write-note" data-i18n="profile.anyLang"></p>
 
       <!-- 料金・人数 -->
@@ -251,6 +272,11 @@
         <div class="field">
           <label for="price" data-i18n="listing.price">料金</label>
           <input type="number" id="price" min="0" step="1000" value="0">
+          <!-- ホストが受け取る通貨。換算はしない -->
+          <label for="currency" data-i18n="listing.currency"
+                 style="margin-top:14px">通貨</label>
+          <select id="currency"></select>
+          <p class="help" data-i18n="listing.currencyHelp"></p>
         </div>
         <div class="field">
           <label for="capacity" data-i18n="listing.capacity">最大人数</label>
@@ -358,6 +384,7 @@
   </div>
 
 <script src="i18n.js"></script>
+<script src="certs.js"></script>
 <script src="limits.js"></script>
 <script type="module">
   import { app, db, onUser, getUser, getProfile } from './auth.js';
@@ -806,7 +833,9 @@
      ============================================================ */
   const storage   = getStorage(app);
   const IMG_MAX   = 10;
+  const NOTE_LEN  = 60;   // 一言メモの長さ。短く言い切ってもらう
   let   images    = [];
+  let   imgNotes  = [];   // images と同じ並び。写真ごとの一言メモ（空でもよい）
 
   /* 長辺を max に縮めた JPEG にする。そのまま上げると重すぎるため */
   async function wideJpeg(file, max) {
@@ -839,19 +868,52 @@
 
   function renderImages() {
     el('imgGrid').innerHTML = images.map((u, i) =>
-      '<div class="ph" data-full="' + escHtml(u) + '">' +
-        '<img src="' + escHtml(u) + '" alt="" loading="lazy">' +
-        (i === 0 ? '<span class="cover-tag">' + escHtml(t('listing.coverTag')) + '</span>' : '') +
-        '<button type="button" data-i="' + i + '" aria-label="remove">×</button>' +
+      '<div class="ph-item">' +
+        '<div class="ph" data-full="' + escHtml(u) + '">' +
+          '<img src="' + escHtml(u) + '" alt="" loading="lazy">' +
+          (i === 0 ? '<span class="cover-tag">' + escHtml(t('listing.coverTag')) + '</span>' : '') +
+          '<button type="button" data-i="' + i + '" aria-label="remove">×</button>' +
+        '</div>' +
+        '<input type="text" class="ph-note" data-i="' + i + '" maxlength="' + NOTE_LEN + '"' +
+          ' value="' + escHtml(imgNotes[i] || '') + '"' +
+          ' placeholder="' + escHtml(t('listing.photoNote')) + '">' +
       '</div>').join('');
+
     el('imgGrid').querySelectorAll('.ph button').forEach(b =>
       b.addEventListener('click', () => {
-        images.splice(parseInt(b.dataset.i, 10), 1);
+        const i = parseInt(b.dataset.i, 10);
+        images.splice(i, 1);
+        imgNotes.splice(i, 1);          // 写真と一言メモは、必ず同じ並びに保つ
         renderImages();
       }));
+
+    // 打った内容をその場で控えておく。作り直しのときに消えないように
+    el('imgGrid').querySelectorAll('input.ph-note').forEach(inp =>
+      inp.addEventListener('input', () => {
+        imgNotes[parseInt(inp.dataset.i, 10)] = inp.value;
+      }));
+
     document.querySelector('label[for=imgFile]')
       .classList.toggle('hidden', images.length >= IMG_MAX);
   }
+
+  /* 画面にある一言メモを、控えに取り込む（保存の直前に呼ぶ） */
+  function collectNotes() {
+    el('imgGrid').querySelectorAll('input.ph-note').forEach(inp => {
+      imgNotes[parseInt(inp.dataset.i, 10)] = inp.value;
+    });
+    // images と長さを揃える。足りない分は空にする
+    imgNotes.length = images.length;
+    return images.map((_, i) => String(imgNotes[i] || '').trim().slice(0, NOTE_LEN));
+  }
+
+  /* 通貨の選択肢。i18n.js が持っている一覧から作る */
+  (function buildCurrency() {
+    const sel = el('currency');
+    if (!sel) return;
+    sel.innerHTML = (TriArk.i18n.currencies || ['JPY'])
+      .map(c => '<option value="' + c + '">' + c + '</option>').join('');
+  })();
 
   el('imgFile').addEventListener('change', async (e) => {
     // 先に取り出しておく。input を空にすると、この一覧も消えてしまう
@@ -864,7 +926,7 @@
     for (const f of picked) {
       try {
         const url = await uploadPhoto(f);
-        if (url) { images.push(url); renderImages(); }
+        if (url) { images.push(url); imgNotes.push(''); renderImages(); }
       } catch (err) {
         console.error('[listing] 写真のアップロードに失敗', err);
         message('profile.photoFailed', 'error');
@@ -897,8 +959,19 @@
     el('bring').value       = (d.bring    || []).join('\n');
     TriArk.limits.refresh();
     el('price').value          = d.price ?? 0;
+    el('currency').value       = d.currency || 'JPY';
     el('capacity').value       = d.capacity ?? 2;
-    images = Array.isArray(d.images) ? d.images.filter(Boolean) : [];
+    el('pickup').checked       = !!d.pickup;
+    // 写真と一言メモは対で読み込む。片方だけ間引くと並びがずれる
+    const rawImgs  = Array.isArray(d.images)     ? d.images     : [];
+    const rawNotes = Array.isArray(d.imageNotes) ? d.imageNotes : [];
+    images   = [];
+    imgNotes = [];
+    rawImgs.forEach((u, i) => {
+      if (!u) return;
+      images.push(u);
+      imgNotes.push(String(rawNotes[i] || ''));
+    });
     renderImages();
     sessions = normalize(d);
     renderDates();
@@ -939,6 +1012,36 @@
     if (!title) { message('listing.needTitle', 'error'); return; }
     if (!TriArk.limits.check()) { message('limit.over', 'error'); return; }
 
+    /* ---- ここから、公開するときだけの確認 ----
+       下書きの保存は、何も書けていなくても通す。
+       書きかけを守れないと、かえって面倒なことになるため       */
+    if (status === 'published') {
+      /* 1. 体験の中身。
+         「実態が目的地への運送のみ」の出品を置けないようにする。
+         国交省のガイドラインが許可不要としているのは、
+         あくまで中身のあるツアー・ガイドに付随する送迎だけ */
+      if (!el('description').value.trim()) { message('listing.needDesc', 'error'); return; }
+      if (!lines(el('doList').value).length) { message('listing.needDo', 'error'); return; }
+
+      /* 2. 海は、事業の登録がなければ違法。
+         プロフィールに3点が揃っているかを見て、足りなければ止める */
+      if (selectedType === 'sea') {
+        let host = {};
+        try {
+          const hs = await getDoc(doc(db, 'hosts', user.uid));
+          if (hs.exists()) host = hs.data() || {};
+        } catch (e) { console.error(e); }
+
+        const miss = TriArk.certs.missingSea(host.vehicles);
+        if (miss.length) {
+          el('message').className = 'message error';
+          el('message').textContent = t('listing.needSea')
+            .replace('{list}', miss.map(id => t('sea.need.' + id)).join(' / '));
+          return;
+        }
+      }
+    }
+
     const data = {
       hostId         : user.uid,
       type           : selectedType,
@@ -948,14 +1051,17 @@
       doList         : lines(el('doList').value),
       included       : lines(el('included').value),
       bring          : lines(el('bring').value),
+      pickup         : !!el('pickup').checked,
       // 以前の英語欄は、1欄にまとめたので消す（翻訳は自動で用意される）
       title_en       : deleteField(),
       area_en        : deleteField(),
       description_en : deleteField(),
       address_en     : deleteField(),
       price          : parseInt(el('price').value, 10) || 0,
+      currency       : el('currency').value || 'JPY',
       capacity       : parseInt(el('capacity').value, 10) || 1,
       images         : images,
+      imageNotes     : collectNotes(),
       sessions       : sessions,
       openDates      : sessions.map(s => s.start),   // 古い形式の互換のため残す
       address        : el('address').value.trim(),
@@ -1016,5 +1122,7 @@
     }
   });
 </script>
+<script src="trial.js"></script>
+<script src="tabbar.js"></script>
 </body>
 </html>
