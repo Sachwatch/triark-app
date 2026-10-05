@@ -36,15 +36,9 @@
     display:flex;gap:20px;background:#fff;border:1px solid rgba(10,22,34,.12);border-radius:3px;
     overflow:hidden;
   }
-  .card .thumbs{width:180px;flex-shrink:0;display:flex;flex-direction:column;gap:2px}
-  .card .thumbs .t{flex:1;min-height:44px;background:#e6e0d6 center/cover no-repeat}
-  .card .thumbs .t.main{flex:2.4}
-  .card .more-n{
-    position:relative;display:flex;align-items:center;justify-content:center;
-    color:#fff;font-size:13px;font-family:"Helvetica Neue",sans-serif;
-  }
-  .card .more-n::after{content:'';position:absolute;inset:0;background:rgba(10,22,34,.45)}
-  .card .more-n span{position:relative;z-index:1}
+  /* 写真は1枚目だけを大きく。公開されている一覧と同じ見え方 */
+  .card .thumbs{width:180px;flex-shrink:0;display:flex}
+  .card .thumbs .t{flex:1;min-height:120px;background:#e6e0d6 center/cover no-repeat}
   .card .body{flex:1;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
   .card .row1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   .badge{
@@ -71,10 +65,9 @@
   @media(max-width:600px){
     .wrap{padding:36px 20px 70px}
     .card{flex-direction:column}
-    /* 写真は横に並べて、上部いっぱいに */
-    .card .thumbs{width:100%;flex-direction:row;height:180px}
+    /* 細い画面では、上部いっぱいに1枚 */
+    .card .thumbs{width:100%;height:180px}
     .card .thumbs .t{min-height:0}
-    .card .thumbs .t.main{flex:2}
   }
 </style>
 </head>
@@ -142,14 +135,10 @@
       const meta  = [area, t('listing.fee') + ' ' + price + ' / ' + t('listing.perPerson'),
                      t('listing.upTo') + ' ' + (d.capacity || 1)].filter(Boolean).join('　·　');
 
+      /* 写真は1枚目だけ。公開されている一覧と同じ見え方にそろえる */
       return '<div class="card">' +
         '<div class="thumbs">' +
           '<div class="t main"' + (cover ? ' style="background-image:url(\'' + esc(cover) + '\')"' : '') + '></div>' +
-          (imgs[1] ? '<div class="t" style="background-image:url(\'' + esc(imgs[1]) + '\')"></div>' : '') +
-          (imgs[2]
-            ? '<div class="t' + (imgs.length > 3 ? ' more-n' : '') + '" style="background-image:url(\'' + esc(imgs[2]) + '\')">' +
-              (imgs.length > 3 ? '<span>+' + (imgs.length - 3) + '</span>' : '') + '</div>'
-            : '') +
         '</div>' +
         '<div class="body">' +
           '<div class="row1">' +

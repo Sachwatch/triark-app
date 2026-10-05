@@ -1006,7 +1006,7 @@
     setHostOpen(wasHost || wantHost);
     TriArk.limits.refresh();
 
-    buildTrLangs(u.srcLang || h.srcLang);
+    // 選択肢は loadTranslations の中で作り直す（書いた言語が変わることがあるため）
     loadTranslations().catch(e => console.warn('[profile] 翻訳の読み込みに失敗', e));
   }
 
@@ -1121,13 +1121,19 @@
   async function loadTranslations() {
     const user = getUser();
     if (!user) return;
-    const lang = el('trLang').value;
     const [userSnap, hostSnap] = await Promise.all([
       getDoc(doc(db, 'users', user.uid)),
       getDoc(doc(db, 'hosts', user.uid))
     ]);
     const u = userSnap.exists() ? userSnap.data() : {};
     const h = hostSnap.exists() ? hostSnap.data() : {};
+
+    /* 書いた言語を変えると、訳す先も変わる（英語で書けば日本語へ、その逆も）。
+       選択肢は読み込みのたびに作り直す。作り直さないと、
+       英語→日本語に書き換えたあと「日本語」しか選べないままになる */
+    buildTrLangs(u.srcLang || h.srcLang, el('trLang').value);
+
+    const lang = el('trLang').value;
     const got = {};
     if (u.tr && u.tr[lang]) Object.assign(got, u.tr[lang]);
     if (h.tr && h.tr[lang]) Object.assign(got, h.tr[lang]);
@@ -1185,10 +1191,13 @@
   }
   el('trSave').addEventListener('click', saveTranslations);
 
-  function buildTrLangs(srcLang) {
+  /* 訳す先の候補を作る。keep が今も候補に残っていれば、選択を保つ */
+  function buildTrLangs(srcLang, keep) {
     const others = TriArk.i18n.langs.filter(l => l !== (srcLang || TriArk.i18n.get()));
+    const cur = (keep && others.indexOf(keep) !== -1) ? keep : others[0];
     el('trLang').innerHTML = others.map(l =>
-      '<option value="' + l + '">' + esc(t('lang.' + l)) + '</option>').join('');
+      '<option value="' + l + '"' + (l === cur ? ' selected' : '') + '>' +
+      esc(t('lang.' + l)) + '</option>').join('');
   }
   el('trLang').addEventListener('change', loadTranslations);
   el('trReload').addEventListener('click', loadTranslations);

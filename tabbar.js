@@ -43,12 +43,15 @@
      ・多くても5つまで。増やすと文字が小さくなって読めない
      ・ホストの人には「自分の体験」を、そうでない人には「ホストを探す」を出す */
   function tabs() {
+    /* まだログインしていない人には「ホストになる」を出さない。
+       並べてしまうと「登録＝ホストになること」と読めて、
+       ただ見たいだけの人を遠ざける。
+       ホストへの入口は、トップページの中ほどに置いてある */
     if (!state.signedIn) {
       return [
-        ['listings.html',        'tab.find',     'search'],
-        ['hosts.html',           'tab.hosts',    'people'],
-        ['profile.html?host=1',  'tab.becomeHost', 'ark'],
-        ['login.html',           'tab.login',    'person']
+        ['listings.html', 'tab.find',  'search'],
+        ['hosts.html',    'tab.hosts', 'people'],
+        ['login.html',    'tab.login', 'person']
       ];
     }
     return [

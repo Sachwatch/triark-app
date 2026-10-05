@@ -186,6 +186,25 @@
   /* 送迎のチェック。道路運送法の表示につながる欄なので、他より少し目立たせる */
   .pickup-check{display:flex;gap:9px;align-items:flex-start;font-size:14px;line-height:1.7}
   .pickup-check input{margin-top:4px;flex:0 0 auto}
+  /* 必須の印。下書きにも要るものと、公開にだけ要るものを分ける */
+  .req{
+    margin-left:8px;padding:2px 7px;border-radius:9px;vertical-align:1px;
+    font:600 10px/1.6 var(--sans);letter-spacing:.08em;
+    background:var(--sun);color:#fff;
+  }
+  .req.pub{background:#e6ddd0;color:#7d6f5e}
+
+  /* 足りないまま公開を押した欄を、その場で示す */
+  .bad{border-color:var(--sun) !important;box-shadow:0 0 0 3px rgba(214,99,56,.12)}
+
+  /* 公開までに何が足りないか。入力しているそばから書き換える */
+  .ready{margin:0 0 14px;font-size:13px;line-height:1.9}
+  .ready.hidden{display:none}
+  .ready .todo{color:#8a7c6b}
+  .ready .done{color:var(--sea);font-weight:600}
+  .ready ul{list-style:none;margin:6px 0 0;padding:0}
+  .ready li{padding-left:18px;position:relative;color:#8a7c6b}
+  .ready li::before{content:'—';position:absolute;left:0}
 </style>
 </head>
 <body>
@@ -222,7 +241,7 @@
 
       <!-- 日本語と英語を、同じ枠の中に並べて入力する -->
       <div class="field">
-        <label for="title" data-i18n="listing.title">タイトル</label>
+        <label for="title"><span data-i18n="listing.title">タイトル</span><span class="req" data-i18n="req.must">必須</span></label>
         <input type="text" id="title" data-max="40" data-i18n-attr="placeholder:listing.titlePh">
       </div>
 
@@ -232,13 +251,13 @@
       </div>
 
       <div class="field">
-        <label for="description" data-i18n="listing.description">説明</label>
+        <label for="description"><span data-i18n="listing.description">説明</span><span class="req pub" data-i18n="req.pub">公開に必要</span></label>
         <textarea id="description" data-max="3000" data-recommend="200" data-i18n-attr="placeholder:listing.descriptionPh"></textarea>
         <p class="help" data-i18n="listing.descriptionHelp"></p>
       </div>
 
       <div class="field">
-        <label for="doList" data-i18n="listing.doList">やること</label>
+        <label for="doList"><span data-i18n="listing.doList">やること</span><span class="req pub" data-i18n="req.pub">公開に必要</span></label>
         <textarea id="doList" style="min-height:120px" data-max="600" data-i18n-attr="placeholder:listing.doListPh"></textarea>
         <p class="help" data-i18n="listing.linesHelp"></p>
       </div>
@@ -368,6 +387,8 @@
       </div>
 
       <div class="actions">
+      <div class="ready" id="ready"></div>
+
         <button class="btn btn-primary" id="publishBtn" data-i18n="listing.publish">公開する</button>
         <button class="btn btn-outline" id="draftBtn" data-i18n="listing.saveDraft">下書きとして保存</button>
       </div>
@@ -405,6 +426,7 @@
 
   const listingId = new URLSearchParams(location.search).get('id');
   let selectedType = 'land';
+  let seaMissing = false;   // 船の登録が足りていないか（公開の判定に使う）
 
   /* ---- 警報を見る地域（気象庁の区分：都道府県 → 市区町村） ---- */
   let jmaTable = null;
@@ -566,6 +588,7 @@
   /* ---- 種別の選択 ---- */
   function setType(type) {
     selectedType = type;
+    if (typeof updateReady === 'function') updateReady();
     el('typeCards').querySelectorAll('.type-card').forEach(c =>
       c.classList.toggle('active', c.dataset.type === type)
     );
@@ -1004,12 +1027,53 @@
     return isNaN(n) ? null : n;
   }
 
+  /* ---- 公開までに足りないもの ----
+     下書きはいつでも保存できる。公開のときだけ見る欄を、ここで一覧にする。
+     画面の下に出しておいて、打っているそばから書き換える */
+  function missingForPublish() {
+    const out = [];
+    if (!el('title').value.trim())            out.push(['ready.title', 'title']);
+    if (!el('description').value.trim())      out.push(['ready.desc',  'description']);
+    if (!lines(el('doList').value).length)    out.push(['ready.do',    'doList']);
+    if (selectedType === 'sea' && seaMissing) out.push(['ready.sea',   null]);
+    return out;
+  }
+
+  function updateReady() {
+    const box = el('ready');
+    if (!box) return;
+    const miss = missingForPublish();
+    if (!miss.length) {
+      box.innerHTML = '<span class="done">' + escHtml(t('ready.ok')) + '</span>';
+      return;
+    }
+    box.innerHTML = '<span class="todo">' + escHtml(t('ready.todo').replace('{n}', miss.length)) + '</span>' +
+      '<ul>' + miss.map(([k]) => '<li>' + escHtml(t(k)) + '</li>').join('') + '</ul>';
+  }
+
+  /* 足りない欄に印をつけて、そこまで画面を動かす。
+     「あと何つ」も、このときに出し直す */
+  function pointAt(id) {
+    updateReady();
+    document.querySelectorAll('.bad').forEach(x => x.classList.remove('bad'));
+    const f = el(id);
+    if (!f) return;
+    f.classList.add('bad');
+    f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    f.focus({ preventScroll: true });
+  }
+
+  ['title', 'description', 'doList'].forEach(id => {
+    const f = el(id);
+    if (f) f.addEventListener('input', () => { f.classList.remove('bad'); updateReady(); });
+  });
+
   async function save(status) {
     const user = getUser();
     if (!user) return;
 
     const title = el('title').value.trim();
-    if (!title) { message('listing.needTitle', 'error'); return; }
+    if (!title) { message('listing.needTitle', 'error'); pointAt('title'); return; }
     if (!TriArk.limits.check()) { message('limit.over', 'error'); return; }
 
     /* ---- ここから、公開するときだけの確認 ----
@@ -1020,8 +1084,12 @@
          「実態が目的地への運送のみ」の出品を置けないようにする。
          国交省のガイドラインが許可不要としているのは、
          あくまで中身のあるツアー・ガイドに付随する送迎だけ */
-      if (!el('description').value.trim()) { message('listing.needDesc', 'error'); return; }
-      if (!lines(el('doList').value).length) { message('listing.needDo', 'error'); return; }
+      if (!el('description').value.trim()) {
+        message('listing.needDesc', 'error'); pointAt('description'); return;
+      }
+      if (!lines(el('doList').value).length) {
+        message('listing.needDo', 'error'); pointAt('doList'); return;
+      }
 
       /* 2. 海は、事業の登録がなければ違法。
          プロフィールに3点が揃っているかを見て、足りなければ止める */
@@ -1052,11 +1120,17 @@
       included       : lines(el('included').value),
       bring          : lines(el('bring').value),
       pickup         : !!el('pickup').checked,
-      // 以前の英語欄は、1欄にまとめたので消す（翻訳は自動で用意される）
-      title_en       : deleteField(),
-      area_en        : deleteField(),
-      description_en : deleteField(),
-      address_en     : deleteField(),
+      /* 以前は英語を手で書く欄があった。いまは1欄にまとめて自動翻訳にしたので、
+         古い書類に残っている英語欄は消す。
+         ただし deleteField() は「すでにあるものを消す」指示なので、
+         新しく作るときには渡せない（addDoc がエラーになる）。
+         作るときは、そもそも消すものが無い */
+      ...(listingId ? {
+        title_en       : deleteField(),
+        area_en        : deleteField(),
+        description_en : deleteField(),
+        address_en     : deleteField()
+      } : {}),
       price          : parseInt(el('price').value, 10) || 0,
       currency       : el('currency').value || 'JPY',
       capacity       : parseInt(el('capacity').value, 10) || 1,
@@ -1098,6 +1172,8 @@
   el('draftBtn').addEventListener('click',   () => save('draft'));
 
   /* ---- 起動 ---- */
+  TriArk.i18n.onChange(() => { if (typeof updateReady === 'function') updateReady(); });
+
   onUser(async ({ user, profile }) => {
     if (!user) {
       const back = 'listing-edit.html' + (listingId ? '?id=' + listingId : '');
@@ -1120,6 +1196,17 @@
       const ok = await loadListing(listingId, user.uid);
       if (!ok) location.href = 'my-listings.html' + q();
     }
+
+    /* 船の登録が揃っているかを、先に一度だけ見ておく。
+       公開のときにも改めて確かめるが、ここで読んでおくと
+       「公開までにあと何つ」をその場で出せる */
+    try {
+      const hs = await getDoc(doc(db, 'hosts', user.uid));
+      const h = hs.exists() ? (hs.data() || {}) : {};
+      seaMissing = TriArk.certs.missingSea(h.vehicles).length > 0;
+    } catch (e) { console.warn('[listing-edit] Ark の確認に失敗', e); }
+
+    updateReady();
   });
 </script>
 <script src="trial.js"></script>
